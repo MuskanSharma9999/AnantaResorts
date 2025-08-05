@@ -6,14 +6,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 // Import your screen components
-import OnboardingScreen from './src/screens/OnboardingScreen';
-import LoginScreen from './src/screens/LoginScreen';
+import OnboardingScreen from './src/components/auth/onboarding/OnboardingScreen';
+import LoginScreen from "./src/components/auth/Login/LoginScreen"
 import HomeScreen from './src/screens/HomeScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ServicesScreen from './src/screens/ServicesScreen';
-import SplashScreen from './src/screens/SplashScreen';
-
+import SplashScreen from './src/components/auth/splash/SplashScreen';
 // Navigation types
 export type RootStackParamList = {
   Splash: undefined;

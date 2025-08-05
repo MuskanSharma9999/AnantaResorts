@@ -1,150 +1,170 @@
 // src/styles/LoginScreenStyles.ts
 import { StyleSheet, Dimensions } from 'react-native';
-import { Colors, Typography, Spacing, BorderRadius } from './Colors';
 
 const { width, height } = Dimensions.get('window');
-
-// Responsive dimensions
 const isSmallDevice = width < 375;
-const isLargeDevice = width > 414;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#000',
   },
 
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-
-  scrollViewContent: {
-    flexGrow: 1,
-  },
-
-  // Header
+  // Header Section
   header: {
     position: 'absolute',
-    top: 0,
+    top: 50, // Minimal top spacing
     left: 0,
     right: 0,
     zIndex: 10,
     alignItems: 'center',
-    paddingTop: 50, // Will be overridden by safe area
+    paddingHorizontal: 0, // Remove horizontal padding
+    paddingVertical: 0, // Remove vertical padding
+    backgroundColor: 'black',
   },
   logo: {
-    fontSize: isSmallDevice ? Typography.fontSize.h3 : Typography.fontSize.h2,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.primary,
-    letterSpacing: 2,
+    alignSelf: 'center',
+    width: '100%',
   },
-  logoSubtext: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.textPrimary,
+  brandName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#D4AF37', // Gold color
+    letterSpacing: 2,
+    textAlign: 'center',
+  },
+  brandSubtitle: {
+    fontSize: 12,
+    color: '#D4AF37',
     letterSpacing: 1,
+    textAlign: 'center',
     marginTop: 2,
   },
 
   // Image Section
   imageSection: {
-    height: height * 0.65, // 65% of screen height
+    flex: 1,
     position: 'relative',
   },
-  imagePlaceholder: {
+  carouselItem: {
     flex: 1,
-    backgroundColor: '#8B7355', // Desert color placeholder
+    position: 'relative',
   },
-  imageGradient: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    paddingBottom: height * 0.15, // Space for form
+  carouselImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
+
+  // Location Badge
   locationBadge: {
-    paddingHorizontal: Spacing.xl,
-    marginBottom: Spacing.xl,
+    position: 'absolute',
+    left: 20,
+    bottom: 150, // Position above the form
+    zIndex: 5,
   },
   locationTitle: {
-    fontSize: isSmallDevice ? Typography.fontSize.h3 : Typography.fontSize.h2,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.primary,
-    letterSpacing: 2,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#D4AF37', // Gold color
+    letterSpacing: 3,
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   locationSubtitle: {
-    fontSize: Typography.fontSize.md,
-    color: Colors.textPrimary,
-    letterSpacing: 1,
+    fontSize: 14,
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
 
   // Bottom Section
   bottomSection: {
-    minHeight: height * 0.4, // Minimum 40% of screen height
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: height * 0.35, // Takes up bottom 45% of screen
+    backgroundColor: '#1E1E1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 30,
+    paddingVertical: 30
+  },
+  gradientOverlay: {
+    flex: 1,
     justifyContent: 'flex-end',
+    paddingBottom: 40,
   },
   formContainer: {
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.xl,
+    gap: 30
   },
 
   // Welcome Text
   welcomeText: {
-    fontSize: isSmallDevice ? Typography.fontSize.h2 : Typography.fontSize.h1,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.primary,
-    marginBottom: Spacing.sm,
+    fontSize: isSmallDevice ? 28 : 32,
+    fontWeight: '400', // Lighter weight to match the design
+    color: '#FBCF9C', // Gold color
+    fontFamily: 'Cormorant-Bold', // You might want to use a custom serif font
   },
   subText: {
-    fontSize: isSmallDevice ? Typography.fontSize.md : Typography.fontSize.lg,
-    color: Colors.textMuted,
-    marginBottom: Spacing.xxl,
+    fontSize: 16,
+    color: '#999',
+    marginBottom: 40,
+    fontWeight: '300',
   },
 
-  // Input Container
-  inputContainer: {
-    marginBottom: Spacing.xxl,
-  },
   phoneInputContainer: {
+    backgroundColor: 'transparent',
+    color: '#6B6B6B',
+  },
+  inputContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-    backgroundColor: Colors.backgroundCard,
-    minHeight: 56, // Ensure proper touch target
+    borderColor: '#ccc',
+    color: '#6B6B6B',
+
+    borderRadius: 8,
+    paddingHorizontal: 12,
   },
   countryCode: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
+    paddingRight: 8,
     borderRightWidth: 1,
-    borderRightColor: Colors.border,
-    minWidth: 80,
-    justifyContent: 'center',
+    borderRightColor: '#ccc',
+    color: '#6B6B6B',
+    marginRight: 8,
   },
   countryCodeText: {
-    fontSize: Typography.fontSize.lg,
-    color: Colors.textPrimary,
-    marginRight: Spacing.sm,
+    fontSize: 16,
+    marginRight: 4,
+    color: '#6B6B6B',
   },
   dropdownIcon: {
-    fontSize: Typography.fontSize.xs,
-    color: Colors.textMuted,
+    fontSize: 12,
+    color: '#666',
   },
   phoneInput: {
     flex: 1,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    fontSize: Typography.fontSize.lg,
-    color: Colors.textPrimary,
-    minHeight: 56,
+    fontSize: 16,
+    paddingVertical: 10,
+    color: '#6B6B6B',
   },
 
-  // Submit Button
-  submitButton: {
-    width: '100%',
-    marginBottom: Spacing.lg,
+
+
+  // Responsive adjustments
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
   },
 });
 
