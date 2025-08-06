@@ -3,21 +3,29 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 // Import your screen components
 import OnboardingScreen from './src/components/auth/onboarding/OnboardingScreen';
-import LoginScreen from "./src/components/auth/Login/LoginScreen"
+import LoginScreen from './src/components/auth/Login/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ServicesScreen from './src/screens/ServicesScreen';
 import SplashScreen from './src/components/auth/splash/SplashScreen';
+import OtpScreen from './src/components/auth/otp/OtpScreen';
+import Logo from './src/assets/images/AnantaLogo.svg';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { TouchableOpacity } from 'react-native';
+import MenuIcon from './src/assets/images/MenuIcon.svg';
+
 // Navigation types
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
+  Otp: undefined;
   MainTabs: undefined;
 };
 
@@ -30,9 +38,34 @@ export type TabParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
+const Drawer = createDrawerNavigator();
+
+const MainDrawerNavigator = () => {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        drawerStyle: {
+          backgroundColor: '#000',
+        },
+        drawerActiveTintColor: '#D4AF37',
+        drawerInactiveTintColor: '#fff',
+        headerShown: false,
+      }}
+    >
+      <Drawer.Screen
+        name="MainTabs"
+        component={MainTabNavigator}
+        options={{ title: 'Home' }}
+      />
+      {/* You can add more drawer screens here if needed */}
+    </Drawer.Navigator>
+  );
+};
 
 // Bottom Tab Navigator Component
 const MainTabNavigator = () => {
+  const navigation = useNavigation();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -55,8 +88,6 @@ const MainTabNavigator = () => {
             default:
               iconName = 'home-outline';
           }
-
-          return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#D4AF37', // Gold color
         tabBarInactiveTintColor: '#666666',
@@ -87,8 +118,21 @@ const MainTabNavigator = () => {
         options={{
           title: 'Ananta Resorts',
           headerShown: true,
+          headerTitle: () => <Logo width={100} height={100} />,
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: 'black' },
+          headerTintColor: '#D4AF37',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+              style={{ marginLeft: 15 }}
+            >
+              <MenuIcon width={30} height={30}></MenuIcon>
+            </TouchableOpacity>
+          ),
         }}
       />
+
       <Tab.Screen
         name="Booking"
         component={BookingScreen}
@@ -141,11 +185,35 @@ const App = () => {
             component={LoginScreen}
             options={{
               gestureEnabled: false,
+              headerShown: true,
+              headerTitle: () => <Logo width={100} height={100}></Logo>,
+              headerTitleAlign: 'center',
+              headerStyle: {
+                backgroundColor: 'black',
+              },
+              headerTintColor: '#D4AF37',
+              headerLeft: () => null,
             }}
           />
           <Stack.Screen
+            name="Otp"
+            component={OtpScreen}
+            options={{
+              gestureEnabled: true,
+              headerShown: true,
+              headerTitle: () => <Logo width={100} height={100}></Logo>,
+              headerTitleAlign: 'center',
+              headerStyle: {
+                backgroundColor: 'black',
+              },
+              headerTintColor: '#D4AF37',
+              headerBackButtonDisplayMode: 'minimal',
+            }}
+          />
+
+          <Stack.Screen
             name="MainTabs"
-            component={MainTabNavigator}
+            component={MainDrawerNavigator}
             options={{
               gestureEnabled: false,
             }}

@@ -10,18 +10,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
 
-  // Header Section
-  header: {
-    position: 'absolute',
-    top: 50, // Minimal top spacing
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    alignItems: 'center',
-    paddingHorizontal: 0, // Remove horizontal padding
-    paddingVertical: 0, // Remove vertical padding
-    backgroundColor: 'black',
-  },
+ 
   logo: {
     alignSelf: 'center',
     width: '100%',
@@ -82,26 +71,31 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
 
-  // Bottom Section
   bottomSection: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height * 0.35, // Takes up bottom 45% of screen
     backgroundColor: '#1E1E1E',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 30,
-    paddingVertical: 30
+    paddingVertical: 30,
+    minHeight: height * 0.35,
+    justifyContent: 'flex-end',
   },
+
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+  },
+
   gradientOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
     paddingBottom: 40,
   },
   formContainer: {
-    gap: 30
+    gap: 30,
   },
 
   // Welcome Text
@@ -155,16 +149,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 10,
     color: '#6B6B6B',
-  },
-
-
-
-  // Responsive adjustments
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
   },
 });
 
