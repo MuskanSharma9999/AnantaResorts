@@ -17,10 +17,11 @@ import Logo from '../../../assets/images/AnantaLogo.svg';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import styles from './OtpScreenStyles';
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import GradientButton from '../../Buttons/GradientButton';
 import { Alert } from 'react-native';
-
+import { TabParamList } from '../navigation/types';
+import { useAppNavigation } from '../../../hooks/useAppNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,8 +29,8 @@ const OtpScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '']); // 4-digit OTP
   const [resendTime, setResendTime] = useState(30);
   const [mobileNumber] = useState('****555'); // Would come from auth flow
-  const navigation = useNavigation();
   const inputRefs = useRef<Array<TextInput | null>>([]);
+  const navigation = useAppNavigation();
 
   const data = [
     { image: require('../../../assets/images/loginCarousel_images/img_1.jpg') },
@@ -76,7 +77,7 @@ const OtpScreen = () => {
     const enteredOtp = otp.join('');
     console.log('Verifying OTP:', enteredOtp);
 
-    navigation.navigate('MainTabs' as never);
+    navigation.navigate('Home');
   };
 
   return (

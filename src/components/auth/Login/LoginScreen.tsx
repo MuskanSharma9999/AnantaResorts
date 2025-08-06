@@ -16,7 +16,7 @@ import styles from './LoginScreenStyles';
 import Logo from '../../../assets/images/AnantaLogo.svg';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
-import PhoneInputWithCountryCode from '../../PhoneInputWithCountryCode';
+import PhoneInputWithCountryCode from './PhoneInputWithCountryCode';
 
 const LoginScreen = () => {
   const { width, height } = Dimensions.get('window');

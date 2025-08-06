@@ -9,7 +9,7 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
-import GradientButton from './Buttons/GradientButton';
+import GradientButton from '../../Buttons/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -81,7 +81,7 @@ const PhoneInputWithCountryCode = () => {
         await AsyncStorage.setItem('userToken', 'dummy_token');
         await AsyncStorage.setItem('userMobile', mobileNumber);
         setIsLoading(false);
-        navigation.navigate('Otp' as never);
+        navigation.navigate('Otp');
       }, 1500);
     } catch (error) {
       setIsLoading(false);
@@ -109,7 +109,7 @@ const PhoneInputWithCountryCode = () => {
           keyboardType="phone-pad"
           value={mobileNumber}
           onChangeText={text => {
-            const digitsOnly = text.replace(/[^0-9]/g, ''); 
+            const digitsOnly = text.replace(/[^0-9]/g, '');
             setMobileNumber(digitsOnly);
           }}
           maxLength={10}

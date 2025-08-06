@@ -12,7 +12,7 @@ const SplashScreen = () => {
   useEffect(() => {
     // Always navigate to onboarding first, regardless of previous state
     setTimeout(() => {
-      navigation.navigate('Onboarding' as never);
+      navigation.navigate('Onboarding');
     }, 1000); // 5 seconds delay
   }, [navigation]);
 
