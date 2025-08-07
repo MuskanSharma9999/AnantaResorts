@@ -7,7 +7,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export const AppNavigator = () => {
   // Replace with your actual auth state logic
-  const isAuthenticated = true; // Example: useSelector(state => state.auth.isAuthenticated);
+  // Here isAuthenticated should be coming from the async Storage.
+  // Delete the isAuthenticated variable/data from the Async Storage while Logout.
+  // If the OTP is valid then store the isAuthenticated value in the Async Storage, and let the user enter the App.
+
+  const isAuthenticated = false;
 
   return (
     <SafeAreaProvider>
