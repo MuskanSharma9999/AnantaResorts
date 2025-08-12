@@ -11,7 +11,7 @@ export const AppNavigator = () => {
   // Delete the isAuthenticated variable/data from the Async Storage while Logout.
   // If the OTP is valid then store the isAuthenticated value in the Async Storage, and let the user enter the App.
 
-  const isAuthenticated = false;
+  const isAuthenticated = true;
 
   return (
     <SafeAreaProvider>

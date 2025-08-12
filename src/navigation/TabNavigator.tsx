@@ -10,7 +10,12 @@ import { DrawerActions } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
 import Logo from '../assets/images/AnantaLogo.svg';
 import MenuIcon from '../assets/images/MenuIcon.svg';
-import Icon from 'react-native-vector-icons/Ionicons';
+import ProfileIcon from '../assets/images/ProfileIcon.svg';
+import HomeIcon from '../assets/images/home.svg';
+import CardIcon from '../assets/images/Credit Card.svg';
+import FlightIcon from '../assets/images/Essentials.svg';
+import HeartIcon from '../assets/images/Action.svg';
+import { BlurView } from '@react-native-community/blur';
 
 // Extend the TabParamList if needed
 declare global {
@@ -27,41 +32,61 @@ export const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string;
-
+        tabBarIcon: ({ color, size }) => {
+          const iconSize = size + 4; // Slightly bigger for emphasis
           switch (route.name) {
             case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
+              return (
+                <HomeIcon width={iconSize} height={iconSize} fill={color} />
+              );
             case 'Booking':
-              iconName = focused ? 'calendar' : 'calendar-outline';
-              break;
+              return (
+                <CardIcon width={iconSize} height={iconSize} fill={color} />
+              );
             case 'Services':
-              iconName = focused ? 'list' : 'list-outline';
-              break;
+              return (
+                <FlightIcon width={iconSize} height={iconSize} fill={color} />
+              );
             case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
+              return (
+                <HeartIcon width={iconSize} height={iconSize} fill={color} />
+              );
             default:
-              iconName = 'home-outline';
+              return null;
           }
-
-          return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#D4AF37',
-        tabBarInactiveTintColor: '#666666',
+        tabBarActiveTintColor: '#D4AF37', // Gold
+
+        tabBarBackground: () => (
+          <BlurView
+            style={{ flex: 1 }}
+            blurType="light"
+            blurAmount={20}
+            reducedTransparencyFallbackColor="white"
+          />
+        ),
         tabBarStyle: {
-          backgroundColor: '#000000',
-          borderTopWidth: 1,
-          borderTopColor: '#333333',
-          height: 60,
+          backgroundColor: 'rgba(255, 255, 255, 0.2)', // Transparent white
+          borderTopWidth: 0,
+          height: 100,
           paddingBottom: 8,
           paddingTop: 8,
+          elevation: 10, // Android shadow
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowOffset: { width: 0, height: -2 },
+          shadowRadius: 6,
+          paddingHorizontal: 10,
+          position: 'absolute', // Required for blur
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          overflow: 'hidden', // Clips blur edges
         },
+
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '500',
+          fontWeight: '600',
+          paddingBottom: 2,
         },
         headerStyle: {
           backgroundColor: '#000000',
@@ -69,6 +94,8 @@ export const TabNavigator = () => {
         headerTintColor: '#D4AF37',
         headerTitleStyle: {
           fontWeight: 'bold',
+          paddingTop: 10,
+          fontSize: 18,
         },
       })}
     >
@@ -76,7 +103,7 @@ export const TabNavigator = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          title: 'Ananta Resorts',
+          title: 'Home',
           headerShown: true,
           headerTitle: () => <Logo width={100} height={100} />,
           headerTitleAlign: 'center',
@@ -88,6 +115,22 @@ export const TabNavigator = () => {
               style={{ marginLeft: 15 }}
             >
               <MenuIcon width={30} height={30} />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+              style={{ marginLeft: 15 }}
+            >
+              <ProfileIcon
+                width={30}
+                height={30}
+                style={{
+                  backgroundColor: 'gold',
+                  borderRadius: 20,
+                  margin: 10,
+                }}
+              />
             </TouchableOpacity>
           ),
         }}

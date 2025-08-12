@@ -9,7 +9,7 @@ export const MainNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
-        name="MainTabs"
+        name="RootTabs"
         component={DrawerNavigator}
         options={{ gestureEnabled: false }}
       />
