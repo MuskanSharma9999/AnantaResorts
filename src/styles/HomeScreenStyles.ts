@@ -9,11 +9,13 @@ const styles = StyleSheet.create({
   imageSection: {
     flex: 1,
     position: 'relative',
+    
   },
 
   carouselItem: {
     flex: 1,
     position: 'relative',
+    maxHeight: 300
   },
 
   carouselImage: {

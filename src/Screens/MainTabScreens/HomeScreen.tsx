@@ -10,6 +10,7 @@ import styles from '../../styles/HomeScreenStyles';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { TopRated } from '../../components/HomeScreenComponents/TopRated';
 
 const HomeScreen = () => {
   const featuredRooms = [
@@ -49,7 +50,7 @@ const HomeScreen = () => {
       contentContainerStyle={{ paddingBottom: 60 }}
       showsVerticalScrollIndicator={false}
     >
-      <View>
+      <View style={{ maxHeight: 300 }}>
         <Carousel
           loop
           autoPlay
@@ -81,72 +82,11 @@ const HomeScreen = () => {
         ))}
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.topRatedContainer}>
-        <Text style={styles.topRatedText}>Top Rated</Text>
-        <Text style={styles.topRatedSubText}>
-          Unwind at ANANTA Club best resorts with premium stays and amazing
-          experiences.
-        </Text>
-      </View>
+      <TopRated></TopRated>
+            <TopRated></TopRated>
 
-      {/* Featured Rooms */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Featured Rooms</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {featuredRooms.map(room => (
-            <View key={room.id} style={styles.roomCard}>
-              <View style={styles.roomImagePlaceholder} />
-              <Text style={styles.roomName}>{room.name}</Text>
-              <Text style={styles.roomPrice}>{room.price}/night</Text>
-              <TouchableOpacity style={styles.bookButton}>
-                <Text style={styles.bookButtonText}>Book</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-      <View style={styles.topRatedContainer}>
-        <Text style={styles.topRatedText}>Hot Offers</Text>
-        <Text style={styles.topRatedSubText}>
-          Unwind at ANANTA Club best resorts with premium stays and amazing
-          experiences.
-        </Text>
-      </View>
-      {/* Amenities */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesGrid}>
-          {amenities.map(amenity => (
-            <TouchableOpacity key={amenity.id} style={styles.amenityCard}>
-              <Icon name={amenity.icon} size={32} color="#2E86AB" />
-              <Text style={styles.amenityText}>{amenity.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-      <View style={styles.topRatedContainer}>
-        <Text style={styles.topRatedText}>Trending this Season</Text>
-        <Text style={styles.topRatedSubText}>
-          Unwind at ANANTA Club best resorts with premium stays and amazing
-          experiences.
-        </Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Featured Rooms</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {featuredRooms.map(room => (
-            <View key={room.id} style={styles.roomCard}>
-              <View style={styles.roomImagePlaceholder} />
-              <Text style={styles.roomName}>{room.name}</Text>
-              <Text style={styles.roomPrice}>{room.price}/night</Text>
-              <TouchableOpacity style={styles.bookButton}>
-                <Text style={styles.bookButtonText}>Book</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+      <TopRated></TopRated>
+
     </ScrollView>
   );
 };
