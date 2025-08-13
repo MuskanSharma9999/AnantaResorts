@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -56,8 +57,12 @@ const OnboardingScreen = () => {
         colors={['#000000', '#1a1a1a', '#000000']}
         style={styles.container}
       >
+        {/* <OnBoarding width={width} height={width} /> */}
         <View style={styles.onboardingImage}>
-          <OnBoarding width={width} height={width} />
+          <Image
+            source={require('../../../assets/images/onBoarding.png')}
+           
+          />
         </View>
 
         <View>

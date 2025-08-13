@@ -1,10 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
-import HomeScreen from '../screens/HomeScreen';
-import BookingScreen from '../screens/BookingScreen';
-import ServicesScreen from '../screens/ServicesScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import HomeScreen from '../Screens/MainTabScreens/HomeScreen';
+import BookingScreen from '../Screens/MainTabScreens/BookingScreen';
+import ServicesScreen from '../Screens/MainTabScreens/ServicesScreen';
+import ProfileScreen from '../Screens/MainTabScreens/ProfileScreen';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
@@ -16,41 +16,33 @@ import CardIcon from '../assets/images/Credit Card.svg';
 import FlightIcon from '../assets/images/Essentials.svg';
 import HeartIcon from '../assets/images/Action.svg';
 import { BlurView } from '@react-native-community/blur';
+import { View } from 'react-native';
 
-// Extend the TabParamList if needed
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends TabParamList {}
   }
 }
 
-const Tab = createBottomTabNavigator<TabParamList>();
+const BottomTab = createBottomTabNavigator<TabParamList>();
 
-export const TabNavigator = () => {
+export const BottomTabNavigator = () => {
   const navigation = useNavigation();
 
   return (
-    <Tab.Navigator
+    <BottomTab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           const iconSize = size + 4; // Slightly bigger for emphasis
           switch (route.name) {
             case 'Home':
-              return (
-                <HomeIcon width={iconSize} height={iconSize} fill={color} />
-              );
+              return <HomeIcon width={iconSize} height={iconSize} />;
             case 'Booking':
-              return (
-                <CardIcon width={iconSize} height={iconSize} fill={color} />
-              );
+              return <CardIcon width={iconSize} height={iconSize} />;
             case 'Services':
-              return (
-                <FlightIcon width={iconSize} height={iconSize} fill={color} />
-              );
+              return <FlightIcon width={iconSize} height={iconSize} />;
             case 'Profile':
-              return (
-                <HeartIcon width={iconSize} height={iconSize} fill={color} />
-              );
+              return <HeartIcon width={iconSize} height={iconSize} />;
             default:
               return null;
           }
@@ -60,15 +52,14 @@ export const TabNavigator = () => {
         tabBarBackground: () => (
           <BlurView
             style={{ flex: 1 }}
-            blurType="light"
-            blurAmount={20}
+            blurAmount={1}
             reducedTransparencyFallbackColor="white"
           />
         ),
         tabBarStyle: {
-          backgroundColor: 'rgba(255, 255, 255, 0.2)', // Transparent white
+          backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent white
           borderTopWidth: 0,
-          height: 100,
+          height: 80,
           paddingBottom: 8,
           paddingTop: 8,
           elevation: 10, // Android shadow
@@ -99,15 +90,21 @@ export const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen
+      <BottomTab.Screen
         name="Home"
         component={HomeScreen}
         options={{
           title: 'Home',
           headerShown: true,
-          headerTitle: () => <Logo width={100} height={100} />,
+          headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: 'black' },
+          headerTitleContainerStyle: {
+            height: '100%',
+          },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
           headerTintColor: '#D4AF37',
           headerLeft: () => (
             <TouchableOpacity
@@ -117,48 +114,86 @@ export const TabNavigator = () => {
               <MenuIcon width={30} height={30} />
             </TouchableOpacity>
           ),
-          headerRight: () => (
+        }}
+      />
+      <BottomTab.Screen
+        name="Booking"
+        component={BookingScreen}
+        options={{
+          title: 'Booking',
+          headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerTitleContainerStyle: {
+            height: '100%',
+          },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
+          headerTintColor: '#D4AF37',
+          headerLeft: () => (
             <TouchableOpacity
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
               style={{ marginLeft: 15 }}
             >
-              <ProfileIcon
-                width={30}
-                height={30}
-                style={{
-                  backgroundColor: 'gold',
-                  borderRadius: 20,
-                  margin: 10,
-                }}
-              />
+              <MenuIcon width={30} height={30} />
             </TouchableOpacity>
           ),
         }}
       />
-      <Tab.Screen
-        name="Booking"
-        component={BookingScreen}
-        options={{
-          title: 'Book Stay',
-          headerShown: true,
-        }}
-      />
-      <Tab.Screen
+      <BottomTab.Screen
         name="Services"
         component={ServicesScreen}
         options={{
           title: 'Services',
           headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerTitleContainerStyle: {
+            height: '100%',
+          },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
+          headerTintColor: '#D4AF37',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+              style={{ marginLeft: 15 }}
+            >
+              <MenuIcon width={30} height={30} />
+            </TouchableOpacity>
+          ),
         }}
       />
-      <Tab.Screen
+      <BottomTab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
           title: 'Profile',
           headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerTitleContainerStyle: {
+            height: '100%',
+          },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
+          headerTintColor: '#D4AF37',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+              style={{ marginLeft: 15 }}
+            >
+              <MenuIcon width={30} height={30} />
+            </TouchableOpacity>
+          ),
         }}
       />
-    </Tab.Navigator>
+    </BottomTab.Navigator>
   );
 };

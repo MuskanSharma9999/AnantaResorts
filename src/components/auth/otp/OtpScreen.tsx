@@ -52,32 +52,39 @@ const OtpScreen = () => {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return; // Allow only single digit or empty
+    if (!/^\d?$/.test(value)) return; // only allow single digit or empty
 
     const updatedOtp = [...otp];
-    updatedOtp[index] = value;
+    updatedOtp[index] = value.trim();
     setOtp(updatedOtp);
 
+    // Move to next field if digit is entered
     if (value !== '' && index < otp.length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    if (updatedOtp.every(digit => digit !== '')) {
-      handleVerify();
+    // Auto-verify if last digit entered and all are valid
+    if (index === otp.length - 1 && updatedOtp.every(d => /^\d$/.test(d))) {
+      setTimeout(() => handleVerify(), 50); // small delay for state sync
     }
   };
 
   const handleVerify = () => {
-    if (otp.some(digit => digit === '')) {
-      Alert.alert('OTP Incomplete', 'Please enter all 4 digits of the OTP');
+    // Remove spaces and ensure each is exactly one digit
+    const cleanedOtp = otp.map(d => (d || '').trim());
 
+    const isInvalid =
+      cleanedOtp.length !== 4 || cleanedOtp.some(d => !/^\d$/.test(d));
+
+    if (isInvalid) {
+      Alert.alert('OTP Incomplete', 'Please enter all 4 digits of the OTP');
       return;
     }
 
-    const enteredOtp = otp.join('');
+    const enteredOtp = cleanedOtp.join('');
     console.log('Verifying OTP:', enteredOtp);
 
-    navigation.navigate('Home');
+    navigation.navigate('Signup');
   };
 
   return (

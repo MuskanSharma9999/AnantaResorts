@@ -3,16 +3,16 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from './types';
 import { DrawerNavigator } from './DrawerNavigator';
 
-const Stack = createStackNavigator<RootStackParamList>();
+const RootStack = createStackNavigator<RootStackParamList>();
 
 export const MainNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="RootTabs"
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Screen
+        name="DrawerRoot"
         component={DrawerNavigator}
         options={{ gestureEnabled: false }}
       />
-    </Stack.Navigator>
+    </RootStack.Navigator>
   );
 };

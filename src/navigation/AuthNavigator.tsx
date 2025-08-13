@@ -7,12 +7,13 @@ import OnboardingScreen from '../components/auth/onboarding/OnboardingScreen';
 import Logo from '../assets/images/AnantaLogo.svg';
 
 import OtpScreen from '../components/auth/otp/OtpScreen';
+import SignupScreen from '../components/auth/SignupScreen/SignupScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const AuthNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Splash"
+      initialRouteName="Signup"
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
@@ -21,15 +22,19 @@ export const AuthNavigator = () => {
         component={OnboardingScreen}
         options={{ gestureEnabled: false }}
       />
+
       <Stack.Screen
         name="Login"
         component={LoginScreen}
         options={{
           gestureEnabled: false,
           headerShown: true,
-          headerTitle: () => <Logo width={100} height={100} />,
+          headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: 'black' },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
           headerTintColor: '#D4AF37',
           headerLeft: () => null,
         }}
@@ -40,9 +45,28 @@ export const AuthNavigator = () => {
         options={{
           gestureEnabled: true,
           headerShown: true,
-          headerTitle: () => <Logo width={100} height={100} />,
+          headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: 'black' },
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={SignupScreen}
+        options={{
+          gestureEnabled: true,
+          headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: 120,
+          },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
         }}

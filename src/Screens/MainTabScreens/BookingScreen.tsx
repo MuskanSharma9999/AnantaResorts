@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import styles from '../styles/BookingScreenStyles';
+import styles from '../../styles/BookingScreenStyles';
 
 const BookingScreen = () => {
   const [checkIn, setCheckIn] = useState('');

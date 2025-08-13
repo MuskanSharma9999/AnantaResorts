@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import styles from '../styles/ProfileScreenStyles';
+import styles from '../../styles/ProfileScreenStyles';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();

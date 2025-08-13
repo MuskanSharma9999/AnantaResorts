@@ -53,6 +53,8 @@
 	<array>
 		<string>Cormorant-Bold.ttf</string>
 		<string>Montserrat-Regular.ttf</string>
+		  <string>Feather.ttf</string>
+
 	</array>
 	
 </dict>

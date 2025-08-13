@@ -6,7 +6,8 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   Otp: undefined;
-  RootTabs: NavigatorScreenParams<TabParamList>;
+  Signup: undefined;
+  DrawerRoot: undefined;
 };
 
 export type TabParamList = {
@@ -18,4 +19,6 @@ export type TabParamList = {
 
 export type DrawerParamList = {
   MainTabs: undefined;
+  Setting: undefined;
+  Logout: undefined;
 };

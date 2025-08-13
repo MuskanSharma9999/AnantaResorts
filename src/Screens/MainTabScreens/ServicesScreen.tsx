@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import styles from '../styles/ServicesScreenStyles';
+import styles from '../../styles/ServicesScreenStyles';
 
 const ServicesScreen = () => {
   const services = [
