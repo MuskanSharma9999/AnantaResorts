@@ -10,7 +10,7 @@ import styles from '../../styles/HomeScreenStyles';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { TopRated } from '../../components/HomeScreenComponents/TopRated';
+import { TopRated } from '../../components/HomeScreenComponents/TopRated/TopRated';
 
 const HomeScreen = () => {
   const featuredRooms = [
@@ -83,10 +83,9 @@ const HomeScreen = () => {
       </View>
 
       <TopRated></TopRated>
-            <TopRated></TopRated>
-
       <TopRated></TopRated>
 
+      <TopRated></TopRated>
     </ScrollView>
   );
 };

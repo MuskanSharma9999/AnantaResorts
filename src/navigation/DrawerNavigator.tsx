@@ -168,6 +168,7 @@ export const DrawerNavigator = () => {
           headerShown: true,
           headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',
+
           headerTitleContainerStyle: {
             height: '100%',
           },

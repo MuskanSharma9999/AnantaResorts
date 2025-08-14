@@ -13,7 +13,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export const AuthNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Signup"
+      initialRouteName="Splash"
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="Splash" component={SplashScreen} />

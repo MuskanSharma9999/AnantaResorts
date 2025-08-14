@@ -2,8 +2,6 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
 import HomeScreen from '../Screens/MainTabScreens/HomeScreen';
-import BookingScreen from '../Screens/MainTabScreens/BookingScreen';
-import ServicesScreen from '../Screens/MainTabScreens/ServicesScreen';
 import ProfileScreen from '../Screens/MainTabScreens/ProfileScreen';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
@@ -13,10 +11,12 @@ import MenuIcon from '../assets/images/MenuIcon.svg';
 import ProfileIcon from '../assets/images/ProfileIcon.svg';
 import HomeIcon from '../assets/images/home.svg';
 import CardIcon from '../assets/images/Credit Card.svg';
-import FlightIcon from '../assets/images/Essentials.svg';
+import AnantaSelectIcon from '../assets/images/Essentials.svg';
 import HeartIcon from '../assets/images/Action.svg';
 import { BlurView } from '@react-native-community/blur';
 import { View } from 'react-native';
+import JoinClub from '../Screens/MainTabScreens/JoinClub';
+import AnantaSelect from '../Screens/MainTabScreens/AnantaSelect';
 
 declare global {
   namespace ReactNavigation {
@@ -37,10 +37,10 @@ export const BottomTabNavigator = () => {
           switch (route.name) {
             case 'Home':
               return <HomeIcon width={iconSize} height={iconSize} />;
-            case 'Booking':
+            case 'JoinClub':
               return <CardIcon width={iconSize} height={iconSize} />;
-            case 'Services':
-              return <FlightIcon width={iconSize} height={iconSize} />;
+            case 'AnantaSelect':
+              return <AnantaSelectIcon width={iconSize} height={iconSize} />;
             case 'Profile':
               return <HeartIcon width={iconSize} height={iconSize} />;
             default:
@@ -117,10 +117,10 @@ export const BottomTabNavigator = () => {
         }}
       />
       <BottomTab.Screen
-        name="Booking"
-        component={BookingScreen}
+        name="JoinClub"
+        component={JoinClub}
         options={{
-          title: 'Booking',
+          title: 'Join Club',
           headerShown: true,
           headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',
@@ -143,10 +143,10 @@ export const BottomTabNavigator = () => {
         }}
       />
       <BottomTab.Screen
-        name="Services"
-        component={ServicesScreen}
+        name="AnantaSelect"
+        component={AnantaSelect}
         options={{
-          title: 'Services',
+          title: 'Ananta Select',
           headerShown: true,
           headerTitle: () => <Logo width={100} height={50} />,
           headerTitleAlign: 'center',

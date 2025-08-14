@@ -8,12 +8,14 @@ export type RootStackParamList = {
   Otp: undefined;
   Signup: undefined;
   DrawerRoot: undefined;
+  TopRated: undefined;
+  ResortDetails: undefined;
 };
 
 export type TabParamList = {
   Home: undefined;
-  Booking: undefined;
-  Services: undefined;
+  JoinClub: undefined;
+  AnantaSelect: undefined;
   Profile: undefined;
 };
 

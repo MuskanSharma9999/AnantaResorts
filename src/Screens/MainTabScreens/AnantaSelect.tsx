@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import styles from '../../styles/ServicesScreenStyles';
 
-const ServicesScreen = () => {
+const AnantaSelect = () => {
   const services = [
     {
       id: 1,
@@ -108,4 +108,4 @@ const ServicesScreen = () => {
   );
 };
 
-export default ServicesScreen;
+export default AnantaSelect;
