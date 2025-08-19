@@ -157,7 +157,6 @@ export const styles = StyleSheet.create({
   },
   reviewsContainer: {
     padding: 20,
-    backgroundColor: '#FFFFFF',
   },
   reviewsMainTitle: {
     fontSize: 22,
@@ -166,45 +165,13 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
     fontFamily: 'Inter-Bold',
   },
-  reviewCard: {
-    marginBottom: 24,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    fontFamily: 'Inter-SemiBold',
-  },
+
   reviewTime: {
     fontSize: 12,
     color: '#6B7280',
     fontFamily: 'Inter-Regular',
   },
-  verifiedContainer: {
-    backgroundColor: '#F0FDF4',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 12,
-  },
-  verifiedText: {
-    color: '#16A34A',
-    fontSize: 12,
-    fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
+
   ratingText: {
     marginLeft: 4,
     fontSize: 14,
@@ -212,44 +179,13 @@ export const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: 'Inter-Bold',
   },
-  reviewComment: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#374151',
-    marginBottom: 8,
-    fontFamily: 'Inter-Regular',
-  },
-  showMoreText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    marginBottom: 12,
-    fontFamily: 'Inter-Medium',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontFamily: 'Inter-Regular',
-  },
+
   reviewDivider: {
     height: 1,
     backgroundColor: '#E5E7EB',
     marginVertical: 24,
   },
-  clientsSayTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000000',
-    marginTop: 8,
-    marginBottom: 8,
-    fontFamily: 'Inter-Bold',
-  },
-  clientsSaySubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 24,
-    fontFamily: 'Inter-Regular',
-  },
+
   galleryList: {
     padding: 8,
     justifyContent: 'center',
@@ -259,19 +195,128 @@ export const styles = StyleSheet.create({
     margin: 2,
     alignItems: 'center',
     borderRadius: 14,
-   
   },
   galleryImage: {
     width: 120,
     height: 120,
-     margin: 2,
+    margin: 2,
     alignItems: 'center',
     borderRadius: 14,
-    
+
     borderWidth: 1,
     borderColor: 'gold',
     resizeMode: 'cover',
   },
 
+  reviewCard: {
+    borderWidth: 1,
+    borderColor: '#E0C48F', // gold border
+    borderRadius: 5,
+    padding: 16,
+    marginBottom: 20,
+    backgroundColor: '#000', // black card background
+  },
 
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+
+  userHandle: {
+    fontSize: 13,
+    color: '#E0C48F',
+  },
+
+  verifiedContainer: {
+    backgroundColor: '#E0C48F',
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+
+  verifiedText: {
+    color: '#000',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
+  ratingContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+
+  reviewComment: {
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 6,
+  },
+
+  showMoreText: {
+    color: '#E0C48F',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+
+  reviewDate: {
+    fontSize: 12,
+    color: '#ccc',
+  },
+
+  clientsSayTitle: {
+    color: '#E0C48F',
+    fontSize: 20,
+    fontWeight: '600',
+    marginVertical: 16,
+  },
+
+  clientsSaySubtitle: {
+    color: '#fff',
+    fontSize: 14,
+    marginBottom: 16,
+  },
+
+  videoCard: {
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+
+  videoImage: {
+    width: '100%',
+    height: 200,
+  },
+
+  playButton: {
+    position: 'absolute',
+    top: '40%',
+    left: '45%',
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  playIcon: {
+    fontSize: 22,
+    color: '#000',
+    fontWeight: 'bold',
+  },
 });

@@ -155,7 +155,7 @@ export const DrawerNavigator = () => {
         options={{
           title: 'Home',
           drawerIcon: ({ color, size }) => (
-            <HomeIcon width={size} height={size} />
+            <HomeIcon width={size} height={size}  />
           ),
         }}
       />

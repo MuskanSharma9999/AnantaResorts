@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import GradientButton from '../../components/Buttons/GradientButton';
+import LinearGradient from 'react-native-linear-gradient';
 
 const ProfileScreen = () => {
   return (
@@ -20,8 +20,8 @@ const ProfileScreen = () => {
       </View>
 
       {/* Account Settings Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account settings</Text>
+      <View style={styles.AccountSettingsSection}>
+        <Text style={styles.AccountSettingTitle}>Account settings</Text>
         <TouchableOpacity style={styles.menuItem}>
           <Text style={styles.menuText}>Change Password</Text>
           <Text style={styles.chevron}>></Text>
@@ -34,56 +34,87 @@ const ProfileScreen = () => {
           <Text style={styles.menuText}>Update Email Address</Text>
           <Text style={styles.chevron}>></Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity >
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
         </TouchableOpacity>
       </View>
 
       {/* Wallet Section */}
-      <View >
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Point Wallet</Text>
-
-<View style={{display: "flex"}}>
-
-      <GradientButton title={"1500"} onPress={()=>console.log("sds")} style={{width: 100}} />
-      <GradientButton title={"1500"} onPress={()=>console.log("sds")} style={{width: 100}} />
-
-      <GradientButton title={"1500"} onPress={()=>console.log("sds")} style={{width: 100}} />
-
-</View>
-     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Point Wallet</Text>
-      
-      <View style={styles.walletContainer}>
-        {/* First row */}
-        <View style={styles.walletItem}>
-          <Text style={styles.walletNumber}>1500</Text>
-          <Text style={styles.walletLabel}>Total vouchers in</Text>
-          <Text style={styles.walletSubLabel}>current membership plan</Text>
-        </View>
         
-        {/* Second row */}
-        <View style={styles.walletItem}>
-          <Text style={styles.walletNumber}>800</Text>
-          <Text style={styles.walletLabel}>Total vouchers</Text>
-          <Text style={styles.walletSubLabel}>redeemed</Text>
+        <View style={styles.walletContainer}>
+          
+          {/* Total Vouchers */}
+          <LinearGradient
+            colors={['#CDAA7D', '#A67C52']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.walletCard}
+          >
+            <View style={styles.cardContent}>
+              <Text style={styles.walletNumber}>1500</Text>
+              <Text style={styles.walletLabel}>Total vouchers in</Text>
+              <Text style={styles.walletSubLabel}>current membership plan</Text>
+            </View>
+          </LinearGradient>
+
+          {/* Redeemed Vouchers */}
+          <LinearGradient
+            colors={['#CDAA7D', '#A67C52']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.walletCard}
+          >
+            <View style={styles.cardContent}>
+              <Text style={styles.walletNumber}>800</Text>
+              <Text style={styles.walletLabel}>Total vouchers</Text>
+              <Text style={styles.walletSubLabel}>redeemed</Text>
+            </View>
+          </LinearGradient>
+
         </View>
       </View>
-    </View>
-              <Text style={styles.sectionTitle}>Membership Points</Text>
-        <View style={styles.walletRow}>
-          <View style={styles.walletItem}>
-            <Text style={styles.walletNumber}>3000</Text>
-            <Text style={styles.walletLabel}>Total vouchers remaining</Text>
-          </View>
-          <View style={styles.walletItem}>
-            <Text style={styles.walletNumber}>1500</Text>
-            <Text style={styles.walletLabel}>Points Used</Text>
-          </View>
+
+
+            {/* Membership Points< */}
+      <View style={styles.MembershipSection}>
+        <Text style={styles.sectionTitle}>Membership Points</Text>
+        
+        <View style={styles.walletContainer}>
+          
+          {/* Total Vouchers */}
+          <LinearGradient
+            colors={['#CDAA7D', '#A67C52']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.walletCard}
+          >
+            <View style={styles.cardContent}>
+              <Text style={styles.walletNumber}>1500</Text>
+              <Text style={styles.walletLabel}>Total vouchers in</Text>
+              <Text style={styles.walletSubLabel}>current membership plan</Text>
+            </View>
+          </LinearGradient>
+
+          {/* Redeemed Vouchers */}
+          <LinearGradient
+            colors={['#CDAA7D', '#A67C52']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.walletCard}
+          >
+            <View style={styles.cardContent}>
+              <Text style={styles.walletNumber}>800</Text>
+              <Text style={styles.walletLabel}>Total vouchers</Text>
+              <Text style={styles.walletSubLabel}>redeemed</Text>
+            </View>
+          </LinearGradient>
+
         </View>
       </View>
-   
-  
+
+
     </ScrollView>
   );
 };
@@ -124,23 +155,32 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 14,
     color: '#fff',
-        fontFamily: "Montserrat"
+    fontFamily: "Montserrat"
+  },
 
+  AccountSettingsSection:{
+    marginVertical: 20,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "#FBCF9C",
+    borderRadius: 10
+  
   },
   section: {
-    marginBottom: 24,
-        borderWidth: 1,
-    borderColor: "#FBCF9C",
-        borderRadius: 10,
-    padding: 10
+    marginVertical: 20,
+    paddingHorizontal: 16,
+  },
+  MembershipSection:{
+    marginVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 100
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#FBCF9C',
-        fontFamily: "Cormorant",
-
-    marginBottom: 16,
+    color: '#E0C097',
+    fontFamily: "Cormorant",
+    marginBottom: 12,
   },
   menuItem: {
     flexDirection: 'row',
@@ -153,63 +193,69 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     color: '#fff',
-            fontFamily: "Montserrat"
-
+    paddingLeft: 20,
+    fontFamily: "Montserrat"
   },
- 
+  AccountSettingTitle:{
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#E0C097',
+    fontFamily: "Cormorant",
+    marginBottom: 12,
+    paddingLeft: 20
+  },
   chevron: {
     color: '#98A2B3',
     fontSize: 16,
     paddingRight: 10
   },
-  walletRow: {
+  walletContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  walletItem: {
-    width: '48%',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 16,
-  },
-  walletNumber: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#101828',
-    marginBottom: 4,
-  },
-  walletLabel: {
-    fontSize: 14,
-    color: '#667085',
   },
 
-    walletContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  walletItem: {
-    width: '48%',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 16,
+
+walletCard: {
+  width: 160,        // fixed width
+  height: 120,       // fixed height (adjust as needed)
+  marginHorizontal: 5,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+
+
+  cardContent: {
+    display: 'flex',
     alignItems: 'center',
+    justifyContent: "center",
   },
   walletNumber: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#101828',
+    fontWeight: '700',
+    color: 'white',
     marginBottom: 4,
+    fontFamily: 'Cormorant',
   },
   walletLabel: {
-    fontSize: 14,
-    color: '#667085',
+    fontSize: 16,
+    color: 'white',
     textAlign: 'center',
   },
   walletSubLabel: {
-    fontSize: 14,
-    color: '#667085',
+    fontSize: 16,
+    color: 'white',
     textAlign: 'center',
   },
+  logoutText: {
+    color: 'white ',
+    paddingTop: 10,
+     fontSize: 16,
+    color: '#fff',
+    paddingLeft: 20,
+    fontFamily: "Montserrat"
+  }
 });
 
 export default ProfileScreen;

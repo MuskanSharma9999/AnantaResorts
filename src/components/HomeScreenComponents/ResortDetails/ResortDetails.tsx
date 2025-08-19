@@ -83,49 +83,78 @@ const ResortDetails = ({ route, navigation }) => {
       case 'Reviews':
         return (
           <View style={styles.reviewsContainer}>
-            <Text style={styles.reviewsMainTitle}>Reviews</Text>
-
-            {resort.reviews.map((review, index) => (
-              <View key={index} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <Text style={styles.userName}>{review.user}</Text>
-                  <Text style={styles.reviewTime}>9:41</Text>
-                </View>
-
-                {review.isVerified && (
-                  <View style={styles.verifiedContainer}>
-                    <Text style={styles.verifiedText}>Verified Purchase</Text>
-                  </View>
-                )}
-
-                <View style={styles.ratingContainer}>
-                  <Star size={16} color="#FFD700" fill="#FFD700" />
-                  <Text style={styles.ratingText}>{review.rating}</Text>
-                </View>
-
-                <Text style={styles.reviewComment}>{review.comment}</Text>
-
-                <TouchableOpacity>
-                  <Text style={styles.showMoreText}>Show more ✔</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.reviewDate}>{review.date}</Text>
-
-                {index < resort.reviews.length - 1 && (
-                  <View style={styles.reviewDivider} />
-                )}
-              </View>
-            ))}
-
+            {/* Clients say section */}
             <Text style={styles.clientsSayTitle}>
-              See what clients are saying
+              See what client are saying
             </Text>
             <Text style={styles.clientsSaySubtitle}>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit ut Lorem
               Ipsum dolor sit amet
             </Text>
+
+            {/* Example video/image */}
+            <View style={styles.videoCard}>
+              <Image
+                source={{ uri: 'https://picsum.photos/400/300' }}
+                style={styles.videoImage}
+              />
+              <View style={styles.playButton}>
+                <Text style={styles.playIcon}>▶</Text>
+              </View>
+            </View>
+
+            <Text style={styles.reviewDate}>23 Nov 2021</Text>
+
+            {resort.reviews.map((review, index) => (
+              <View key={index} style={styles.reviewCard}>
+                {/* Header with avatar + name + handle */}
+                <View style={styles.reviewHeader}>
+                  <Image
+                    source={{ uri: review.avatar }}
+                    style={styles.avatar}
+                  />
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={styles.userName}>{review.user}</Text>
+                    <Text style={styles.userHandle}>{review.handle}</Text>
+                  </View>
+                </View>
+
+                {/* Verified Purchase */}
+                {review.isVerified && (
+                  <View style={styles.verifiedContainer}>
+                    <Text style={styles.verifiedText}>✓ Verified Purchase</Text>
+                  </View>
+                )}
+
+                {/* Rating */}
+                <View style={styles.ratingContainer}>
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <Star
+                      key={starIndex}
+                      size={18}
+                      color={starIndex < review.rating ? '#FFD700' : '#444'}
+                      fill={starIndex < review.rating ? '#FFD700' : 'none'}
+                    />
+                  ))}
+                </View>
+
+                {/* Comment */}
+                <Text numberOfLines={3} style={styles.reviewComment}>
+                  {review.comment}
+                </Text>
+
+                {/* Show more */}
+                <TouchableOpacity>
+                  <Text style={styles.showMoreText}>Show more ⌄</Text>
+                </TouchableOpacity>
+
+                {/* Date */}
+                <Text style={styles.reviewDate}>{review.date}</Text>
+              </View>
+            ))}
           </View>
         );
+
       case 'Resort Services & Offers':
         return (
           <View style={styles.contentPadding}>
@@ -155,12 +184,12 @@ const ResortDetails = ({ route, navigation }) => {
             imageStyle={styles.imageStyle}
           >
             <View style={styles.imageOverlay}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => navigation.goBack()}
               >
                 <ChevronLeft size={24} color="white" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <Text style={styles.resortTitle}>{resort.title}</Text>
               <View style={styles.locationContainer}>
                 <MapPin size={16} color="#D1D5DB" />
@@ -262,10 +291,10 @@ const ResortDetails = ({ route, navigation }) => {
         {/* Tab Content */}
         {renderTabContent()}
 
-        {/* Bottom Indicator */}
+        {/* Bottom Indicator
         <View style={styles.bottomIndicator}>
           <View style={styles.indicatorLine} />
-        </View>
+        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
