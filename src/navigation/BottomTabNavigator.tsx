@@ -13,7 +13,9 @@ import HomeIcon from '../assets/images/home.svg';
 import CardIcon from '../assets/images/Credit Card.svg';
 import AnantaSelectIcon from '../assets/images/Essentials.svg';
 import HeartIcon from '../assets/images/Action.svg';
-import { BlurView } from '@react-native-community/blur';
+// import { BlurView } from '@react-native-community/blur';
+import { BlurView } from 'expo-blur';
+
 import { View } from 'react-native';
 import JoinClub from '../Screens/MainTabScreens/JoinClub';
 import AnantaSelect from '../Screens/MainTabScreens/AnantaSelect';
@@ -50,11 +52,17 @@ export const BottomTabNavigator = () => {
         tabBarActiveTintColor: '#D4AF37', // Gold
 
         tabBarBackground: () => (
-          <BlurView
-            style={{ flex: 1 }}
-            blurAmount={1}
-            reducedTransparencyFallbackColor="white"
-          />
+          // <BlurView
+          //   style={{ flex: 1 }}
+          //   blurAmount={1}
+          //   reducedTransparencyFallbackColor="white"
+          // />
+
+            <BlurView
+    tint="light"
+    intensity={50}
+    style={{ flex: 1 }}
+  />
         ),
         tabBarStyle: {
           backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent white
