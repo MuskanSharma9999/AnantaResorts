@@ -177,7 +177,7 @@ export const DrawerNavigator = () => {
           ),
           headerStyle: {
             backgroundColor: 'black',
-            height: 120,
+            height: Platform.OS == 'ios' ? 120 : 60, 
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (

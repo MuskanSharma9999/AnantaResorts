@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
   },
 
   topRatedText: {
-    fontFamily: 'Cormorant',
+    fontFamily: "Cormorant-Bold",
     fontWeight: '600',
     fontSize: 20,
     lineHeight: 24,
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
 
   topRatedSubText: {
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-Regular',
     fontWeight: '400',
     fontSize: 14,
     lineHeight: 20,

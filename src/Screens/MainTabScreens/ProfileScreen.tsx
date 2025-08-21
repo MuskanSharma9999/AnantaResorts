@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const ProfileScreen = () => {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   MembershipSection:{
     marginVertical: 20,
     paddingHorizontal: 16,
-    marginBottom: 100
+    marginBottom: 200
   },
   sectionTitle: {
     fontSize: 24,
@@ -212,11 +212,12 @@ const styles = StyleSheet.create({
   walletContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: Dimensions.get('window').width - 80, // Adjust width to fit screen
   },
 
 
 walletCard: {
-  width: 160,        // fixed width
+    width: Dimensions.get('window').width - 230, // Adjust width to fit screen
   height: 120,       // fixed height (adjust as needed)
   marginHorizontal: 5,
   borderRadius: 12,
@@ -239,12 +240,12 @@ walletCard: {
     fontFamily: 'Cormorant',
   },
   walletLabel: {
-    fontSize: 16,
+    fontSize: 12,
     color: 'white',
     textAlign: 'center',
   },
   walletSubLabel: {
-    fontSize: 16,
+    fontSize: 10,
     color: 'white',
     textAlign: 'center',
   },

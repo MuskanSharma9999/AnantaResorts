@@ -8,6 +8,7 @@ import Logo from '../assets/images/AnantaLogo.svg';
 
 import OtpScreen from '../components/auth/otp/OtpScreen';
 import SignupScreen from '../components/auth/SignupScreen/SignupScreen';
+import { Platform } from 'react-native';
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const AuthNavigator = () => {
@@ -33,7 +34,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: 120,
+            height: Platform.OS == 'ios' ? 120 : 60, 
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => null,
@@ -49,7 +50,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: 120,
+            height: Platform.OS == 'ios' ? 120 : 60, 
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
@@ -65,7 +66,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: 120,
+            height: Platform.OS == 'ios' ? 120 : 60, 
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',

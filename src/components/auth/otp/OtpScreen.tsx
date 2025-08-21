@@ -22,14 +22,14 @@ import GradientButton from '../../Buttons/GradientButton';
 import { Alert } from 'react-native';
 import { TabParamList } from '../navigation/types';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
+import { OtpInput } from 'react-native-otp-entry';
 
 const { width, height } = Dimensions.get('window');
 
 const OtpScreen = () => {
-  const [otp, setOtp] = useState(['', '', '', '']); // 4-digit OTP
+  const [otp, setOtp] = useState(''); // Store as string for OtpInput
   const [resendTime, setResendTime] = useState(30);
   const [mobileNumber] = useState('****555'); // Would come from auth flow
-  const inputRefs = useRef<Array<TextInput | null>>([]);
   const navigation = useAppNavigation();
 
   const data = [
@@ -48,43 +48,31 @@ const OtpScreen = () => {
 
   const handleResendCode = () => {
     setResendTime(30);
+    setOtp(''); // Clear OTP when resending
     // Add resend OTP logic
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return; // only allow single digit or empty
-
-    const updatedOtp = [...otp];
-    updatedOtp[index] = value.trim();
-    setOtp(updatedOtp);
-
-    // Move to next field if digit is entered
-    if (value !== '' && index < otp.length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-verify if last digit entered and all are valid
-    if (index === otp.length - 1 && updatedOtp.every(d => /^\d$/.test(d))) {
-      setTimeout(() => handleVerify(), 50); // small delay for state sync
-    }
-  };
-
   const handleVerify = () => {
-    // Remove spaces and ensure each is exactly one digit
-    const cleanedOtp = otp.map(d => (d || '').trim());
-
-    const isInvalid =
-      cleanedOtp.length !== 4 || cleanedOtp.some(d => !/^\d$/.test(d));
-
-    if (isInvalid) {
+    console.log('Verifying OTP:', otp, 'Length:', otp.length);
+    
+    if (!otp || otp.length !== 4) {
       Alert.alert('OTP Incomplete', 'Please enter all 4 digits of the OTP');
       return;
     }
 
-    const enteredOtp = cleanedOtp.join('');
-    console.log('Verifying OTP:', enteredOtp);
+    // Additional validation to ensure all characters are digits
+    if (!/^\d{4}$/.test(otp)) {
+      Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+      return;
+    }
 
+    console.log('Verifying OTP:', otp);
     navigation.navigate('Signup');
+  };
+
+  const handleOtpFilled = (otpValue) => {
+    console.log('OTP Filled:', otpValue);
+    // Just log when OTP is filled, don't auto-verify
   };
 
   return (
@@ -121,43 +109,68 @@ const OtpScreen = () => {
               </Text>
 
               <View style={styles.otpContainer}>
-                {otp.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={ref => (inputRefs.current[index] = ref)}
-                    style={styles.otpInput}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    value={digit}
-                    onChangeText={value => handleOtpChange(index, value)}
-                    onKeyPress={({ nativeEvent }) => {
-                      if (nativeEvent.key === 'Backspace') {
-                        if (otp[index] === '' && index > 0) {
-                          const newOtp = [...otp];
-                          newOtp[index - 1] = '';
-                          setOtp(newOtp);
-                          inputRefs.current[index - 1]?.focus();
-                        } else {
-                          const newOtp = [...otp];
-                          newOtp[index] = '';
-                          setOtp(newOtp);
-                        }
-                      }
-                    }}
-                    autoCorrect={false}
-                    contextMenuHidden={true}
-                    importantForAutofill="no"
-                    autoFocus={index === 0}
-                    selectionColor="#D4AF37"
-                    caretHidden={false}
-                  />
-                ))}
+                <OtpInput
+                  numberOfDigits={4}
+                  focusColor="#D4AF37"
+                  autoFocus={false}
+                  hideStick={true}
+                  placeholder="•"
+                  blurOnFilled={true}
+                  disabled={false}
+                  type="numeric"
+                  secureTextEntry={false}
+                  focusStickBlinkingDuration={500}
+                  onFocus={() => console.log('Focused')}
+                  onBlur={() => console.log('Blurred')}
+                  onTextChange={(value) => {
+                    console.log('OTP changed:', value);
+                    setOtp(value);
+                  }}
+                  onFilled={handleOtpFilled}
+                  textInputProps={{
+                    accessibilityLabel: 'One-Time Password',
+                  }}
+                  textProps={{
+                    accessibilityRole: 'text',
+                    accessibilityLabel: 'OTP digit',
+                    allowFontScaling: false,
+                  }}
+                  theme={{
+                    containerStyle: styles.otpContainer,
+                    pinCodeContainerStyle: styles.otpInput,
+                    pinCodeTextStyle: {
+                      fontSize: 20,
+                      fontWeight: '700',
+                      color: '#000',
+                    },
+                    focusStickStyle: {
+                      backgroundColor: '#D4AF37',
+                      height: 2,
+                    },
+                    focusedPinCodeContainerStyle: {
+                      borderColor: '#7AC678',
+                      borderWidth: 2,
+                      backgroundColor: '#fff',
+                    },
+                    placeholderTextStyle: {
+                      color: '#ccc',
+                    },
+                    filledPinCodeContainerStyle: {
+                      borderColor: '#D4AF37',
+                      backgroundColor: '#fff',
+                    },
+                    disabledPinCodeContainerStyle: {
+                      backgroundColor: '#e0e0e0',
+                      borderColor: '#aaa',
+                    },
+                  }}
+                />
               </View>
 
               <GradientButton
                 title="Continue"
                 onPress={handleVerify}
-              ></GradientButton>
+              />
 
               <TouchableOpacity
                 style={styles.resendButton}

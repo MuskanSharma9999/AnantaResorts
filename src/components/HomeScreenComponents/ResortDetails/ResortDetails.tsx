@@ -75,6 +75,7 @@ const ResortDetails = ({ route, navigation }) => {
             />
             <GradientButton
               title="Join Club"
+              style={styles.joinClubButton}
               onPress={() => console.log('Join Club Pressed')}
             ></GradientButton>
           </View>

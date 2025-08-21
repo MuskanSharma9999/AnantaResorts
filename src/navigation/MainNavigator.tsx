@@ -5,6 +5,7 @@ import { DrawerNavigator } from './DrawerNavigator';
 import { TopRated } from '../components/HomeScreenComponents/TopRated/TopRated';
 import ResortDetails from '../components/HomeScreenComponents/ResortDetails/ResortDetails';
 import Logo from '../assets/images/AnantaLogo.svg';
+import { Platform } from 'react-native';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -26,7 +27,7 @@ export const MainNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: 120,
+            height: Platform.OS == 'ios' ? 120 : 60, 
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',

@@ -242,7 +242,7 @@ export const TopRated = () => {
                         fontSize: 20,
                         fontWeight: '600',
                         color: '#FBCF9C',
-                        fontFamily: 'Cormorant',
+    fontFamily: "Cormorant-Bold",
                         marginBottom: 6,
                         textAlign: 'center',
                       }}
@@ -253,7 +253,7 @@ export const TopRated = () => {
                       style={{
                         fontSize: 13,
                         color: '#fff',
-                        fontFamily: 'Montserrat',
+                        fontFamily: 'Montserrat-Regular',
                         lineHeight: 18,
                         marginBottom: 12,
                         textAlign: 'center',

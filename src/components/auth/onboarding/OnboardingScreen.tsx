@@ -95,7 +95,8 @@ const OnboardingScreen = () => {
         </View>
 
         <GradientButton
-          title={currentIndex < titles.length - 1 ? 'Next' : "Let's Go"}
+        style={styles.button}
+          title={currentIndex < titles.length - 1 ? 'Next' : "Let's Go" }
           onPress={handleNext}
         />
       </LinearGradient>

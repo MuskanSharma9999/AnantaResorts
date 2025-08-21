@@ -1,5 +1,9 @@
 // ResortDetails.styles.js
 import { StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
+const { width } = Dimensions.get('window');
+import { Platform } from 'react-native';
+
 
 export const styles = StyleSheet.create({
   safeArea: {
@@ -27,10 +31,10 @@ export const styles = StyleSheet.create({
     borderBottomRightRadius: 16,
   },
   resortTitle: {
-    color: 'white',
+    color: '#FBCF9C',
     fontSize: 36,
     fontWeight: '300',
-    fontFamily: 'serif',
+    fontFamily: 'Cormorant-Bold',
     marginBottom: 8,
   },
   locationContainer: {
@@ -71,7 +75,7 @@ export const styles = StyleSheet.create({
     color: '#FBCF9C',
     fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'Cormorant',
+    fontFamily: 'Cormorant-Bold',
     marginBottom: 12,
   },
   descriptionText: {
@@ -197,9 +201,9 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
   },
   galleryImage: {
-    width: 120,
+    width: width / 3 - 10,
     height: 120,
-    margin: 2,
+    margin:  width / 100 - 3,
     alignItems: 'center',
     borderRadius: 14,
 
@@ -318,5 +322,10 @@ export const styles = StyleSheet.create({
     fontSize: 22,
     color: '#000',
     fontWeight: 'bold',
+  },
+  joinClubButton: {
+    marginBottom: 20,
+    
+ 
   },
 });
