@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -7,7 +7,13 @@ import {
 import { DrawerParamList } from './types';
 import { BottomTabNavigator } from './BottomTabNavigator';
 import ProfileScreen from '../Screens/MainTabScreens/ProfileScreen';
-import { Alert, Dimensions, Text, TouchableOpacity } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import SettingScreen from '../Screens/SettingScreen';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
@@ -18,6 +24,8 @@ import HomeIcon from '../assets/images/home.svg';
 import SettingIcon from '../assets/images/Settings.svg';
 import LinearGradient from 'react-native-linear-gradient';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import TravediseScreen from '../Screens/TravediseScreen';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
@@ -136,6 +144,8 @@ function CustomDrawerContent(props) {
 }
 
 export const DrawerNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Drawer.Navigator
       drawerContent={props => <CustomDrawerContent {...props} />}
@@ -155,7 +165,7 @@ export const DrawerNavigator = () => {
         options={{
           title: 'Home',
           drawerIcon: ({ color, size }) => (
-            <HomeIcon width={size} height={size}  />
+            <HomeIcon width={size} height={size} />
           ),
         }}
       />
@@ -177,7 +187,37 @@ export const DrawerNavigator = () => {
           ),
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+              style={{ marginLeft: 15 }}
+            >
+              <MenuIcon width={30} height={30} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Drawer.Screen
+        name="Travedise"
+        component={TravediseScreen}
+        options={({ navigation }) => ({
+          title: 'Travedise',
+          headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+
+          headerTitleContainerStyle: {
+            height: '100%',
+          },
+          drawerIcon: ({ color, size }) => (
+            <SettingIcon width={size} height={size} fill="#fff" />
+          ),
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (
@@ -219,3 +259,6 @@ export const DrawerNavigator = () => {
     </Drawer.Navigator>
   );
 };
+
+
+  

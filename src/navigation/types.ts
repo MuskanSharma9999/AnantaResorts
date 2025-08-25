@@ -9,7 +9,7 @@ export type RootStackParamList = {
   Signup: undefined;
   DrawerRoot: undefined;
   TopRated: undefined;
-  ResortDetails: undefined;
+  ResortDetails: { resortId: string }; // example param
 };
 
 export type TabParamList = {

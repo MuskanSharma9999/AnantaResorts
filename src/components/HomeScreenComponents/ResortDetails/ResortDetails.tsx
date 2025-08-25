@@ -21,10 +21,49 @@ import {
 } from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
 import GradientButton from '../../Buttons/GradientButton';
+import Xyz from '../../../Screens/MembershipModal';
 
-const ResortDetails = ({ route, navigation }) => {
+interface ResortDetailsProps {
+  route: {
+    params: {
+      resort: {
+        title: string;
+        description: string;
+        amenities: string[];
+        specificAmenities: string[];
+        location: string;
+        image: any;
+        aboutSections: string[];
+        reviews: {
+          avatar: string;
+          user: string;
+          handle: string;
+          isVerified: boolean;
+          rating: number;
+          comment: string;
+          date: string;
+        }[];
+        servicesAndOffers: {
+          service: string;
+          description: string;
+        }[];
+      };
+    };
+  };
+  navigation: {
+    goBack: () => void;
+    // add other navigation methods if needed
+  };
+}
+
+const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
+  // Use resortid when the API is Called by ID. and then remove the above resort object from params
+  // const { resortId } = route.params;
+
   const { resort } = route.params;
   const [activeTab, setActiveTab] = useState('About Resort');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const gallery = [
     { uri: 'https://picsum.photos/400/304' },
     { uri: 'https://picsum.photos/400/305' },
@@ -76,8 +115,12 @@ const ResortDetails = ({ route, navigation }) => {
             <GradientButton
               title="Join Club"
               style={styles.joinClubButton}
-              onPress={() => console.log('Join Club Pressed')}
+              onPress={() => setIsModalVisible(true)} // open modal
             ></GradientButton>
+            <Xyz
+              isVisible={isModalVisible}
+              onClose={() => setIsModalVisible(false)}
+            />
           </View>
         );
 

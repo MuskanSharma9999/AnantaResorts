@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from './types';
 import SplashScreen from '../components/auth/splash/SplashScreen';
@@ -9,9 +9,11 @@ import Logo from '../assets/images/AnantaLogo.svg';
 import OtpScreen from '../components/auth/otp/OtpScreen';
 import SignupScreen from '../components/auth/SignupScreen/SignupScreen';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const AuthNavigator = () => {
+  const insets = useSafeAreaInsets();
   return (
     <Stack.Navigator
       initialRouteName="Splash"
@@ -34,7 +36,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => null,
@@ -50,7 +52,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
@@ -66,7 +68,7 @@ export const AuthNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',

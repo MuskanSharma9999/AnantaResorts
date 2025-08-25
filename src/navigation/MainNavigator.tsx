@@ -6,10 +6,12 @@ import { TopRated } from '../components/HomeScreenComponents/TopRated/TopRated';
 import ResortDetails from '../components/HomeScreenComponents/ResortDetails/ResortDetails';
 import Logo from '../assets/images/AnantaLogo.svg';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
 export const MainNavigator = () => {
+  const insets = useSafeAreaInsets();
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen
@@ -20,6 +22,9 @@ export const MainNavigator = () => {
       <RootStack.Screen name="TopRated" component={TopRated} />
       <RootStack.Screen
         name="ResortDetails"
+
+  component={ResortDetails}
+
         options={{
           headerShown: true,
           gestureEnabled: true,
@@ -27,12 +32,11 @@ export const MainNavigator = () => {
           headerTitleAlign: 'center',
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 100 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
         }}
-        component={ResortDetails}
       />
     </RootStack.Navigator>
   );

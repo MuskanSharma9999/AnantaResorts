@@ -18,6 +18,7 @@ import { BlurView } from '@react-native-community/blur';
 import { View } from 'react-native';
 import JoinClub from '../Screens/MainTabScreens/JoinClub';
 import AnantaSelect from '../Screens/MainTabScreens/AnantaSelect';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 declare global {
   namespace ReactNavigation {
@@ -29,6 +30,7 @@ const BottomTab = createBottomTabNavigator<TabParamList>();
 
 export const BottomTabNavigator = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   return (
     <BottomTab.Navigator
@@ -56,7 +58,6 @@ export const BottomTabNavigator = () => {
             blurAmount={1}
             reducedTransparencyFallbackColor="white"
           />
-
         ),
         tabBarStyle: {
           backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent white
@@ -105,7 +106,8 @@ export const BottomTabNavigator = () => {
           },
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            // ✅ Dynamic height: base + safe area top
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (
@@ -131,7 +133,7 @@ export const BottomTabNavigator = () => {
           },
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (
@@ -157,7 +159,7 @@ export const BottomTabNavigator = () => {
           },
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (
@@ -183,7 +185,7 @@ export const BottomTabNavigator = () => {
           },
           headerStyle: {
             backgroundColor: 'black',
-            height: Platform.OS == 'ios' ? 120 : 60, 
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerLeft: () => (

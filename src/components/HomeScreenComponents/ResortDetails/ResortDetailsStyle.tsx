@@ -2,7 +2,6 @@
 import { StyleSheet } from 'react-native';
 import { Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
-import { Platform } from 'react-native';
 
 
 export const styles = StyleSheet.create({
