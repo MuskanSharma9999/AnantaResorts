@@ -2,339 +2,353 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
   TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
+  Modal,
+  Dimensions,
+  Animated,
+  PanResponder,
 } from 'react-native';
-import Modal from 'react-native-modal';
-import PhoneInputWithCountryCode from '../components/auth/Login/PhoneInputWithCountryCode';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-type MembershipModalProps = {
-  isVisible: boolean;
+const { height } = Dimensions.get('window');
+
+interface MembershipModalProps {
+  visible: boolean;
   onClose: () => void;
-};
+}
 
-export default function MembershipModal({
-  isVisible,
-  onClose,
-}: MembershipModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    phone: '',
-    email: '',
-    city: '',
-    countryCode: '+91',
-    acceptTerms: false,
-  });
+const MembershipModal: React.FC<MembershipModalProps> = ({ visible, onClose }) => {
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('9898989898');
+  const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  
+  const panY = React.useRef(new Animated.Value(height)).current;
+  const [modalVisible, setModalVisible] = useState(visible);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  React.useEffect(() => {
+    if (visible) {
+      setModalVisible(true);
+      Animated.spring(panY, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 0,
+      }).start();
+    } else {
+      Animated.timing(panY, {
+        toValue: height,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setModalVisible(false));
+    }
+  }, [visible, panY]);
+
+  const panResponders = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => false,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          panY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 100) {
+          onClose();
+        } else {
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 0,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const handleSubmit = () => {
-    if (!formData.acceptTerms) {
-      Alert.alert('Please agree to the Terms and Conditions');
+    if (!name || !age || !phone || !email || !city) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.phone) {
-      Alert.alert('Please fill all required fields');
+    
+    if (!agreeToTerms) {
+      Alert.alert('Error', 'You must agree to the Terms and Conditions');
       return;
     }
-
-    console.log('Membership form submitted:', formData);
+    
+    Alert.alert('Success', 'Your information has been submitted successfully!');
     onClose();
-  };
-
-  const toggleTerms = () => {
-    setFormData(prev => ({
-      ...prev,
-      acceptTerms: !prev.acceptTerms,
-    }));
   };
 
   return (
     <Modal
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
-      style={styles.modal}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      backdropOpacity={0.5}
-      useNativeDriver
-      hideModalContentWhileAnimating
+      transparent
+      animationType="fade"
+      visible={modalVisible}
+      onRequestClose={onClose}
     >
-      <View style={styles.modalContent}>
-        {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>✕</Text>
-        </TouchableOpacity>
-
-        {/* Form Content */}
-        <ScrollView
-          style={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
+      <View style={styles.overlay}>
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              transform: [{ translateY: panY }],
+            },
+          ]}
+          {...panResponders.panHandlers}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Let's get in touch</Text>
-            <Text style={styles.subtitle}>
-              Join our exclusive membership program today
-            </Text>
+          <View style={styles.sheetHeader}>
+            <View style={styles.panelHandle} />
           </View>
 
-          <View style={styles.form}>
-            {/* Name Field */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Hello, My name is</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter here"
-                placeholderTextColor="#999"
-                value={formData.name}
-                onChangeText={value => handleInputChange('name', value)}
-              />
-            </View>
-
-            {/* Age Field */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Age</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Age"
-                placeholderTextColor="#999"
-                keyboardType="numeric"
-                value={formData.age}
-                onChangeText={value => handleInputChange('age', value)}
-              />
-            </View>
-
-
-            {/* Email Field */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Email ID"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={formData.email}
-                onChangeText={value => handleInputChange('email', value)}
-              />
-            </View>
-
-            {/* City Field */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>I live in</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter city name"
-                placeholderTextColor="#999"
-                value={formData.city}
-                onChangeText={value => handleInputChange('city', value)}
-              />
-            </View>
-
-            {/* Phone Field */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Waiting to hear from you on</Text>
-              <View style={styles.formContainer}>
-                <View style={styles.phoneInputContainer}>
-                  <PhoneInputWithCountryCode></PhoneInputWithCountryCode>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.content}
+          >
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.title}>Let's get in touch</Text>
+              <Text style={styles.subtitle}>Lorem ipsum dolor sit amet, consectetur</Text>
+              
+              <View style={styles.form}>
+                <Text style={styles.label}>Hello, My name is</Text>
+                <View style={styles.inputContainer}>
+                  <Icon name="person" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter here"
+                    value={name}
+                    onChangeText={setName}
+                    placeholderTextColor="#999"
+                  />
                 </View>
+                
+                <Text style={styles.label}>Age</Text>
+                <View style={styles.inputContainer}>
+                  <Icon name="cake" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter Age"
+                    value={age}
+                    onChangeText={setAge}
+                    keyboardType="numeric"
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                
+                <Text style={styles.label}>Waiting to hear from you on</Text>
+                <View style={styles.phoneContainer}>
+                  <View style={styles.countryCode}>
+                    <Text style={styles.countryCodeText}>+91 ✓</Text>
+                  </View>
+                  <TextInput
+                    style={styles.phoneInput}
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                
+                <Text style={styles.label}>Email</Text>
+                <View style={styles.inputContainer}>
+                  <Icon name="email" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email ID"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                
+                <Text style={styles.label}>I live in</Text>
+                <View style={styles.inputContainer}>
+                  <Icon name="location-city" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter city name"
+                    value={city}
+                    onChangeText={setCity}
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.termsContainer}
+                  onPress={() => setAgreeToTerms(!agreeToTerms)}
+                >
+                  <View style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}>
+                    {agreeToTerms && <Icon name="check" size={16} color="#fff" />}
+                  </View>
+                  <Text style={styles.termsText}>
+                    By signing up you agree to our <Text style={styles.termsLink}>Terms and Conditions of Use</Text>
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <Text style={styles.submitButtonText}>Submit</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-
-            {/* Terms and Conditions */}
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={toggleTerms}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  formData.acceptTerms && styles.checkboxChecked,
-                ]}
-              >
-                {formData.acceptTerms && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </View>
-              <Text style={styles.termsText}>
-                By signing up you agree to our{' '}
-                <Text style={styles.termsLink}>
-                  Terms and Conditions of Use
-                </Text>
-              </Text>
-            </TouchableOpacity>
-
-         
-          </View>
-        </ScrollView>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Animated.View>
       </View>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  modal: {
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
-    margin: 0,
   },
-  modalContent: {
-    backgroundColor: '#000000',
+  container: {
+    backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: '90%',
+    height: height * 0.85,
+    overflow: 'hidden',
   },
-  scrollContainer: {
-    flex: 1,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-    zIndex: 1000,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  sheetHeader: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  panelHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: '#ddd',
+    borderRadius: 4,
   },
-  header: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+  content: {
+    padding: 24,
+    height: '100%',
   },
   title: {
-    fontSize: 28,
-    color: '#fff',
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 8,
-    fontFamily: 'Cormorant',
+    color: '#1a1a1a',
   },
   subtitle: {
     fontSize: 14,
-    color: '#ccc',
     textAlign: 'center',
+    color: '#666',
+    marginBottom: 24,
   },
   form: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  inputGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
     fontSize: 16,
-    color: '#fff',
-    marginBottom: 8,
     fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  inputIcon: {
+    padding: 12,
   },
   input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    fontSize: 14,
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
     color: '#333',
   },
   phoneContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  countryCodeContainer: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-    marginRight: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    minWidth: 80,
+    marginBottom: 16,
   },
   countryCode: {
-    fontSize: 16,
-    color: '#333',
-    marginRight: 5,
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRightWidth: 0,
   },
-  dropdownArrow: {
-    fontSize: 12,
-    color: '#666',
+  countryCodeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
   phoneInput: {
     flex: 1,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#f9f9f9',
   },
-  checkboxContainer: {
+  termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 30,
-    paddingRight: 20,
+    marginBottom: 24,
+    marginTop: 8,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#fff',
-    borderRadius: 4,
-    marginRight: 10,
-    marginTop: 2,
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#4a6bff',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
+    marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#FFE2B8',
-    borderColor: '#FFE2B8',
-  },
-  checkmark: {
-    color: '#000',
-    fontSize: 14,
-    fontWeight: 'bold',
+    backgroundColor: '#4a6bff',
   },
   termsText: {
-    fontSize: 14,
-    color: '#ccc',
     flex: 1,
+    fontSize: 14,
     lineHeight: 20,
+    color: '#666',
   },
   termsLink: {
-    color: '#FFE2B8',
-    textDecorationLine: 'underline',
+    color: '#4a6bff',
+    fontWeight: '500',
   },
   submitButton: {
-    backgroundColor: '#D4A574',
-    borderRadius: 25,
-    paddingVertical: 15,
+    backgroundColor: '#4a6bff',
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#666',
-    opacity: 0.5,
   },
   submitButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  formContainer: {
-    gap: 30,
-  },
-  phoneInputContainer: {
-    color: '#6B6B6B',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
+
+export default MembershipModal;

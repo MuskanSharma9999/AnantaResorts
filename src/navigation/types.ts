@@ -5,7 +5,10 @@ export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
-  Otp: undefined;
+  Otp: {
+    phoneNumber: string;
+    maskedPhone: string;
+  };
   Signup: undefined;
   DrawerRoot: undefined;
   TopRated: undefined;

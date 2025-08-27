@@ -45,6 +45,7 @@ export const AuthNavigator = () => {
       <Stack.Screen
         name="Otp"
         component={OtpScreen}
+        
         options={{
           gestureEnabled: true,
           headerShown: true,

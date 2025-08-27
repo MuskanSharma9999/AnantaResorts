@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 import { Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
-
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -190,7 +189,7 @@ export const styles = StyleSheet.create({
   },
 
   galleryList: {
-    padding: 8,
+    padding: 2,
     justifyContent: 'center',
   },
   galleryItem: {
@@ -202,7 +201,7 @@ export const styles = StyleSheet.create({
   galleryImage: {
     width: width / 3 - 10,
     height: 120,
-    margin:  width / 100 - 3,
+    margin: width / 100 - 3,
     alignItems: 'center',
     borderRadius: 14,
 
@@ -323,8 +322,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   joinClubButton: {
-    marginBottom: 20,
-    
- 
+    marginBottom: 50,
   },
 });

@@ -118,7 +118,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
               onPress={() => setIsModalVisible(true)} // open modal
             ></GradientButton>
             <Xyz
-              isVisible={isModalVisible}
+              visible={isModalVisible}
               onClose={() => setIsModalVisible(false)}
             />
           </View>

@@ -7,9 +7,8 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import GradientButton from '../../components/Buttons/GradientButton';
-import Xyz from '../MembershipModal';
+import MembershipModal from '../MembershipModal';
 
 // Replace these with the correct local images or URLs
 const BACKGROUND_IMAGE = require('../../assets/images/signUpCarousel_images/img_1.jpg');
@@ -151,14 +150,12 @@ export default function MembershipScreen() {
           }}
         />
 
-        {/* Pass props to Xyz */}
-        <Xyz
-          isVisible={isModalVisible}
+        {/* Membership Modal */}
+        <MembershipModal
+          visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
         />
       </ScrollView>
-
-      {/* Modal with Form */}
     </View>
   );
 }
@@ -199,6 +196,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     opacity: 0.5,
     paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   headerTitle: {
     fontSize: 22,
@@ -249,51 +247,5 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     fontWeight: '700',
     fontFamily: 'montserrat',
-  },
-  // Test button for debugging
-  testButton: {
-    backgroundColor: 'red',
-    padding: 15,
-    margin: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  testButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  // Modal styles
-  modal: {
-    justifyContent: 'flex-end',
-    margin: 0,
-  },
-  modalContent: {
-    backgroundColor: '#000',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: '90%',
-    paddingTop: 10,
-  },
-  formContainer: {
-    flex: 1,
-    paddingTop: 40, // Make room for close button
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-    zIndex: 1000,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });

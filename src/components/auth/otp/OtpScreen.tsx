@@ -17,20 +17,33 @@ import Logo from '../../../assets/images/AnantaLogo.svg';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import styles from './OtpScreenStyles';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import GradientButton from '../../Buttons/GradientButton';
 import { Alert } from 'react-native';
-import { TabParamList } from '../navigation/types';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
 import { OtpInput } from 'react-native-otp-entry';
+import ApiList from '../../../Api_List/apiList';
+import axios from 'axios';
+import { RootStackParamList } from '../../../navigation/types'; // adjust path
+
+type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
 
 const { width, height } = Dimensions.get('window');
 
 const OtpScreen = () => {
+  const route = useRoute<OtpScreenRouteProp>();
+
+  const { phoneNumber, maskedPhone } = route.params;
+
   const [otp, setOtp] = useState(''); // Store as string for OtpInput
   const [resendTime, setResendTime] = useState(30);
-  const [mobileNumber] = useState('****555'); // Would come from auth flow
   const navigation = useAppNavigation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const data = [
     { image: require('../../../assets/images/loginCarousel_images/img_1.jpg') },
@@ -52,25 +65,54 @@ const OtpScreen = () => {
     // Add resend OTP logic
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     console.log('Verifying OTP:', otp, 'Length:', otp.length);
-    
-    if (!otp || otp.length !== 4) {
-      Alert.alert('OTP Incomplete', 'Please enter all 4 digits of the OTP');
+    if (!otp || otp.length !== 6) {
+      // ✅ Changed to 6
+      Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
       return;
     }
-
-    // Additional validation to ensure all characters are digits
-    if (!/^\d{4}$/.test(otp)) {
+    if (!/^\d{6}$/.test(otp)) {
+      // ✅ Changed regex to 6 digits
       Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
       return;
     }
+    try {
+      setIsLoading(true);
 
-    console.log('Verifying OTP:', otp);
-    navigation.navigate('Signup');
+      const response = await axios.post(
+        ApiList.VERIFY_OTP,
+        {
+          phone: phoneNumber, // replace with actual number
+          otpcode: otp,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      if (response.status === 200) {
+        Alert.alert('Success', 'OTP verified successfully!', [
+          { text: 'OK', onPress: () => navigation.navigate('Signup') },
+        ]);
+      }
+      //  else  if (response.status === "") {
+      //   Alert.alert('Success', 'OTP verified successfully!', [
+      //     { text: 'OK', onPress: () => navigation.navigate('Signup') },
+      //   ]);
+      // }
+      // here above if the phone and details of user is already present in db then navigate to home screen directly else navigate to signup screen
+    } catch (error: any) {
+      console.error('Error verifying OTP:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Invalid OTP. Please try again.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleOtpFilled = (otpValue) => {
+  const handleOtpFilled = (otpValue: any) => {
     console.log('OTP Filled:', otpValue);
     // Just log when OTP is filled, don't auto-verify
   };
@@ -82,7 +124,7 @@ const OtpScreen = () => {
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? height * 0.1 : 20}
         >
           <View style={{ flex: 1 }}>
             <View style={styles.imageSection}>
@@ -105,12 +147,12 @@ const OtpScreen = () => {
             <View style={styles.bottomSection}>
               <Text style={styles.otpAlert}>OTP Alert</Text>
               <Text style={styles.otpInstructions}>
-                Sent to mobile ending with {mobileNumber}
+                Sent to mobile ending with {maskedPhone}
               </Text>
 
               <View style={styles.otpContainer}>
                 <OtpInput
-                  numberOfDigits={4}
+                  numberOfDigits={6}
                   focusColor="#D4AF37"
                   autoFocus={false}
                   hideStick={true}
@@ -122,7 +164,7 @@ const OtpScreen = () => {
                   focusStickBlinkingDuration={500}
                   onFocus={() => console.log('Focused')}
                   onBlur={() => console.log('Blurred')}
-                  onTextChange={(value) => {
+                  onTextChange={value => {
                     console.log('OTP changed:', value);
                     setOtp(value);
                   }}
@@ -167,10 +209,7 @@ const OtpScreen = () => {
                 />
               </View>
 
-              <GradientButton
-                title="Continue"
-                onPress={handleVerify}
-              />
+              <GradientButton title="Continue" onPress={handleVerify} />
 
               <TouchableOpacity
                 style={styles.resendButton}

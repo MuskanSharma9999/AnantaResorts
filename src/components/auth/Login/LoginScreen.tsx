@@ -10,6 +10,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 
 import styles from './LoginScreenStyles';
@@ -43,7 +44,7 @@ const LoginScreen = () => {
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? height * 0.1 : 20}
         >
           <View style={{ flex: 1 }}>
             <View style={styles.imageSection}>
@@ -69,7 +70,7 @@ const LoginScreen = () => {
               <Text style={styles.subText}>Login with your Mobile Number</Text>
               <View style={styles.formContainer}>
                 <View style={styles.phoneInputContainer}>
-                  <PhoneInputWithCountryCode></PhoneInputWithCountryCode>
+                  <PhoneInputWithCountryCode />
                 </View>
               </View>
             </View>
