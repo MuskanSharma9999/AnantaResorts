@@ -19,9 +19,14 @@ import Carousel from 'react-native-reanimated-carousel';
 import Icon from 'react-native-vector-icons/Feather';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { useDispatch } from 'react-redux';
 
 import styles from './SignupScreenStyle';
 import GradientButton from '../../Buttons/GradientButton';
+import ApiList from '../../../Api_List/apiList';
+import axios from 'axios';
+import { setAuth } from '../../../redux/slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,22 +39,24 @@ const SignupSchema = Yup.object().shape({
   email: Yup.string()
     .email('Please enter a valid email address')
     .required('Email is required'),
-  password: Yup.string()
-    .min(8, 'Password must be at least 8 characters long')
-    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
-      'Password must contain uppercase, lowercase, and a number')
-    .required('Password is required'),
 });
 
 const SignupScreen = () => {
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
 
   const data = [
-    { image: require('../../../assets/images/signUpCarousel_images/img_1.jpg') },
-    { image: require('../../../assets/images/signUpCarousel_images/img_2.jpg') },
-    { image: require('../../../assets/images/signUpCarousel_images/img_3.jpg') },
-    { image: require('../../../assets/images/signUpCarousel_images/img_4.jpg') },
+    {
+      image: require('../../../assets/images/signUpCarousel_images/img_1.jpg'),
+    },
+    {
+      image: require('../../../assets/images/signUpCarousel_images/img_2.jpg'),
+    },
+    {
+      image: require('../../../assets/images/signUpCarousel_images/img_3.jpg'),
+    },
+    {
+      image: require('../../../assets/images/signUpCarousel_images/img_4.jpg'),
+    },
   ];
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -58,14 +65,38 @@ const SignupScreen = () => {
     try {
       console.log('Submitting form:', {
         ...values,
-        rememberMe,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 2000)); // simulate API call
+      const token = await AsyncStorage.getItem('token');
+      console.log('???????????', token);
 
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => console.log('Navigate next') },
-      ]);
+      if (!token) {
+        Alert.alert(
+          'Error',
+          'Authentication token not found. Please log in again.',
+        );
+        return;
+      }
+
+      const response = await axios.put(
+        ApiList.UPDATE_PROFILE,
+        {
+          ...values,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.status === 200) {
+        await AsyncStorage.setItem('isAuth', 'true');
+        dispatch(setAuth(true));
+        Alert.alert('Success', 'Profile updated successfully');
+      }
+
       resetForm();
     } catch (error) {
       console.error('Signup error:', error);
@@ -110,7 +141,7 @@ const SignupScreen = () => {
               <Text style={styles.welcomeText}>Let's Sign you up</Text>
 
               <Formik
-                initialValues={{ name: '', email: '', password: '' }}
+                initialValues={{ name: '', email: '' }}
                 validationSchema={SignupSchema}
                 onSubmit={handleSubmit}
               >
@@ -146,7 +177,9 @@ const SignupScreen = () => {
                     <TextInput
                       style={[
                         styles.input,
-                        errors.email && touched.email ? styles.inputError : null,
+                        errors.email && touched.email
+                          ? styles.inputError
+                          : null,
                       ]}
                       placeholder="Enter your email address"
                       placeholderTextColor="#999"
@@ -160,69 +193,11 @@ const SignupScreen = () => {
                       <Text style={styles.errorText}>{errors.email}</Text>
                     )}
 
-                    {/* Password */}
-                    <Text style={styles.label}>Password</Text>
-                    <View
-                      style={[
-                        styles.passwordContainer,
-                        errors.password && touched.password
-                          ? styles.inputError
-                          : null,
-                      ]}
-                    >
-                      <TextInput
-                        style={styles.passwordInput}
-                        placeholder="Enter your password"
-                        placeholderTextColor="#999"
-                        secureTextEntry={!showPassword}
-                        value={values.password}
-                        onChangeText={handleChange('password')}
-                        onBlur={handleBlur('password')}
-                      />
-                      <TouchableOpacity
-                        onPress={() => setShowPassword(!showPassword)}
-                        style={styles.eyeIconContainer}
-                      >
-                        <Icon
-                          name={showPassword ? 'eye' : 'eye-off'}
-                          size={20}
-                          color={showPassword ? '#F5C97B' : '#999'}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    {errors.password && touched.password && (
-                      <Text style={styles.errorText}>{errors.password}</Text>
-                    )}
-
-                    {/* Remember Me + Forgot Password */}
-                    <View style={styles.rowBetween}>
-                      <TouchableOpacity
-                        style={styles.rememberContainer}
-                        onPress={() => setRememberMe(!rememberMe)}
-                      >
-                        <View
-                          style={[
-                            styles.checkbox,
-                            rememberMe && styles.checkboxChecked,
-                          ]}
-                        >
-                          {rememberMe && (
-                            <Text style={styles.checkmark}>✓</Text>
-                          )}
-                        </View>
-                        <Text style={styles.rememberText}>Remember Me</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity onPress={() => console.log('Forgot')}>
-                        <Text style={styles.forgotText}>Forgot Password</Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Submit */}
                     <GradientButton
                       title={isSubmitting ? 'Creating Account...' : 'Submit'}
                       onPress={handleSubmit}
                       disabled={isSubmitting}
+                      style={{ marginTop: 10, marginBottom: 20 }}
                     />
 
                     {/* Footer */}
@@ -230,9 +205,7 @@ const SignupScreen = () => {
                       <Text style={styles.termsText}>
                         By signing up you agree to our{' '}
                         <Text style={styles.termsLink}>Terms</Text> and{' '}
-                        <Text style={styles.termsLink}>
-                          Conditions of Use
-                        </Text>
+                        <Text style={styles.termsLink}>Conditions of Use</Text>
                       </Text>
                     </View>
                   </>

@@ -1,17 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { MainNavigator } from './MainNavigator';
 import { AuthNavigator } from './AuthNavigator';
-import { useSelector } from 'react-redux'; // If using Redux for auth state
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, ActivityIndicator } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { setAuth } from '../redux/slices/authSlice';
 
 export const AppNavigator = () => {
-  // Replace with your actual auth state logic
-  // Here isAuthenticated should be coming from the async Storage.
-  // Delete the isAuthenticated variable/data from the Async Storage while Logout.
-  // If the OTP is valid then store the isAuthenticated value in the Async Storage, and let the user enter the App.
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = false;
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const isAuth = await AsyncStorage.getItem('isAuth');
+        if (isAuth === 'true') {
+          dispatch(setAuth(true));
+        } else {
+          dispatch(setAuth(false));
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        dispatch(setAuth(false));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaProvider>

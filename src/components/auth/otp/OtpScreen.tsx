@@ -30,6 +30,7 @@ import { OtpInput } from 'react-native-otp-entry';
 import ApiList from '../../../Api_List/apiList';
 import axios from 'axios';
 import { RootStackParamList } from '../../../navigation/types'; // adjust path
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
 
@@ -66,41 +67,43 @@ const OtpScreen = () => {
   };
 
   const handleVerify = async () => {
-    console.log('Verifying OTP:', otp, 'Length:', otp.length);
     if (!otp || otp.length !== 6) {
-      // ✅ Changed to 6
       Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
       return;
     }
     if (!/^\d{6}$/.test(otp)) {
-      // ✅ Changed regex to 6 digits
       Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
       return;
     }
     try {
       setIsLoading(true);
 
-      const response = await axios.post(
-        ApiList.VERIFY_OTP,
-        {
-          phone: phoneNumber, // replace with actual number
-          otpcode: otp,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      const response = await axios.post(ApiList.VERIFY_OTP, {
+        phone: phoneNumber,
+        otp_code: otp,
+      });
+
+      // console.log('------------', response.data.data.token);
+
       if (response.status === 200) {
-        Alert.alert('Success', 'OTP verified successfully!', [
-          { text: 'OK', onPress: () => navigation.navigate('Signup') },
-        ]);
+        const { token } = response.data.data;
+        // console.log(token);
+        if (token) {
+          await AsyncStorage.setItem('token', token);
+          console.log(
+            '........................................................',
+          );
+
+          navigation.navigate('Signup');
+        } else {
+          Alert.alert('Error', 'Token not found in response.');
+        }
+      } else {
+        Alert.alert(
+          'Error',
+          `OTP verification failed with status: ${response.status}`,
+        );
       }
-      //  else  if (response.status === "") {
-      //   Alert.alert('Success', 'OTP verified successfully!', [
-      //     { text: 'OK', onPress: () => navigation.navigate('Signup') },
-      //   ]);
-      // }
-      // here above if the phone and details of user is already present in db then navigate to home screen directly else navigate to signup screen
     } catch (error: any) {
       console.error('Error verifying OTP:', error);
       Alert.alert(

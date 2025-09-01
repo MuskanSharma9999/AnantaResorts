@@ -20,11 +20,9 @@ export const MainNavigator = () => {
         options={{ gestureEnabled: false }}
       />
       <RootStack.Screen name="TopRated" component={TopRated} />
-      <RootStack.Screen
+      {/* <RootStack.Screen
         name="ResortDetails"
-
   component={ResortDetails}
-
         options={{
           headerShown: true,
           gestureEnabled: true,
@@ -37,7 +35,7 @@ export const MainNavigator = () => {
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
         }}
-      />
+      /> */}
     </RootStack.Navigator>
   );
 };

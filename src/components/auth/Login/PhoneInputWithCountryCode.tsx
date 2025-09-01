@@ -13,6 +13,8 @@ const PhoneInputWithCountryCode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
+
+
   const sendOTP = async () => {
     if (!phoneNumber) {
       Alert.alert('Error', 'Please enter your mobile number');

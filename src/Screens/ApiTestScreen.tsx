@@ -18,8 +18,9 @@ export default function ApiTestScreen() {
       setLoading(true);
       setResult(null);
 
-      const response = await fetch('http://192.168.1.6:9000/api');
+      const response = await fetch('http://localhost:3000/api');
       const data = await response.json();
+      console.log(response)
 
       setResult(JSON.stringify(data, null, 2));
     } catch (error: any) {

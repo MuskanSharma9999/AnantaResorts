@@ -12,7 +12,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   imageSection: {
-    height: height * 0.25,
+    height: height * 0.45,
     width: '100%',
   },
   carouselImage: {
