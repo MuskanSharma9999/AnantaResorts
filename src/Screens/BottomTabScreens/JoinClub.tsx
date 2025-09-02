@@ -155,6 +155,8 @@ export default function MembershipScreen() {
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
         />
+
+        
       </ScrollView>
     </View>
   );

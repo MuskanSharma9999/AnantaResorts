@@ -1,8 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
-import HomeScreen from '../Screens/MainTabScreens/HomeScreen';
-import ProfileScreen from '../Screens/MainTabScreens/ProfileScreen';
+import HomeScreen from '../Screens/BottomTabScreens/HomeScreen';
+import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
 import { Platform, TouchableOpacity } from 'react-native';
@@ -16,8 +16,8 @@ import HeartIcon from '../assets/images/Action.svg';
 import { BlurView } from '@react-native-community/blur';
 
 import { View } from 'react-native';
-import JoinClub from '../Screens/MainTabScreens/JoinClub';
-import AnantaSelect from '../Screens/MainTabScreens/AnantaSelect';
+import JoinClub from '../Screens/BottomTabScreens/JoinClub';
+import AnantaSelect from '../Screens/BottomTabScreens/AnantaSelect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 declare global {
