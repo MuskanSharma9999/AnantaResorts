@@ -65,55 +65,86 @@ const OtpScreen = () => {
     setOtp(''); // Clear OTP when resending
     // Add resend OTP logic
   };
-
   const handleVerify = async () => {
-    if (!otp || otp.length !== 6) {
-      Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
-      return;
-    }
-    if (!/^\d{6}$/.test(otp)) {
-      Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
-      return;
-    }
-    try {
-      setIsLoading(true);
+  if (!otp || otp.length !== 6) {
+    Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
+    return;
+  }
+  if (!/^\d{6}$/.test(otp)) {
+    Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+    return;
+  }
+  try {
+    setIsLoading(true);
 
-      const response = await axios.post(ApiList.VERIFY_OTP, {
-        phone: phoneNumber,
-        otp_code: otp,
-      });
+    // Instead of calling the real API, use a hardcoded token for testing
+    const fakeToken = 'test_hardcoded_token_123456';
 
-      // console.log('------------', response.data.data.token);
+    // Simulate a slight delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (response.status === 200) {
-        const { token } = response.data.data;
-        // console.log(token);
-        if (token) {
-          await AsyncStorage.setItem('token', token);
-          console.log(
-            '........................................................',
-          );
+    await AsyncStorage.setItem('token', fakeToken);
 
-          navigation.navigate('Signup');
-        } else {
-          Alert.alert('Error', 'Token not found in response.');
-        }
-      } else {
-        Alert.alert(
-          'Error',
-          `OTP verification failed with status: ${response.status}`,
-        );
-      }
-    } catch (error: any) {
-      console.error('Error verifying OTP:', error);
-      Alert.alert(
-        'Error',
-        error.response?.data?.message || 'Invalid OTP. Please try again.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    console.log('Hardcoded token saved for testing.');
+
+    navigation.navigate('Signup');
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  // const handleVerify = async () => {
+  //   if (!otp || otp.length !== 6) {
+  //     Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
+  //     return;
+  //   }
+  //   if (!/^\d{6}$/.test(otp)) {
+  //     Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+  //     return;
+  //   }
+  //   try {
+  //     setIsLoading(true);
+
+  //     const response = await axios.post(ApiList.VERIFY_OTP, {
+  //       phone: phoneNumber,
+  //       otp_code: otp,
+  //     });
+
+  //     // console.log('------------', response.data.data.token);
+
+  //     if (response.status === 200) {
+  //       const { token } = response.data.data;
+  //       // console.log(token);
+  //       if (token) {
+  //         await AsyncStorage.setItem('token', token);
+  //         console.log(
+  //           '........................................................',
+  //         );
+
+  //         navigation.navigate('Signup');
+  //       } else {
+  //         Alert.alert('Error', 'Token not found in response.');
+  //       }
+  //     } else {
+  //       Alert.alert(
+  //         'Error',
+  //         `OTP verification failed with status: ${response.status}`,
+  //       );
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Error verifying OTP:', error);
+  //     Alert.alert(
+  //       'Error',
+  //       error.response?.data?.message || 'Invalid OTP. Please try again.',
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleOtpFilled = (otpValue: any) => {
     console.log('OTP Filled:', otpValue);

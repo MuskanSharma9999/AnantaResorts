@@ -60,51 +60,92 @@ const SignupScreen = () => {
   ];
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    Keyboard.dismiss();
+  Keyboard.dismiss();
 
-    try {
-      console.log('Submitting form:', {
-        ...values,
-      });
+  try {
+    console.log('Submitting form:', {
+      ...values,
+    });
 
-      const token = await AsyncStorage.getItem('token');
-      console.log('???????????', token);
+    const token = await AsyncStorage.getItem('token');
+    console.log('???????????', token);
 
-      if (!token) {
-        Alert.alert(
-          'Error',
-          'Authentication token not found. Please log in again.',
-        );
-        return;
-      }
-
-      const response = await axios.put(
-        ApiList.UPDATE_PROFILE,
-        {
-          ...values,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        },
+    if (!token) {
+      Alert.alert(
+        'Error',
+        'Authentication token not found. Please log in again.',
       );
-
-      if (response.status === 200) {
-        await AsyncStorage.setItem('isAuth', 'true');
-        dispatch(setAuth(true));
-        Alert.alert('Success', 'Profile updated successfully');
-      }
-
-      resetForm();
-    } catch (error) {
-      console.error('Signup error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
+      return;
     }
-  };
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Hard-coded successful response simulation
+    const response = { status: 200 };
+
+    if (response.status === 200) {
+      await AsyncStorage.setItem('isAuth', 'true');
+      dispatch(setAuth(true));
+      Alert.alert('Success', 'Profile updated successfully');
+    }
+
+    resetForm();
+  } catch (error) {
+    console.error('Signup error:', error);
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
+  // const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+  //   Keyboard.dismiss();
+
+  //   try {
+  //     console.log('Submitting form:', {
+  //       ...values,
+  //     });
+
+  //     const token = await AsyncStorage.getItem('token');
+  //     console.log('???????????', token);
+
+  //     if (!token) {
+  //       Alert.alert(
+  //         'Error',
+  //         'Authentication token not found. Please log in again.',
+  //       );
+  //       return;
+  //     }
+
+  //     const response = await axios.put(
+  //       ApiList.UPDATE_PROFILE,
+  //       {
+  //         ...values,
+  //       },
+  //       {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     if (response.status === 200) {
+  //       await AsyncStorage.setItem('isAuth', 'true');
+  //       dispatch(setAuth(true));
+  //       Alert.alert('Success', 'Profile updated successfully');
+  //     }
+
+  //     resetForm();
+  //   } catch (error) {
+  //     console.error('Signup error:', error);
+  //     Alert.alert('Error', 'Something went wrong. Please try again.');
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
 
   return (
     <SafeAreaView style={styles.container}>

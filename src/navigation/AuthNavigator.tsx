@@ -10,6 +10,7 @@ import OtpScreen from '../components/auth/otp/OtpScreen';
 import SignupScreen from '../components/auth/SignupScreen/SignupScreen';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TopRated } from '../components/HomeScreenComponents/TopRated/TopRated';
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const AuthNavigator = () => {
@@ -62,6 +63,22 @@ export const AuthNavigator = () => {
       <Stack.Screen
         name="Signup"
         component={SignupScreen}
+        options={{
+          gestureEnabled: true,
+          headerShown: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <Stack.Screen
+        name="TopRated"
+        component={TopRated}
         options={{
           gestureEnabled: true,
           headerShown: true,

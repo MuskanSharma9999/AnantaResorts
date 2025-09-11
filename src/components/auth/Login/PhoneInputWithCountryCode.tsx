@@ -13,8 +13,6 @@ const PhoneInputWithCountryCode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
-
-
   const sendOTP = async () => {
     if (!phoneNumber) {
       Alert.alert('Error', 'Please enter your mobile number');
@@ -57,14 +55,24 @@ const PhoneInputWithCountryCode = () => {
           },
         ]);
       }
+    // } catch (error: any) {
+    //   console.error('Error sending OTP:', error);
+    //   Alert.alert(
+    //     'Error',
+    //     error.response?.data?.message ||
+    //       'Failed to send OTP. Please try again.',
+    //   );
+    // }
     } catch (error: any) {
-      console.error('Error sending OTP:', error);
-      Alert.alert(
-        'Error',
-        error.response?.data?.message ||
-          'Failed to send OTP. Please try again.',
-      );
-    } finally {
+  console.error("Axios error:", error);
+  Alert.alert(
+    'Error',
+    error?.response?.data?.message ??
+    error?.message ??
+    'Unknown error occurred'
+  );
+}
+     finally {
       setIsLoading(false);
     }
   };
