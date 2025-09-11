@@ -27,7 +27,7 @@ interface ResortDetailsProps {
   route: {
     params: {
       resort: {
-        title: string;
+        name: string;
         description: string;
         amenities: string[];
         specificAmenities: string[];
@@ -82,7 +82,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
       case 'About Resort':
         return (
           <View style={styles.contentPadding}>
-            <Text style={styles.sectionTitle}>About {resort.title}</Text>
+            <Text style={styles.sectionTitle}>About {resort.name}</Text>
             <Text style={styles.descriptionText}>{resort.description}</Text>
 
             <Text style={styles.sectionTitle}>Amenities</Text>
