@@ -97,7 +97,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
 
   const fetchProfile = async () => {
     try {
-      console.log('[fetchProfile] fetching...');
+      // console.log('[fetchProfile] fetching...');
 
       // Retrieve token with the correct key
       const token = await AsyncStorage.getItem('token');
@@ -108,10 +108,10 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         return;
       }
 
-      console.log(
-        '[fetchProfile] Token found:',
-        token.substring(0, 20) + '...',
-      ); // Log first part of token
+      // console.log(
+      //   '[fetchProfile] Token found:',
+      //   token.substring(0, 20) + '...',
+      // ); // Log first part of token
 
       const response = await axios.get(ApiList.GET_PROFILE, {
         headers: {
@@ -120,17 +120,17 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         },
       });
 
-      console.log(
-        '[fetchProfile] Full response:',
-        JSON.stringify(response.data, null, 2),
-      );
+      // console.log(
+      //   '[fetchProfile] Full response:',
+      //   JSON.stringify(response.data, null, 2),
+      // );
 
       if (response.data?.success && response.data?.data?.user) {
         const { name, email, phone } = response.data.data.user;
         setName(name || '');
         setEmail(email || '');
         setPhone(phone || '');
-        console.log('[fetchProfile] Profile data set:', { name, email, phone });
+        // console.log('[fetchProfile] Profile data set:', { name, email, phone });
       } else {
         console.warn(
           '[fetchProfile] Invalid response structure:',
@@ -166,15 +166,15 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    console.log('[handleSubmit] Submit button clicked');
-    console.log('Form values:', {
-      name,
-      age,
-      phone,
-      email,
-      city,
-      agreeToTerms,
-    });
+    // console.log('[handleSubmit] Submit button clicked');
+    // console.log('Form values:', {
+    //   name,
+    //   age,
+    //   phone,
+    //   email,
+    //   city,
+    //   agreeToTerms,
+    // });
 
     if (!name || !age || !phone || !email || !city) {
       console.warn('[handleSubmit] Missing fields');
@@ -195,7 +195,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         return;
       }
 
-      console.log('[handleSubmit] Sending PUT request...');
+      // console.log('[handleSubmit] Sending PUT request...');
       const { data } = await axios.put(
         ApiList.UPDATE_PROFILE,
         {
@@ -212,7 +212,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         },
       );
 
-      console.log('[handleSubmit] API response:', data);
+      // console.log('[handleSubmit] API response:', data);
 
       if (data.success) {
         Alert.alert(
@@ -290,7 +290,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
 
                 <PhoneInput
                   ref={phoneInput}
-                  defaultValue={phone}
+                  value={phone} // 👈 use value instead of defaultValue
                   defaultCode="IN"
                   withDarkTheme={true}
                   withShadow={true}
@@ -301,28 +301,28 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                     width: '100%',
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: '#fff5f5ff', // thin gray border
-                    backgroundColor: '#948585ff', // pure black background
+                    borderColor: '#fff5f5ff',
+                    backgroundColor: '#948585ff',
                     marginBottom: 10,
                     height: 50,
                   }}
                   textContainerStyle={{
-                    backgroundColor: '#ffffffff', // same as container
+                    backgroundColor: '#ffffffff',
                     borderTopRightRadius: 8,
                     borderBottomRightRadius: 8,
                     paddingVertical: 0,
                   }}
                   textInputStyle={{
-                    color: '#000000ff', // light gray text
+                    color: '#000000ff',
                     fontSize: 16,
                     paddingVertical: 8,
                   }}
                   codeTextStyle={{
-                    color: '#000000ff', // light gray text
+                    color: '#000000ff',
                     fontSize: 16,
                   }}
                   flagButtonStyle={{
-                    backgroundColor: '#ffffffff', // make same background
+                    backgroundColor: '#ffffffff',
                     borderTopLeftRadius: 8,
                     borderBottomLeftRadius: 8,
                     paddingVertical: 0,
