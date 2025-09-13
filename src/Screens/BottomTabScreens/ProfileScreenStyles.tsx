@@ -1,9 +1,9 @@
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: 'black',
     padding: 20,
   },
   profileHeader: {
@@ -11,12 +11,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     borderWidth: 1,
-    borderColor: "#FBCF9C",
+    borderColor: '#FBCF9C',
     borderRadius: 10,
-    padding: 10
+    padding: 10,
   },
   avatarContainer: {
     marginRight: 16,
+    backgroundColor: 'black',
   },
   avatar: {
     width: 64,
@@ -31,36 +32,35 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
     marginBottom: 4,
-    fontFamily: "Cormorant"
+    fontFamily: 'Cormorant',
   },
   email: {
     fontSize: 14,
     color: '#fff',
-    fontFamily: "Montserrat"
+    fontFamily: 'Montserrat',
   },
 
-  AccountSettingsSection:{
+  AccountSettingsSection: {
     marginVertical: 20,
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: "#FBCF9C",
-    borderRadius: 10
-  
+    borderColor: '#FBCF9C',
+    borderRadius: 10,
   },
   section: {
     marginVertical: 20,
     paddingHorizontal: 16,
   },
-  MembershipSection:{
+  MembershipSection: {
     marginVertical: 20,
     paddingHorizontal: 16,
-    marginBottom: 200
+    marginBottom: 200,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
     color: '#E0C097',
-    fontFamily: "Cormorant",
+    fontFamily: 'Cormorant',
     marginBottom: 12,
   },
   menuItem: {
@@ -75,20 +75,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     paddingLeft: 20,
-    fontFamily: "Montserrat"
+    fontFamily: 'Montserrat',
   },
-  AccountSettingTitle:{
+  AccountSettingTitle: {
     fontSize: 24,
     fontWeight: '600',
     color: '#E0C097',
-    fontFamily: "Cormorant",
+    fontFamily: 'Cormorant',
     marginBottom: 12,
-    paddingLeft: 20
+    paddingLeft: 20,
   },
   chevron: {
     color: '#98A2B3',
     fontSize: 16,
-    paddingRight: 10
+    paddingRight: 10,
   },
   walletContainer: {
     flexDirection: 'row',
@@ -96,22 +96,19 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width - 80, // Adjust width to fit screen
   },
 
-
-walletCard: {
+  walletCard: {
     width: Dimensions.get('window').width - 230, // Adjust width to fit screen
-  height: 120,       // fixed height (adjust as needed)
-  marginHorizontal: 5,
-  borderRadius: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-
-
+    height: 120, // fixed height (adjust as needed)
+    marginHorizontal: 5,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   cardContent: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   walletNumber: {
     fontSize: 24,
@@ -133,12 +130,11 @@ walletCard: {
   logoutText: {
     color: 'white ',
     paddingTop: 10,
-     fontSize: 16,
+    fontSize: 16,
     color: '#fff',
     paddingLeft: 20,
-    fontFamily: "Montserrat"
-  }
+    fontFamily: 'Montserrat',
+  },
 });
-
 
 export default styles;

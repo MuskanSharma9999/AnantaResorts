@@ -22,7 +22,7 @@ export const MainNavigator = () => {
       <RootStack.Screen name="TopRated" component={TopRated} />
       <RootStack.Screen
         name="ResortDetails"
-  component={ResortDetails}
+        component={ResortDetails}
         options={{
           headerShown: true,
           gestureEnabled: true,
