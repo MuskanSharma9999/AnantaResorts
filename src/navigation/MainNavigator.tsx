@@ -7,6 +7,7 @@ import ResortDetails from '../components/HomeScreenComponents/ResortDetails/Reso
 import Logo from '../assets/images/AnantaLogo.svg';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LoginScreen from '../components/auth/Login/LoginScreen';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -36,6 +37,7 @@ export const MainNavigator = () => {
           headerBackButtonDisplayMode: 'minimal',
         }}
       />
+      
     </RootStack.Navigator>
   );
 };
