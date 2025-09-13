@@ -27,6 +27,7 @@ import ApiList from '../../../Api_List/apiList';
 import axios from 'axios';
 import { setAuth } from '../../../redux/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiRequest } from '../../../Api_List/apiUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -63,34 +64,29 @@ const SignupScreen = () => {
   Keyboard.dismiss();
 
   try {
-    console.log('Submitting form:', {
-      ...values,
-    });
-
     const token = await AsyncStorage.getItem('token');
-    console.log('???????????', token);
 
     if (!token) {
-      Alert.alert(
-        'Error',
-        'Authentication token not found. Please log in again.',
-      );
+      Alert.alert('Error', 'Authentication token not found. Please log in again.');
       return;
     }
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Use the centralized API utility
+    const response = await apiRequest({
+      url: ApiList.UPDATE_PROFILE,
+      method: 'PUT',
+      body: { ...values },
+      token,
+    });
 
-    // Hard-coded successful response simulation
-    const response = { status: 200 };
-
-    if (response.status === 200) {
+    if (response.success) {
       await AsyncStorage.setItem('isAuth', 'true');
       dispatch(setAuth(true));
       Alert.alert('Success', 'Profile updated successfully');
+      resetForm();
+    } else {
+      Alert.alert('Error', response.error);
     }
-
-    resetForm();
   } catch (error) {
     console.error('Signup error:', error);
     Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -98,6 +94,46 @@ const SignupScreen = () => {
     setSubmitting(false);
   }
 };
+
+//   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+//   Keyboard.dismiss();
+
+//   try {
+//     console.log('Submitting form:', {
+//       ...values,
+//     });
+
+//     const token = await AsyncStorage.getItem('token');
+//     console.log('???????????', token);
+
+//     if (!token) {
+//       Alert.alert(
+//         'Error',
+//         'Authentication token not found. Please log in again.',
+//       );
+//       return;
+//     }
+
+//     // Simulate API delay
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+
+//     // Hard-coded successful response simulation
+//     const response = { status: 200 };
+
+//     if (response.status === 200) {
+//       await AsyncStorage.setItem('isAuth', 'true');
+//       dispatch(setAuth(true));
+//       Alert.alert('Success', 'Profile updated successfully');
+//     }
+
+//     resetForm();
+//   } catch (error) {
+//     console.error('Signup error:', error);
+//     Alert.alert('Error', 'Something went wrong. Please try again.');
+//   } finally {
+//     setSubmitting(false);
+//   }
+// };
 
 
   // const handleSubmit = async (values, { setSubmitting, resetForm }) => {

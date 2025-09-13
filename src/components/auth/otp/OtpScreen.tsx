@@ -27,10 +27,10 @@ import GradientButton from '../../Buttons/GradientButton';
 import { Alert } from 'react-native';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
 import { OtpInput } from 'react-native-otp-entry';
-import ApiList from '../../../Api_List/apiList';
-import axios from 'axios';
+import { apiRequest } from '../../../Api_List/apiUtils';
 import { RootStackParamList } from '../../../navigation/types'; // adjust path
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiList from '../../../Api_List/apiList';
 
 type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
 
@@ -76,25 +76,60 @@ const OtpScreen = () => {
   }
   try {
     setIsLoading(true);
+    const response = await apiRequest({
+      url: ApiList.VERIFY_OTP,
+      method: 'POST',
+      body: { phone: phoneNumber, otp_code: otp },
+    });
 
-    // Instead of calling the real API, use a hardcoded token for testing
-    const fakeToken = 'test_hardcoded_token_123456';
-
-    // Simulate a slight delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    await AsyncStorage.setItem('token', fakeToken);
-
-    console.log('Hardcoded token saved for testing.');
-
-    navigation.navigate('Signup');
+    if (response.success) {
+      const token = response.data?.data?.token;
+      if (token) {
+        await AsyncStorage.setItem('token', token);
+        navigation.navigate('Signup');
+      } else {
+        Alert.alert('Error', 'Token not found in response.');
+      }
+    } else {
+      Alert.alert('Error', response.error);
+    }
   } catch (error) {
-    console.error('Error verifying OTP:', error);
-    Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+    Alert.alert('Error', error?.message || 'Invalid OTP. Please try again.');
   } finally {
     setIsLoading(false);
   }
 };
+
+//   const handleVerify = async () => {
+//   if (!otp || otp.length !== 6) {
+//     Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
+//     return;
+//   }
+//   if (!/^\d{6}$/.test(otp)) {
+//     Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+//     return;
+//   }
+//   try {
+//     setIsLoading(true);
+
+//     // Instead of calling the real API, use a hardcoded token for testing
+//     const fakeToken = 'test_hardcoded_token_123456';
+
+//     // Simulate a slight delay
+//     await new Promise(resolve => setTimeout(resolve, 500));
+
+//     await AsyncStorage.setItem('token', fakeToken);
+
+//     console.log('Hardcoded token saved for testing.');
+
+//     navigation.navigate('Signup');
+//   } catch (error) {
+//     console.error('Error verifying OTP:', error);
+//     Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
 
 
   // const handleVerify = async () => {

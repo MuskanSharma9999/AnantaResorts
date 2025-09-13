@@ -5,7 +5,8 @@ import GradientButton from '../../Buttons/GradientButton';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import Api_List from '../../../Api_List/apiList';
+import ApiList from '../../../Api_List/apiList';
+import { apiRequest } from '../../../Api_List/apiUtils';
 
 const PhoneInputWithCountryCode = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -13,69 +14,115 @@ const PhoneInputWithCountryCode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
-  const sendOTP = async () => {
+   const sendOTP = async () => {
     if (!phoneNumber) {
       Alert.alert('Error', 'Please enter your mobile number');
       return;
     }
-
     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-
     if (!isValid) {
       Alert.alert('Error', 'Please enter a valid phone number');
       return;
     }
-
     const formattedNumber =
-      phoneInput.current?.getNumberAfterPossiblyEliminatingZero()
-        .formattedNumber;
+      phoneInput.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber;
 
     try {
       setIsLoading(true);
-
-      const response = await axios.post(
-        Api_List.SEND_OTP,
-        { phone: formattedNumber },
-        { headers: { 'Content-Type': 'application/json' } },
-      );
-      if (response.status === 200) {
+      // USE THE API UTILITY INSTEAD OF AXIOS DIRECTLY
+      const response = await apiRequest({
+        url: ApiList.SEND_OTP,
+        method: 'POST',
+        body: { phone: formattedNumber },
+      });
+      if (response.success) {
         await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
-
         Alert.alert('Success', 'OTP sent successfully!', [
           {
             text: 'OK',
             onPress: () =>
-              // Ensure formattedNumber is defined and cast navigation to any to avoid type errors
-              (navigation as any).navigate('Otp', {
+              (navigation).navigate('Otp', {
                 phoneNumber: formattedNumber,
                 maskedPhone: formattedNumber
-                  ? `${formattedNumber.slice(0, -4)}****`
+                  ? '****' + formattedNumber.slice(-4)
                   : '****',
               }),
           },
         ]);
+      } else {
+        Alert.alert('Error', response.error);
       }
-    // } catch (error: any) {
-    //   console.error('Error sending OTP:', error);
-    //   Alert.alert(
-    //     'Error',
-    //     error.response?.data?.message ||
-    //       'Failed to send OTP. Please try again.',
-    //   );
-    // }
-    } catch (error: any) {
-  console.error("Axios error:", error);
-  Alert.alert(
-    'Error',
-    error?.response?.data?.message ??
-    error?.message ??
-    'Unknown error occurred'
-  );
-}
-     finally {
+    } catch (error) {
+      Alert.alert('Error', error?.message || 'Unknown error occurred');
+    } finally {
       setIsLoading(false);
     }
   };
+
+//   const sendOTP = async () => {
+//     if (!phoneNumber) {
+//       Alert.alert('Error', 'Please enter your mobile number');
+//       return;
+//     }
+
+//     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+
+//     if (!isValid) {
+//       Alert.alert('Error', 'Please enter a valid phone number');
+//       return;
+//     }
+
+//     const formattedNumber =
+//       phoneInput.current?.getNumberAfterPossiblyEliminatingZero()
+//         .formattedNumber;
+
+//     try {
+//       setIsLoading(true);
+
+//       const response = await axios.post(
+//         ApiList.SEND_OTP,
+//         { phone: formattedNumber },
+//         { headers: { 'Content-Type': 'application/json' } },
+//       );
+//       if (response.status === 200) {
+//         await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
+
+//         Alert.alert('Success', 'OTP sent successfully!', [
+//           {
+//             text: 'OK',
+//             onPress: () =>
+//               // Ensure formattedNumber is defined and cast navigation to any to avoid type errors
+//               (navigation as any).navigate('Otp', {
+//                 phoneNumber: formattedNumber,
+//               maskedPhone: formattedNumber
+//   ? '****' + formattedNumber.slice(-4)
+//   : '****',
+
+//               }),
+//           },
+//         ]);
+//       }
+//     // } catch (error: any) {
+//     //   console.error('Error sending OTP:', error);
+//     //   Alert.alert(
+//     //     'Error',
+//     //     error.response?.data?.message ||
+//     //       'Failed to send OTP. Please try again.',
+//     //   );
+//     // }
+//     } catch (error: any) {
+//   console.error("Axios error:", error);
+//   Alert.alert(
+//     'Error',
+//     error?.response?.data?.message ??
+//     error?.message ??
+//     'Unknown error occurred'
+//   );
+// }
+//      finally {
+//       setIsLoading(false);
+//     }
+//   };
 
   return (
     <View style={{ width: '100%' }}>
