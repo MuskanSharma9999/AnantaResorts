@@ -28,6 +28,7 @@ const ProfileScreen = () => {
   const [name, setName] = useState('');
   const [isEmailModalVisible, setIsEmailModalVisible] = useState(false);
   const [tempEmail, setTempEmail] = useState(email);
+  const [isKYCSubmitted, setIsKYCSubmitted] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch()
 
@@ -46,9 +47,9 @@ const ProfileScreen = () => {
         token,
       });
 
-      console.log('get user data', response);
-
       if (response.success) {
+        console.log('response:::::::' ,response);
+        
         const user = response.data.data.user;
         setProfile_photo_url(user.profile_photo_url || null);
         setEmail(user.email || '');
@@ -240,6 +241,7 @@ const handleUpdateProfile = async () => {
 
     if (response.success) {
       Alert.alert('Success', 'Your profile has been updated!');
+       navigation.navigate('MainTabs', { profileUpdated: true });
     } else {
       Alert.alert('Error', response.error || 'Something went wrong');
     }
@@ -299,16 +301,16 @@ const handleUpdateProfile = async () => {
       <Text style={styles.name}>{name}</Text>
 
       {/* Tap email to open modal */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => {
           setTempEmail(email);
           setIsEmailModalVisible(true);
         }}
-      >
+      > */}
         <Text style={[styles.email, { textDecorationLine: 'underline' }]}>
           {email}
         </Text>
-      </TouchableOpacity>
+      {/* </TouchableOpacity> */}
     </View>
   </View>
 )}
@@ -327,10 +329,21 @@ const handleUpdateProfile = async () => {
           <Text style={[styles.menuText, { color: 'green' }]}>Save Changes</Text>
           <Text style={styles.chevron}>✓</Text>
         </TouchableOpacity> */}
+         <TouchableOpacity style={styles.menuItem} 
+     onPress={() =>
+    navigation.navigate('KYC', {
+      onKYCSubmit: () => setIsKYCSubmitted(true),
+    })
+  }
+         >
+          <Text style={[styles.menuText, styles.logoutText]}>KYC</Text>
+           <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
         </TouchableOpacity>
+
       </View>
 
       {/* Email Update Modal */}
@@ -372,10 +385,11 @@ const handleUpdateProfile = async () => {
                 padding: 12,
                 borderRadius: 8,
               }}
-              onPress={() => {
-                setEmail(tempEmail); // update main email state
-                setIsEmailModalVisible(false);
-              }}
+             onPress={async () => {
+    setEmail(tempEmail); // update local state first
+    setIsEmailModalVisible(false);
+    await handleUpdateProfile(); // save to backend immediately
+  }}
             >
               <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
                 Save
