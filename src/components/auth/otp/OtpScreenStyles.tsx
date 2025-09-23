@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textAlign: 'center',
     marginBottom: 8,
-    fontFamily: "Cormorant-Bold"
+    fontFamily: 'Montserrat-Regular',
   },
   otpInstructions: {
     fontSize: 14,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   resendButton: {
     alignItems: 'center',
-    marginTop: 20
+    marginTop: 20,
   },
   resendText: {
     color: '#999',

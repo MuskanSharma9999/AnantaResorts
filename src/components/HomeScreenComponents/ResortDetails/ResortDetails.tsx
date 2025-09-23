@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -22,54 +22,57 @@ import {
 import { styles } from './ResortDetailsStyle';
 import GradientButton from '../../Buttons/GradientButton';
 import Xyz from '../../../Screens/MembershipModal';
+import { useRoute } from '@react-navigation/native';
+import { ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+// Assuming ApiList is imported from your API configuration file
+import { ApiList } from '../../../Api_List/apiList';
 
-interface ResortDetailsProps {
-  route: {
-    params: {
-      resort: {
-        name: string;
-        description: string;
-        amenities: string[];
-        specificAmenities: string[];
-        location: string;
-        image: any;
-        aboutSections: string[];
-        reviews: {
-          avatar: string;
-          user: string;
-          handle: string;
-          isVerified: boolean;
-          rating: number;
-          comment: string;
-          date: string;
-        }[];
-        servicesAndOffers: {
-          service: string;
-          description: string;
-        }[];
-      };
-    };
-  };
-  navigation: {
-    goBack: () => void;
-    // add other navigation methods if needed
-  };
-}
+const ResortDetails: React.FC = ({ navigation }) => {
+  const route = useRoute();
+  const { resortId } = route.params;
 
-const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
-  // Use resortid when the API is Called by ID. and then remove the above resort object from params
-  // const { resortId } = route.params;
-
-  const { resort } = route.params;
   const [activeTab, setActiveTab] = useState('About Resort');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [resort, setResort] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-const gallery = resort.image_gallery?.map(img => img.url) ?? [
+  useEffect(() => {
+    const fetchResort = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.get(ApiList.GET_RESORT_BY_ID(resortId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        setResort(response.data?.data); // adjust based on actual API shape
+      } catch (err) {
+        console.error('Failed to fetch resort details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResort();
+  }, [resortId]);
+
+  // Fallback for gallery since API doesn't provide image_gallery
+  const gallery = resort?.image_gallery?.map(img => ({ uri: img.url })) ?? [
     { uri: 'https://picsum.photos/400/304' },
     { uri: 'https://picsum.photos/400/305' },
     { uri: 'https://picsum.photos/400/306' },
   ];
 
+  // Hardcoded specific amenities texts to match the 4 icons (since API provides amenity IDs, not names)
+  // In a real app, fetch amenity names by ID from another endpoint
+  const specificAmenities = ['TV Monitor', 'Bathroom', 'WiFi', 'Coffee Bar'];
+
+  if (loading) return <ActivityIndicator />;
+  if (!resort) return <Text>Resort not found</Text>;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -77,15 +80,24 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
         return (
           <View style={styles.contentPadding}>
             <Text style={styles.sectionTitle}>About {resort.name}</Text>
-            <Text style={styles.descriptionText}>{resort.description}</Text>
+
+            <Text style={styles.descriptionText}>
+              {resort.about || 'No description available'}
+            </Text>
 
             <Text style={styles.sectionTitle}>Amenities</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {resort.amenities.map((amenity, index) => (
+              {(resort.amenities || []).map((amenity, index) => (
                 <View key={index} style={styles.amenityTag}>
-                  <Text style={styles.amenityTagText}>{amenity}</Text>
+                  <Text style={styles.amenityTagText}>
+                    Amenity ID: {amenity}{' '}
+                    {/* Display ID; in real app, fetch name */}
+                  </Text>
                 </View>
               ))}
+              {resort.amenities?.length === 0 && (
+                <Text style={styles.descriptionText}>No amenities listed</Text>
+              )}
             </View>
           </View>
         );
@@ -110,7 +122,7 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
               title="Join Club"
               style={styles.joinClubButton}
               onPress={() => setIsModalVisible(true)} // open modal
-            ></GradientButton>
+            />
             <Xyz
               visible={isModalVisible}
               onClose={() => setIsModalVisible(false)}
@@ -143,7 +155,7 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
 
             <Text style={styles.reviewDate}>23 Nov 2021</Text>
 
-            {resort.reviews.map((review, index) => (
+            {(resort.reviews || []).map((review, index) => (
               <View key={index} style={styles.reviewCard}>
                 {/* Header with avatar + name + handle */}
                 <View style={styles.reviewHeader}>
@@ -190,13 +202,16 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
                 <Text style={styles.reviewDate}>{review.date}</Text>
               </View>
             ))}
+            {(resort.reviews || []).length === 0 && (
+              <Text style={styles.descriptionText}>No reviews available</Text>
+            )}
           </View>
         );
 
       case 'Resort Services & Offers':
         return (
           <View style={styles.contentPadding}>
-            {resort.servicesAndOffers.map((service, index) => (
+            {(resort.servicesAndOffers || []).map((service, index) => (
               <View key={index} style={styles.serviceItem}>
                 <Text style={styles.serviceTitle}>{service.service}</Text>
                 <Text style={styles.serviceDescription}>
@@ -204,6 +219,11 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
                 </Text>
               </View>
             ))}
+            {(resort.servicesAndOffers || []).length === 0 && (
+              <Text style={styles.descriptionText}>
+                No services or offers available
+              </Text>
+            )}
           </View>
         );
       default:
@@ -217,11 +237,15 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
         {/* Header Image with Title */}
         <View style={styles.imageContainer}>
           <ImageBackground
-  source={{uri:"http://103.191.132.144/uploads/resort-images/d3327d02-aee5-4c16-868d-1dcc082e2348_thumb.png"}}
-  style={[styles.imageBackground]} // ensure width
-  imageStyle={styles.imageStyle}
-  onError={e => console.log('Image Background failed to load:', e.nativeEvent)}
->
+            source={{
+              uri: 'http://103.191.132.144/uploads/resort-images/d3327d02-aee5-4c16-868d-1dcc082e2348_thumb.png',
+            }}
+            style={[styles.imageBackground]} // ensure width
+            imageStyle={styles.imageStyle}
+            onError={e =>
+              console.log('Image Background failed to load:', e.nativeEvent)
+            }
+          >
             <View style={styles.imageOverlay}>
               {/* <TouchableOpacity
                 style={styles.backButton}
@@ -229,7 +253,7 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
               >
                 <ChevronLeft size={24} color="white" />
               </TouchableOpacity> */}
-              <Text style={styles.resortTitle}>{resort.title}</Text>
+              <Text style={styles.resortTitle}>{resort.name}</Text>
               <View style={styles.locationContainer}>
                 <MapPin size={16} color="#D1D5DB" />
                 <Text style={styles.locationText}>{resort.location}</Text>
@@ -244,33 +268,28 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
             <View style={styles.iconContainer}>
               <Monitor size={24} color="black" />
             </View>
-            <Text style={styles.amenityText}>
-{resort.specificAmenities && resort.specificAmenities[0]}
-            </Text>
+            <Text style={styles.amenityText}>{specificAmenities[0]}</Text>
           </View>
 
           <View style={styles.amenityItem}>
             <View style={styles.iconContainer}>
               <Bath size={24} color="black" />
             </View>
-            <Text style={styles.amenityText}>
-{resort.specificAmenities && resort.specificAmenities[1]}            </Text>
+            <Text style={styles.amenityText}>{specificAmenities[1]}</Text>
           </View>
 
           <View style={styles.amenityItem}>
             <View style={styles.iconContainer}>
               <Wifi size={24} color="black" />
             </View>
-            <Text style={styles.amenityText}>
-{resort.specificAmenities && resort.specificAmenities[2]}            </Text>
+            <Text style={styles.amenityText}>{specificAmenities[2]}</Text>
           </View>
 
           <View style={styles.amenityItem}>
             <View style={styles.iconContainer}>
               <Coffee size={24} color="black" />
             </View>
-            <Text style={styles.amenityText}>
-{resort.specificAmenities && resort.specificAmenities[3]}            </Text>
+            <Text style={styles.amenityText}>{specificAmenities[3]}</Text>
           </View>
         </View>
 
@@ -300,29 +319,31 @@ const gallery = resort.image_gallery?.map(img => img.url) ?? [
             )}
           </TouchableOpacity>
 
-         {(resort.aboutSections ?? []).map((section, index) => (
-  <TouchableOpacity
-    key={index}
-    style={[
-      styles.tabButton,
-      activeTab === section && styles.activeTab,
-    ]}
-    onPress={() => setActiveTab(section)}
-  >
-    <Text
-      style={[
-        styles.tabText,
-        activeTab === section && styles.activeTabText,
-        section.length > 15 && { fontSize: 12 },
-      ]}
-    >
-      {section}
-    </Text>
-    {activeTab === section && <View style={styles.activeTabIndicator} />}
-  </TouchableOpacity>
-))}
-
+          {(resort.aboutSections ?? []).map((section, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.tabButton,
+                activeTab === section && styles.activeTab,
+              ]}
+              onPress={() => setActiveTab(section)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === section && styles.activeTabText,
+                  section.length > 15 && { fontSize: 12 },
+                ]}
+              >
+                {section}
+              </Text>
+              {activeTab === section && (
+                <View style={styles.activeTabIndicator} />
+              )}
+            </TouchableOpacity>
+          ))}
         </ScrollView>
+
         {/* Tab Content */}
         {renderTabContent()}
 

@@ -6,47 +6,52 @@ import { useNavigation } from '@react-navigation/native';
 import ApiList from '../../../Api_List/apiList';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { object } from 'yup';
+
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../../navigation/types';
 
 export const TopRated = () => {
-  const navigation = useNavigation();
+  type RootNavigation = StackNavigationProp<RootStackParamList>;
+
+  const navigation = useNavigation<RootNavigation>();
+
   const [resorts, setResorts] = useState<any[]>([]);
 
-  const fetchMembershipPlans = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    if (!token) {
-      console.warn('[TopRated] No token found for memberships API');
-      return;
-    }
-    const response = await axios.get(
-      'http://103.191.132.144/ap/api/memberships/plans',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    console.log('[TopRated] Memberships API response:', response.data);
-    // Do something with response.data, e.g., update state, show memberships, etc.
-  } catch (error) {
-    console.error(
-      '[TopRated] Error fetching membership plans:',
-      error.response?.data || error.message
-    );
-  }
-};
+  // const fetchMembershipPlans = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+  //     if (!token) {
+  //       console.warn('[TopRated] No token found for memberships API');
+  //       return;
+  //     }
+  //     const response = await axios.get(
+  //       'http://103.191.132.144/ap/api/memberships/plans',
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       },
+  //     );
+  //     console.log('[TopRated] Memberships API response:', response.data);
+  //     // Do something with response.data, e.g., update state, show memberships, etc.
+  //   } catch (error) {
+  //     console.error(
+  //       '[TopRated] Error fetching membership plans:',
+  //       error.response?.data || error.message,
+  //     );
+  //   }
+  // };
 
-
-
- useEffect(() => {
+  useEffect(() => {
     const sanitizeImageUrl = (url: string | null) =>
-  url ? url.replace(':6001', '') : null;
+      url ? url.replace(':6001', '') : null;
 
-      const wrapImageUri = (url: string | null) =>
+    const wrapImageUri = (url: string | null) =>
       url ? { uri: url } : undefined;
 
-const sanitizeResortImages = (resorts: any[]) => {
+    const sanitizeResortImages = (resorts: any[]) => {
       return resorts.map(resort => {
         // Sanitize and wrap gallery image URLs
         const sanitizedGallery = resort.image_gallery?.map((image: any) => ({
@@ -65,7 +70,7 @@ const sanitizeResortImages = (resorts: any[]) => {
       });
     };
 
-  const fetchResorts = async () => {
+    const fetchResorts = async () => {
       try {
         console.log('[TopRated] Fetching resorts...');
 
@@ -86,7 +91,7 @@ const sanitizeResortImages = (resorts: any[]) => {
 
         console.log(
           '[TopRated] Full API Response:',
-          JSON.stringify(response.data, null, 2)
+          JSON.stringify(response.data, null, 2),
         );
 
         if (Array.isArray(response.data?.data)) {
@@ -94,20 +99,22 @@ const sanitizeResortImages = (resorts: any[]) => {
           setResorts(sanitizedResorts);
           console.log('[TopRated] Resorts set:', sanitizedResorts.length);
         } else {
-          console.warn('[TopRated] Unexpected response structure:', response.data);
+          console.warn(
+            '[TopRated] Unexpected response structure:',
+            response.data,
+          );
         }
       } catch (error: any) {
         console.error(
           '[TopRated] Error fetching resorts:',
-          error.response?.data || error.message
+          error.response?.data || error.message,
         );
       }
     };
 
     fetchResorts();
-     fetchMembershipPlans();
+    // fetchMembershipPlans();
   }, []);
-  
 
   return (
     <View style={{ backgroundColor: '#000' }}>
@@ -128,79 +135,85 @@ const sanitizeResortImages = (resorts: any[]) => {
         contentContainerStyle={{ paddingHorizontal: 10 }}
       >
         {resorts.map(resort => {
-         const mainImage = resort.image ?? 
-            (resort.image_gallery && resort.image_gallery.length > 0 ? resort.image_gallery[0].url : undefined);
+          const mainImage =
+            resort.image ??
+            (resort.image_gallery && resort.image_gallery.length > 0
+              ? resort.image_gallery[0].url
+              : undefined);
 
-           return (
-          <View key={resort.id} style={{ width: 280, marginRight: 15 }}>
-            <View
-              style={{
-                borderRadius: 20,
-                overflow: 'hidden',
-                borderColor: '#E0C48F',
-                borderWidth: 2,
-              }}
-            >
-              <ImageBackground
-            source={mainImage}
-  style={{ height: 220, borderRadius: 20 }}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                    padding: 16,
-                    borderBottomLeftRadius: 20,
-                    borderBottomRightRadius: 20,
-                  }}
-                >
-                  <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: '600',
-                        color: '#FBCF9C',
-                        fontFamily: 'Cormorant-Bold',
-                        marginBottom: 6,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {resort.name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        color: '#fff',
-                        fontFamily: 'Montserrat-Regular',
-                        lineHeight: 18,
-                        marginBottom: 12,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {resort.location}
-                    </Text>
-                  </View>
-                </View>
-              </ImageBackground>
-            </View>
-
-            {/* Button Below Card */}
-            <View style={{ alignItems: 'center', marginTop: -25 }}>
-              <GradientButton
-                title="Explore"
+          return (
+            <View key={resort.id} style={{ width: 280, marginRight: 15 }}>
+              <View
                 style={{
-                  width: 140,
-                  borderRadius: 15,
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  borderColor: '#E0C48F',
+                  borderWidth: 2,
                 }}
-                  onPress={() => navigation.navigate('ResortDetails', { resort })}
+              >
+                <ImageBackground
+                  source={mainImage}
+                  style={{ height: 220, borderRadius: 20 }}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                      padding: 16,
+                      borderBottomLeftRadius: 20,
+                      borderBottomRightRadius: 20,
+                    }}
+                  >
+                    <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: '600',
+                          color: '#FBCF9C',
+                          fontFamily: 'Cormorant-Bold',
+                          marginBottom: 6,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {resort.name}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: '#fff',
+                          fontFamily: 'Montserrat-Regular',
+                          lineHeight: 18,
+                          marginBottom: 12,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {resort.location}
+                      </Text>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </View>
 
-              />
+              {/* Button Below Card */}
+              <View style={{ alignItems: 'center', marginTop: -25 }}>
+                <GradientButton
+                  title="Explore"
+                  style={{
+                    width: 140,
+                    borderRadius: 15,
+                  }}
+                  onPress={() =>
+                    navigation.navigate('ResortDetails', {
+                      resortId: resort.id,
+                    })
+                  }
+                />
+              </View>
             </View>
-          </View>
-           )
-})}
+          );
+        })}
       </ScrollView>
     </View>
   );

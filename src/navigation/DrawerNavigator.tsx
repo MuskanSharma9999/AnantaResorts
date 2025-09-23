@@ -32,59 +32,65 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApiList from '../Api_List/apiList';
 import CardIcon from '../assets/images/Credit Card.svg';
 
-
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
 
+const BlankScreen = () => <View />;
+
 function CustomDrawerContent(props) {
   const { state, navigation, descriptors } = props;
-    const [profile, setProfile] = useState({ name: '', email: '', profile_photo_url: '' });
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    profile_photo_url: '',
+  });
 
-     const fetchProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Error', 'Authentication token missing');
-          return;
-        }
-        const response = await apiRequest({
-          url: ApiList.GET_PROFILE,
-          method: 'GET',
-          token,
-        });
-        if (response.success) {
-          const user = response.data.data.user;
-          setProfile({
-            name: user.name || '',
-            email: user.email || '',
-            profile_photo_url: user.profile_photo_url || '',
-          });
-        } else {
-          Alert.alert('Error', response.error || 'Failed to fetch profile');
-        }
-      } catch (err) {
-        Alert.alert('Error', 'Failed to load profile data');
+  const fetchProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Error', 'Authentication token missing');
+        return;
       }
-    };
+      const response = await apiRequest({
+        url: ApiList.GET_PROFILE,
+        method: 'GET',
+        token,
+      });
+      if (response.success) {
+        const user = response.data.data.user;
+        setProfile({
+          name: user.name || '',
+          email: user.email || '',
+          profile_photo_url: user.profile_photo_url || '',
+        });
+      } else {
+        Alert.alert('Error', response.error || 'Failed to fetch profile');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to load profile data');
+    }
+  };
 
   useEffect(() => {
-  fetchProfile();
-
-  const unsubscribeDrawerOpen = navigation.addListener('drawerOpen', () => {
     fetchProfile();
-  });
 
-  const unsubscribeProfileUpdated = navigation.addListener('profileUpdated', () => {
-    fetchProfile();
-  });
+    const unsubscribeDrawerOpen = navigation.addListener('drawerOpen', () => {
+      fetchProfile();
+    });
 
-  return () => {
-    unsubscribeDrawerOpen();
-    unsubscribeProfileUpdated();
-  };
-}, [navigation]);
+    const unsubscribeProfileUpdated = navigation.addListener(
+      'profileUpdated',
+      () => {
+        fetchProfile();
+      },
+    );
 
-
+    return () => {
+      unsubscribeDrawerOpen();
+      unsubscribeProfileUpdated();
+    };
+  }, [navigation]);
 
   return (
     <DrawerContentScrollView
@@ -101,13 +107,13 @@ function CustomDrawerContent(props) {
           paddingBottom: 30,
         }}
       >
-         <View
+        <View
           style={{
             width: 50,
             height: 50,
             borderRadius: 25,
             overflow: 'hidden',
-          //  backgroundColor: '#a9a599ff',
+            //  backgroundColor: '#a9a599ff',
             marginRight: 15,
           }}
         >
@@ -274,7 +280,7 @@ export const DrawerNavigator = () => {
             height: '100%',
           },
           drawerIcon: ({ color, size }) => (
-           <CardIcon width={size} height={size} fill="#fff" />
+            <CardIcon width={size} height={size} fill="#fff" />
           ),
           headerStyle: {
             backgroundColor: 'black',
@@ -286,7 +292,7 @@ export const DrawerNavigator = () => {
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
               style={{ marginLeft: 15 }}
             >
-                <MenuIcon width={30} height={30} />
+              <MenuIcon width={30} height={30} />
             </TouchableOpacity>
           ),
         })}
@@ -294,7 +300,7 @@ export const DrawerNavigator = () => {
 
       <Drawer.Screen
         name="Logout"
-        component={() => null}
+        component={BlankScreen}
         options={{
           title: 'Log Out',
           drawerIcon: ({ color, size }) => (
@@ -309,8 +315,16 @@ export const DrawerNavigator = () => {
               {
                 text: 'Logout',
                 style: 'destructive',
-                onPress: () => {
-                  console.log('Logout Pressed');
+                onPress: async () => {
+                  try {
+                    await AsyncStorage.clear();
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'Login' }],
+                    });
+                  } catch (err) {
+                    Alert.alert('Error', 'Failed to logout');
+                  }
                 },
               },
             ]);
