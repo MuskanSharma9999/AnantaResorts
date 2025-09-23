@@ -67,9 +67,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#EAECF0',
+    paddingBottom: 12,
   },
   menuText: {
     fontSize: 16,

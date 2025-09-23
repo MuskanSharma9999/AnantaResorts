@@ -1,4 +1,4 @@
-import React, { use } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -10,6 +10,7 @@ import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen';
 import {
   Alert,
   Dimensions,
+  Image,
   Platform,
   Text,
   TouchableOpacity,
@@ -26,12 +27,64 @@ import LinearGradient from 'react-native-linear-gradient';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TravediseScreen from '../Screens/TravediseScreen';
+import { apiRequest } from '../Api_List/apiUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiList from '../Api_List/apiList';
+import CardIcon from '../assets/images/Credit Card.svg';
+
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
 
 function CustomDrawerContent(props) {
   const { state, navigation, descriptors } = props;
+    const [profile, setProfile] = useState({ name: '', email: '', profile_photo_url: '' });
+
+     const fetchProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          Alert.alert('Error', 'Authentication token missing');
+          return;
+        }
+        const response = await apiRequest({
+          url: ApiList.GET_PROFILE,
+          method: 'GET',
+          token,
+        });
+        if (response.success) {
+          const user = response.data.data.user;
+          setProfile({
+            name: user.name || '',
+            email: user.email || '',
+            profile_photo_url: user.profile_photo_url || '',
+          });
+        } else {
+          Alert.alert('Error', response.error || 'Failed to fetch profile');
+        }
+      } catch (err) {
+        Alert.alert('Error', 'Failed to load profile data');
+      }
+    };
+
+  useEffect(() => {
+  fetchProfile();
+
+  const unsubscribeDrawerOpen = navigation.addListener('drawerOpen', () => {
+    fetchProfile();
+  });
+
+  const unsubscribeProfileUpdated = navigation.addListener('profileUpdated', () => {
+    fetchProfile();
+  });
+
+  return () => {
+    unsubscribeDrawerOpen();
+    unsubscribeProfileUpdated();
+  };
+}, [navigation]);
+
+
 
   return (
     <DrawerContentScrollView
@@ -48,21 +101,29 @@ function CustomDrawerContent(props) {
           paddingBottom: 30,
         }}
       >
-        <View
+         <View
           style={{
             width: 50,
             height: 50,
             borderRadius: 25,
-            backgroundColor: '#a9a599ff',
+            overflow: 'hidden',
+          //  backgroundColor: '#a9a599ff',
             marginRight: 15,
           }}
-        />
+        >
+          {profile.profile_photo_url ? (
+            <Image
+              source={{ uri: profile.profile_photo_url }}
+              style={{ width: 50, height: 50, borderRadius: 25 }}
+            />
+          ) : null}
+        </View>
         <View>
           <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-            Olivia Rhye
+            {profile.name}
           </Text>
           <Text style={{ color: '#fff', fontSize: 14, opacity: 0.7 }}>
-            olivia@untitledui.com
+            {profile.email}
           </Text>
         </View>
       </View>
@@ -170,7 +231,7 @@ export const DrawerNavigator = () => {
         }}
       />
 
-      <Drawer.Screen
+      {/* <Drawer.Screen
         name="Setting"
         component={SettingScreen}
         options={({ navigation }) => ({
@@ -199,7 +260,7 @@ export const DrawerNavigator = () => {
             </TouchableOpacity>
           ),
         })}
-      />
+      /> */}
       <Drawer.Screen
         name="Travedise"
         component={TravediseScreen}
@@ -213,7 +274,7 @@ export const DrawerNavigator = () => {
             height: '100%',
           },
           drawerIcon: ({ color, size }) => (
-            <SettingIcon width={size} height={size} fill="#fff" />
+           <CardIcon width={size} height={size} fill="#fff" />
           ),
           headerStyle: {
             backgroundColor: 'black',
@@ -225,7 +286,7 @@ export const DrawerNavigator = () => {
               onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
               style={{ marginLeft: 15 }}
             >
-              <MenuIcon width={30} height={30} />
+                <MenuIcon width={30} height={30} />
             </TouchableOpacity>
           ),
         })}

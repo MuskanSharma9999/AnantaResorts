@@ -64,18 +64,12 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState('About Resort');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const gallery = [
+const gallery = resort.image_gallery?.map(img => img.url) ?? [
     { uri: 'https://picsum.photos/400/304' },
     { uri: 'https://picsum.photos/400/305' },
     { uri: 'https://picsum.photos/400/306' },
-    { uri: 'https://picsum.photos/400/304' },
-    { uri: 'https://picsum.photos/400/305' },
-    { uri: 'https://picsum.photos/400/306' },
-    { uri: 'https://picsum.photos/400/304' },
-    { uri: 'https://picsum.photos/400/305' },
-    { uri: 'https://picsum.photos/400/306' },
-    // ...other items
   ];
+
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -223,10 +217,11 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
         {/* Header Image with Title */}
         <View style={styles.imageContainer}>
           <ImageBackground
-            source={resort.image}
-            style={styles.imageBackground}
-            imageStyle={styles.imageStyle}
-          >
+  source={{uri:"http://103.191.132.144/uploads/resort-images/d3327d02-aee5-4c16-868d-1dcc082e2348_thumb.png"}}
+  style={[styles.imageBackground]} // ensure width
+  imageStyle={styles.imageStyle}
+  onError={e => console.log('Image Background failed to load:', e.nativeEvent)}
+>
             <View style={styles.imageOverlay}>
               {/* <TouchableOpacity
                 style={styles.backButton}
@@ -250,7 +245,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
               <Monitor size={24} color="black" />
             </View>
             <Text style={styles.amenityText}>
-              {resort.specificAmenities[0]}
+{resort.specificAmenities && resort.specificAmenities[0]}
             </Text>
           </View>
 
@@ -259,8 +254,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
               <Bath size={24} color="black" />
             </View>
             <Text style={styles.amenityText}>
-              {resort.specificAmenities[1]}
-            </Text>
+{resort.specificAmenities && resort.specificAmenities[1]}            </Text>
           </View>
 
           <View style={styles.amenityItem}>
@@ -268,8 +262,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
               <Wifi size={24} color="black" />
             </View>
             <Text style={styles.amenityText}>
-              {resort.specificAmenities[2]}
-            </Text>
+{resort.specificAmenities && resort.specificAmenities[2]}            </Text>
           </View>
 
           <View style={styles.amenityItem}>
@@ -277,8 +270,7 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
               <Coffee size={24} color="black" />
             </View>
             <Text style={styles.amenityText}>
-              {resort.specificAmenities[3]}
-            </Text>
+{resort.specificAmenities && resort.specificAmenities[3]}            </Text>
           </View>
         </View>
 
@@ -308,29 +300,28 @@ const ResortDetails: React.FC<ResortDetailsProps> = ({ route, navigation }) => {
             )}
           </TouchableOpacity>
 
-          {resort.aboutSections.map((section, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.tabButton,
-                activeTab === section && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab(section)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === section && styles.activeTabText,
-                  section.length > 15 && { fontSize: 12 },
-                ]}
-              >
-                {section}
-              </Text>
-              {activeTab === section && (
-                <View style={styles.activeTabIndicator} />
-              )}
-            </TouchableOpacity>
-          ))}
+         {(resort.aboutSections ?? []).map((section, index) => (
+  <TouchableOpacity
+    key={index}
+    style={[
+      styles.tabButton,
+      activeTab === section && styles.activeTab,
+    ]}
+    onPress={() => setActiveTab(section)}
+  >
+    <Text
+      style={[
+        styles.tabText,
+        activeTab === section && styles.activeTabText,
+        section.length > 15 && { fontSize: 12 },
+      ]}
+    >
+      {section}
+    </Text>
+    {activeTab === section && <View style={styles.activeTabIndicator} />}
+  </TouchableOpacity>
+))}
+
         </ScrollView>
         {/* Tab Content */}
         {renderTabContent()}

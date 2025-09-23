@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
   },
   imageOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+   // backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 24,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,

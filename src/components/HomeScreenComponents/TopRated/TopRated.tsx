@@ -11,52 +11,103 @@ export const TopRated = () => {
   const navigation = useNavigation();
   const [resorts, setResorts] = useState<any[]>([]);
 
-useEffect(() => {
-  const fetchResorts = async () => {
-    try {
-      console.log('[TopRated] Fetching resorts...');
-
-      // ✅ Get token from AsyncStorage
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        console.warn('[TopRated] No token found in storage');
-        return;
-      }
-      console.log('[TopRated] Token:', token.substring(0, 15) + '...');
-
-      // ✅ Pass token in headers
-      const response = await axios.get(ApiList.GET_ALL_RESORTS, {
+  const fetchMembershipPlans = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      console.warn('[TopRated] No token found for memberships API');
+      return;
+    }
+    const response = await axios.get(
+      'http://103.191.132.144/ap/api/memberships/plans',
+      {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      });
-
-      console.log(
-        '[TopRated] Full API Response:',
-        JSON.stringify(response.data, null, 2)
-      );
-
-      if (Array.isArray(response.data)) {
-        setResorts(response.data);
-        console.log('[TopRated] Resorts set in state:', response.data.length);
-      } else if (Array.isArray(response.data.data)) {
-        setResorts(response.data.data);
-        console.log('[TopRated] Resorts set from response.data.data:', response.data.data.length);
-      } else {
-        console.warn('[TopRated] Unexpected response structure:', response.data);
       }
-    } catch (error: any) {
-      console.error(
-        '[TopRated] Error fetching resorts:',
-        error.response?.data || error.message
-      );
-    }
-  };
+    );
+    console.log('[TopRated] Memberships API response:', response.data);
+    // Do something with response.data, e.g., update state, show memberships, etc.
+  } catch (error) {
+    console.error(
+      '[TopRated] Error fetching membership plans:',
+      error.response?.data || error.message
+    );
+  }
+};
 
-  fetchResorts();
-}, []);
 
+
+ useEffect(() => {
+    const sanitizeImageUrl = (url: string | null) =>
+  url ? url.replace(':6001', '') : null;
+
+      const wrapImageUri = (url: string | null) =>
+      url ? { uri: url } : undefined;
+
+const sanitizeResortImages = (resorts: any[]) => {
+      return resorts.map(resort => {
+        // Sanitize and wrap gallery image URLs
+        const sanitizedGallery = resort.image_gallery?.map((image: any) => ({
+          ...image,
+          url: wrapImageUri(sanitizeImageUrl(image.url)),
+          thumbnailUrl: wrapImageUri(sanitizeImageUrl(image.thumbnailUrl)),
+        }));
+
+        return {
+          ...resort,
+          // Sanitize primary_image and create image prop with proper format for ResortDetails
+          primary_image: sanitizeImageUrl(resort.primary_image),
+          image: wrapImageUri(sanitizeImageUrl(resort.primary_image)),
+          image_gallery: sanitizedGallery,
+        };
+      });
+    };
+
+  const fetchResorts = async () => {
+      try {
+        console.log('[TopRated] Fetching resorts...');
+
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.warn('[TopRated] No token found in storage');
+          return;
+        }
+
+        console.log('[TopRated] Token:', token.substring(0, 15) + '...');
+
+        const response = await axios.get(ApiList.GET_ALL_RESORTS, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(
+          '[TopRated] Full API Response:',
+          JSON.stringify(response.data, null, 2)
+        );
+
+        if (Array.isArray(response.data?.data)) {
+          const sanitizedResorts = sanitizeResortImages(response.data.data);
+          setResorts(sanitizedResorts);
+          console.log('[TopRated] Resorts set:', sanitizedResorts.length);
+        } else {
+          console.warn('[TopRated] Unexpected response structure:', response.data);
+        }
+      } catch (error: any) {
+        console.error(
+          '[TopRated] Error fetching resorts:',
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchResorts();
+     fetchMembershipPlans();
+  }, []);
+  
 
   return (
     <View style={{ backgroundColor: '#000' }}>
@@ -76,7 +127,11 @@ useEffect(() => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 10 }}
       >
-        {resorts.map(resort => (
+        {resorts.map(resort => {
+         const mainImage = resort.image ?? 
+            (resort.image_gallery && resort.image_gallery.length > 0 ? resort.image_gallery[0].url : undefined);
+
+           return (
           <View key={resort.id} style={{ width: 280, marginRight: 15 }}>
             <View
               style={{
@@ -87,8 +142,8 @@ useEffect(() => {
               }}
             >
               <ImageBackground
-                source={resort.image}
-                style={{ height: 220, borderRadius: 20 }}
+            source={mainImage}
+  style={{ height: 220, borderRadius: 20 }}
               >
                 <View
                   style={{
@@ -139,14 +194,13 @@ useEffect(() => {
                   width: 140,
                   borderRadius: 15,
                 }}
-                onPress={() => {
-                  navigation.navigate('ResortDetails', { resort });
-                }}
+                  onPress={() => navigation.navigate('ResortDetails', { resort })}
 
               />
             </View>
           </View>
-        ))}
+           )
+})}
       </ScrollView>
     </View>
   );

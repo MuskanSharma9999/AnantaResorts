@@ -339,6 +339,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                     keyboardType="email-address"
                     autoCapitalize="none"
                     placeholderTextColor="#999"
+                     editable={false} 
                   />
                 </View>
 
