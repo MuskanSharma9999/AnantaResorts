@@ -16,9 +16,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { setAuth } from '../../redux/slices/authSlice';
-import { apiRequest } from '../../Api_List/apiUtils';
-import ApiList from '../../Api_List/apiList';
+import { setAuth } from '../../../redux/slices/authSlice';
+import { apiRequest } from '../../../Api_List/apiUtils';
+import ApiList from '../../../Api_List/apiList';
 
 
 const ProfileScreen = () => {
@@ -110,92 +110,7 @@ const pickImageFromGallery = () => {
 
 
 
-//   useEffect(() => {
-//   const fetchProfile = async () => {
-//     try {
-//       const token = await AsyncStorage.getItem('token');
-//       if (!token) {
-//         Alert.alert('Error', 'Authentication token missing');
-//         console.log('Error: Authentication token missing');
-//         return;
-//       }
-      
-//       const res = await axios.get(ApiList.GET_PROFILE, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
 
-//       // Log full response for debugging
-//       console.log('get user data', res);
-
-//       if (res.data?.success) {
-//         const user = res.data.data.user;
-//         setProfile_photo_url(user.profile_photo_url || null);
-//         setEmail(user.email || '');
-//         setName(user.name || '');
-//       } else {
-//         console.log('Failed to fetch profile:', res.data);
-//       }
-//     } catch (err) {
-//       // Log detailed error info for Axios and non-Axios errors
-//       if (err.response) {
-//         // Axios error with a server response
-//         console.error('Error fetching profile:', err.response.data);
-//         console.log('Full error object:', err);
-//       } else {
-//         // Other errors: network, parsing, etc.
-//         console.error('Error fetching profile:', err.message);
-//         console.log('Full error object:', err);
-//       }
-//     }
-//   };
-
-//   fetchProfile();
-// }, []);
-
-
-  // Pick photo from gallery
-//   const pickImageFromGallery = () => {
-//   const options = { mediaType: 'photo', quality: 1.0 };
-//   launchImageLibrary(options, async (response) => {
-//     if (response.didCancel) {
-//       console.log('User cancelled image picker');
-//     } else if (response.errorCode) {
-//       Alert.alert('Error', response.errorMessage || 'Something went wrong');
-//     } else if (response.assets?.[0]?.uri) {
-//       const uri = response.assets[0].uri;
-//       setProfile_photo_url(uri); // update photo url in state immediately
-
-//       // Call update profile API to save changes including new photo
-//       try {
-//         const token = await AsyncStorage.getItem('token');
-//         if (!token) {
-//           Alert.alert('Error', 'Authentication token missing');
-//           return;
-//         }
-
-//         const payload = { email, name, profile_photo_url: uri };
-
-//         console.log('[pickImageFromGallery] Sending PUT request...', payload);
-
-//         const { data } = await axios.put(ApiList.UPDATE_PROFILE, payload, {
-//           headers: { Authorization: `Bearer ${token}` },
-//         });
-
-//         if (data.success) {
-//           Alert.alert('Success', 'Profile photo updated successfully!');
-//         } else {
-//           Alert.alert('Error', data.message || 'Failed to update profile photo');
-//         }
-//       } catch (error: any) {
-//         console.error('Error updating profile photo:', error.response?.data || error.message);
-//         Alert.alert(
-//           'Error',
-//           error.response?.data?.message || 'Failed to update profile photo'
-//         );
-//       }
-//     }
-//   });
-// };
 const handleLogout = () => {
   Alert.alert(
     "Confirm Logout",
@@ -251,36 +166,6 @@ const handleUpdateProfile = async () => {
   }
 };
 
-  // Update profile API
-  // const handleUpdateProfile = async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem('token');
-  //     if (!token) {
-  //       Alert.alert('Error', 'Authentication token missing');
-  //       return;
-  //     }
-
-  //     const payload = { email, name, profile_photo_url };
-
-  //     console.log('[handleUpdateProfile] Sending PUT request...', payload);
-
-  //     const { data } = await axios.put(ApiList.UPDATE_PROFILE, payload, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     if (data.success) {
-  //       Alert.alert('Success', 'Your profile has been updated!');
-  //     } else {
-  //       Alert.alert('Error', data.message || 'Something went wrong');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('[handleUpdateProfile] error:', error.response?.data || error.message);
-  //     Alert.alert(
-  //       'Error',
-  //       error.response?.data?.message || 'Failed to update profile'
-  //     );
-  //   }
-  // };
 
   return (
     <ScrollView style={styles.container}>
@@ -292,7 +177,7 @@ const handleUpdateProfile = async () => {
         source={
           profile_photo_url
             ? { uri: profile_photo_url }
-            : require('../../assets/images/1.svg')
+            : require('../../../assets/images/ProfileIcon.svg')
         }
         style={styles.avatar}
       />
@@ -413,6 +298,127 @@ export default ProfileScreen;
 
 
 
+
+  // Update profile API
+  // const handleUpdateProfile = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+  //     if (!token) {
+  //       Alert.alert('Error', 'Authentication token missing');
+  //       return;
+  //     }
+
+  //     const payload = { email, name, profile_photo_url };
+
+  //     console.log('[handleUpdateProfile] Sending PUT request...', payload);
+
+  //     const { data } = await axios.put(ApiList.UPDATE_PROFILE, payload, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     if (data.success) {
+  //       Alert.alert('Success', 'Your profile has been updated!');
+  //     } else {
+  //       Alert.alert('Error', data.message || 'Something went wrong');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('[handleUpdateProfile] error:', error.response?.data || error.message);
+  //     Alert.alert(
+  //       'Error',
+  //       error.response?.data?.message || 'Failed to update profile'
+  //     );
+  //   }
+  // };
+
+
+
+
+//   useEffect(() => {
+//   const fetchProfile = async () => {
+//     try {
+//       const token = await AsyncStorage.getItem('token');
+//       if (!token) {
+//         Alert.alert('Error', 'Authentication token missing');
+//         console.log('Error: Authentication token missing');
+//         return;
+//       }
+      
+//       const res = await axios.get(ApiList.GET_PROFILE, {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+
+//       // Log full response for debugging
+//       console.log('get user data', res);
+
+//       if (res.data?.success) {
+//         const user = res.data.data.user;
+//         setProfile_photo_url(user.profile_photo_url || null);
+//         setEmail(user.email || '');
+//         setName(user.name || '');
+//       } else {
+//         console.log('Failed to fetch profile:', res.data);
+//       }
+//     } catch (err) {
+//       // Log detailed error info for Axios and non-Axios errors
+//       if (err.response) {
+//         // Axios error with a server response
+//         console.error('Error fetching profile:', err.response.data);
+//         console.log('Full error object:', err);
+//       } else {
+//         // Other errors: network, parsing, etc.
+//         console.error('Error fetching profile:', err.message);
+//         console.log('Full error object:', err);
+//       }
+//     }
+//   };
+
+//   fetchProfile();
+// }, []);
+
+
+  // Pick photo from gallery
+//   const pickImageFromGallery = () => {
+//   const options = { mediaType: 'photo', quality: 1.0 };
+//   launchImageLibrary(options, async (response) => {
+//     if (response.didCancel) {
+//       console.log('User cancelled image picker');
+//     } else if (response.errorCode) {
+//       Alert.alert('Error', response.errorMessage || 'Something went wrong');
+//     } else if (response.assets?.[0]?.uri) {
+//       const uri = response.assets[0].uri;
+//       setProfile_photo_url(uri); // update photo url in state immediately
+
+//       // Call update profile API to save changes including new photo
+//       try {
+//         const token = await AsyncStorage.getItem('token');
+//         if (!token) {
+//           Alert.alert('Error', 'Authentication token missing');
+//           return;
+//         }
+
+//         const payload = { email, name, profile_photo_url: uri };
+
+//         console.log('[pickImageFromGallery] Sending PUT request...', payload);
+
+//         const { data } = await axios.put(ApiList.UPDATE_PROFILE, payload, {
+//           headers: { Authorization: `Bearer ${token}` },
+//         });
+
+//         if (data.success) {
+//           Alert.alert('Success', 'Profile photo updated successfully!');
+//         } else {
+//           Alert.alert('Error', data.message || 'Failed to update profile photo');
+//         }
+//       } catch (error: any) {
+//         console.error('Error updating profile photo:', error.response?.data || error.message);
+//         Alert.alert(
+//           'Error',
+//           error.response?.data?.message || 'Failed to update profile photo'
+//         );
+//       }
+//     }
+//   });
+// };
 
 
 // const handleImagePick = (source, section) => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
 import HomeScreen from '../Screens/BottomTabScreens/HomeScreen';
-import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen';
+import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen/ProfileScreen';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
 import { Platform, TouchableOpacity } from 'react-native';

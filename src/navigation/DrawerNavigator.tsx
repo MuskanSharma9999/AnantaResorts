@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/drawer';
 import { DrawerParamList } from './types';
 import { BottomTabNavigator } from './BottomTabNavigator';
-import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen';
+import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen/ProfileScreen';
 import {
   Alert,
   Dimensions,

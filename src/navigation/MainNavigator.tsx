@@ -8,7 +8,7 @@ import Logo from '../assets/images/AnantaLogo.svg';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from '../components/auth/Login/LoginScreen';
-import KYC from '../components/KYC/KYC';
+import KYC from '../Screens/BottomTabScreens/ProfileScreen/KYC/KYC';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -38,7 +38,7 @@ export const MainNavigator = () => {
           headerBackButtonDisplayMode: 'minimal',
         }}
       />
-       <RootStack.Screen
+      <RootStack.Screen
         name="KYC"
         component={KYC}
         options={{
@@ -54,7 +54,6 @@ export const MainNavigator = () => {
           headerBackButtonDisplayMode: 'minimal',
         }}
       />
-      
     </RootStack.Navigator>
   );
 };

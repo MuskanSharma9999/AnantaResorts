@@ -22,7 +22,6 @@ export const ApiList = {
   GET_PROFILE: `${url}/auth/profile`,
   UPDATE_PROFILE: `${url}/auth/profile`,
   GET_ALL_RESORTS: `${url}/resorts`,
-
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,
 };
 
