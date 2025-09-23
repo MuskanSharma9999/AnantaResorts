@@ -46,6 +46,7 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
+    implementation 'com.facebook.fresco:webpsupport:3.0.0' // specify version here
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

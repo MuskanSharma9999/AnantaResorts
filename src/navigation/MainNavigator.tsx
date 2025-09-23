@@ -8,6 +8,7 @@ import Logo from '../assets/images/AnantaLogo.svg';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from '../components/auth/Login/LoginScreen';
+import KYC from '../components/KYC/KYC';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -32,6 +33,22 @@ export const MainNavigator = () => {
           headerStyle: {
             backgroundColor: 'black',
             height: Platform.OS === 'ios' ? 100 + insets.top : 56 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+       <RootStack.Screen
+        name="KYC"
+        component={KYC}
+        options={{
+          headerShown: true,
+          gestureEnabled: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 50 + insets.top : 50 + insets.top,
           },
           headerTintColor: '#D4AF37',
           headerBackButtonDisplayMode: 'minimal',
