@@ -9,10 +9,13 @@ import {
   ScrollView,
 } from 'react-native';
 
-import DocumentPicker from 'react-native-document-picker';
-
 import { Dropdown } from 'react-native-element-dropdown';
+
+import { launchImageLibrary } from 'react-native-image-picker';
+
 import GradientButton from '../../../../components/Buttons/GradientButton';
+
+import ApiList from '../../../../Api_List/apiList';
 
 const styles = {
   container: {
@@ -205,17 +208,25 @@ const KYC = () => {
 
   const pickDocument = async () => {
     try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.images],
-      });
+      const options = {
+        mediaType: 'photo', // only images
+        quality: 1,
+        includeBase64: false,
+      };
 
-      setDocFile(res[0]);
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled document picker');
-      } else {
-        Alert.alert('Error', 'Failed to pick document');
-      }
+      launchImageLibrary(options, response => {
+        if (response.didCancel) {
+          console.log('User cancelled image picker');
+        } else if (response.errorCode) {
+          Alert.alert('Error', response.errorMessage || 'Something went wrong');
+        } else {
+          // `response.assets` is an array of selected images
+          setDocFile(response.assets[0]);
+        }
+      });
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Alert.alert('Error', 'Failed to pick document');
     }
   };
 
@@ -343,9 +354,10 @@ const KYC = () => {
 
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.inputLabel}>Upload Document</Text>
+
             <TouchableOpacity onPress={pickDocument}>
               <Text style={styles.uploadButtonText}>
-                {docFile?.name || 'Choose Document Image'}
+                {docFile?.fileName || 'Choose Document Image'}
               </Text>
             </TouchableOpacity>
           </View>

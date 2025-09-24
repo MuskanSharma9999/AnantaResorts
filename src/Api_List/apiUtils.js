@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-export async function apiRequest({ url, method = 'GET', body = {}, token = '' }) {
+export async function apiRequest({
+  url,
+  method = 'GET',
+  body = {},
+  token = '',
+}) {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;

@@ -66,71 +66,70 @@ const OtpScreen = () => {
     // Add resend OTP logic
   };
   const handleVerify = async () => {
-  if (!otp || otp.length !== 6) {
-    Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
-    return;
-  }
-  if (!/^\d{6}$/.test(otp)) {
-    Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
-    return;
-  }
-  try {
-    setIsLoading(true);
-    const response = await apiRequest({
-      url: ApiList.VERIFY_OTP,
-      method: 'POST',
-      body: { phone: phoneNumber, otp_code: otp },
-    });
-
-    if (response.success) {
-      const token = response.data?.data?.token;
-      if (token) {
-        await AsyncStorage.setItem('token', token);
-        navigation.navigate('Signup');
-      } else {
-        Alert.alert('Error', 'Token not found in response.');
-      }
-    } else {
-      Alert.alert('Error', response.error);
+    if (!otp || otp.length !== 6) {
+      Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
+      return;
     }
-  } catch (error) {
-    Alert.alert('Error', error?.message || 'Invalid OTP. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+    if (!/^\d{6}$/.test(otp)) {
+      Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await apiRequest({
+        url: ApiList.VERIFY_OTP,
+        method: 'POST',
+        body: { phone: phoneNumber, otp_code: otp },
+      });
 
-//   const handleVerify = async () => {
-//   if (!otp || otp.length !== 6) {
-//     Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
-//     return;
-//   }
-//   if (!/^\d{6}$/.test(otp)) {
-//     Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
-//     return;
-//   }
-//   try {
-//     setIsLoading(true);
+      if (response.success) {
+        const token = response.data?.data?.token;
+        if (token) {
+          await AsyncStorage.setItem('token', token);
+          navigation.navigate('Signup');
+        } else {
+          Alert.alert('Error', 'Token not found in response.');
+        }
+      } else {
+        Alert.alert('Error', response.error);
+      }
+    } catch (error) {
+      Alert.alert('Error', error?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-//     // Instead of calling the real API, use a hardcoded token for testing
-//     const fakeToken = 'test_hardcoded_token_123456';
+  //   const handleVerify = async () => {
+  //   if (!otp || otp.length !== 6) {
+  //     Alert.alert('OTP Incomplete', 'Please enter all 6 digits of the OTP');
+  //     return;
+  //   }
+  //   if (!/^\d{6}$/.test(otp)) {
+  //     Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
+  //     return;
+  //   }
+  //   try {
+  //     setIsLoading(true);
 
-//     // Simulate a slight delay
-//     await new Promise(resolve => setTimeout(resolve, 500));
+  //     // Instead of calling the real API, use a hardcoded token for testing
+  //     const fakeToken = 'test_hardcoded_token_123456';
 
-//     await AsyncStorage.setItem('token', fakeToken);
+  //     // Simulate a slight delay
+  //     await new Promise(resolve => setTimeout(resolve, 500));
 
-//     console.log('Hardcoded token saved for testing.');
+  //     await AsyncStorage.setItem('token', fakeToken);
 
-//     navigation.navigate('Signup');
-//   } catch (error) {
-//     console.error('Error verifying OTP:', error);
-//     Alert.alert('Error', 'Failed to verify OTP. Please try again.');
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
+  //     console.log('Hardcoded token saved for testing.');
 
+  //     navigation.navigate('Signup');
+  //   } catch (error) {
+  //     console.error('Error verifying OTP:', error);
+  //     Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // const handleVerify = async () => {
   //   if (!otp || otp.length !== 6) {
