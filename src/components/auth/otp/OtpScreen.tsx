@@ -86,6 +86,7 @@ const OtpScreen = () => {
         const token = response.data?.data?.token;
         if (token) {
           await AsyncStorage.setItem('token', token);
+          console.log('--------------', token);
           navigation.navigate('Signup');
         } else {
           Alert.alert('Error', 'Token not found in response.');

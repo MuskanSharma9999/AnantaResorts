@@ -23,7 +23,7 @@ export const ApiList = {
   UPDATE_PROFILE: `${url}/auth/profile`,
   GET_ALL_RESORTS: `${url}/resorts`,
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,
-  UPDATE_KYC: `${url}/auth/kyc/upload`,
+  UPDATE_KYC: `${url}/kyc/upload`,
 };
 
 export default ApiList;
