@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,64 @@ import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TopRated } from '../../components/HomeScreenComponents/TopRated/TopRated';
+import { useDispatch } from 'react-redux';
+import { useIsFocused } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiList from '../../Api_List/apiList';
+import {
+  clearUser,
+  setUserDetails,
+  updateProfilePhoto,
+} from './././../../redux/slices/userSlice';
+import { apiRequest } from '../../Api_List/apiUtils';
 
 const HomeScreen = () => {
+  const dispatch = useDispatch();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
+
+        console.log('Fetching user profile in drawer...');
+        const response = await apiRequest({
+          url: ApiList.GET_PROFILE,
+          method: 'GET',
+          token,
+        });
+
+        console.log('Drawer API Response:', response);
+
+        if (response.success) {
+          const user = response.data?.data?.user || response.data?.user;
+          console.log('User data from API:', user);
+
+          const userData = {
+            name: user?.name || '',
+            email: user?.email || '',
+            profilePhoto: user?.profile_photo_url || '',
+          };
+
+          console.log('Dispatching user data:', userData);
+          dispatch(setUserDetails(userData));
+        } else {
+          console.error('Failed to fetch profile:', response.error);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile in drawer:', error);
+      }
+    };
+
+    if (isFocused) {
+      fetchUserProfile();
+    }
+  }, [dispatch, isFocused]); // Runs when screen comes into focus
+
   const featuredRooms = [
     { id: 1, name: 'Deluxe Ocean View', price: '$299', image: null },
     { id: 2, name: 'Premium Suite', price: '$459', image: null },

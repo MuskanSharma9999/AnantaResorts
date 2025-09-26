@@ -10,30 +10,26 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   TouchableOpacity,
-  TextInput,
-  StyleSheet,
+  PermissionsAndroid,
+  Alert,
 } from 'react-native';
-import Logo from '../../../assets/images/AnantaLogo.svg';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import styles from './OtpScreenStyles';
-import {
-  NavigationProp,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import GradientButton from '../../Buttons/GradientButton';
-import { Alert } from 'react-native';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
 import { OtpInput } from 'react-native-otp-entry';
 import { apiRequest } from '../../../Api_List/apiUtils';
-import { RootStackParamList } from '../../../navigation/types'; // adjust path
+import { RootStackParamList } from '../../../navigation/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApiList from '../../../Api_List/apiList';
 import { useDispatch } from 'react-redux';
 import { setAuth } from '../../../redux/slices/authSlice';
-import { setUserDetails } from '../../../redux/slices/userSlice'; // adjust path
+import { setUserDetails } from '../../../redux/slices/userSlice';
+
+// Add this import
+import OtpVerify from 'react-native-otp-verify';
 
 type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
 
@@ -41,43 +37,93 @@ const { width, height } = Dimensions.get('window');
 
 const OtpScreen = () => {
   const route = useRoute<OtpScreenRouteProp>();
-
   const { phoneNumber, maskedPhone } = route.params;
 
-  const [otp, setOtp] = useState(''); // Store as string for OtpInput
+  const [otp, setOtp] = useState('');
   const [resendTime, setResendTime] = useState(30);
   const navigation = useAppNavigation();
   const [isLoading, setIsLoading] = useState(false);
-
-  const data = [
-    { image: require('../../../assets/images/loginCarousel_images/img_1.jpg') },
-    { image: require('../../../assets/images/loginCarousel_images/img_2.jpg') },
-    { image: require('../../../assets/images/loginCarousel_images/img_3.jpg') },
-    { image: require('../../../assets/images/loginCarousel_images/img_4.jpg') },
-  ];
-
-  useEffect(() => {
-    if (resendTime > 0) {
-      const timer = setTimeout(() => setResendTime(resendTime - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTime]);
-
-  const handleResendCode = () => {
-    setResendTime(30);
-    setOtp(''); // Clear OTP when resending
-    // Add resend OTP logic
-  };
+  const [hasSmsPermission, setHasSmsPermission] = useState(false);
 
   const dispatch = useDispatch();
 
-  // OtpScreen.js - FIXED handleVerify function
-  const handleVerify = async () => {
-    if (!otp || otp.length !== 4) {
+  // Request SMS permission for Android
+  useEffect(() => {
+    const requestSmsPermission = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_SMS,
+            {
+              title: 'SMS Reading Permission',
+              message:
+                'This app needs access to read SMS to automatically detect OTP',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          setHasSmsPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+        } catch (err) {
+          console.warn('SMS permission error:', err);
+        }
+      }
+    };
+
+    requestSmsPermission();
+  }, []);
+
+  // Auto-read OTP from SMS
+  useEffect(() => {
+    if (hasSmsPermission) {
+      // Get the OTP hash (optional, for some apps)
+      OtpVerify.getHash()
+        .then(hash => {
+          console.log('OTP Hash:', hash);
+        })
+        .catch(error => console.log('Hash error:', error));
+
+      // Start listening for OTP
+      OtpVerify.getOtp()
+        .then(p => OtpVerify.addListener(otpHandler))
+        .catch(p => console.log('OTP listener error:', p));
+
+      return () => {
+        OtpVerify.removeListener();
+      };
+    }
+  }, [hasSmsPermission]);
+
+  const otpHandler = (message: string) => {
+    console.log('Received SMS:', message);
+
+    // Extract OTP from message using regex
+    const otpMatch = message.match(/\b\d{4,6}\b/); // Match 4-6 digit OTP
+    if (otpMatch) {
+      const extractedOtp = otpMatch[0];
+      console.log('Extracted OTP:', extractedOtp);
+
+      // If it's a 4-digit OTP, auto-fill
+      if (extractedOtp.length === 4) {
+        setOtp(extractedOtp);
+
+        // Optional: Auto-verify after a short delay
+        setTimeout(() => {
+          handleVerify(extractedOtp);
+        }, 500);
+      }
+    }
+  };
+
+  // Update handleVerify to accept optional parameter
+  const handleVerify = async (providedOtp = null) => {
+    const otpToVerify = providedOtp || otp;
+
+    if (!otpToVerify || otpToVerify.length !== 4) {
       Alert.alert('OTP Incomplete', 'Please enter all 4 digits of the OTP');
       return;
     }
-    if (!/^\d{4}$/.test(otp)) {
+    if (!/^\d{4}$/.test(otpToVerify)) {
       Alert.alert('Invalid OTP', 'Please enter valid numeric digits');
       return;
     }
@@ -88,29 +134,27 @@ const OtpScreen = () => {
       const response = await apiRequest({
         url: ApiList.VERIFY_OTP,
         method: 'POST',
-        body: { phone: phoneNumber, otp_code: otp },
+        body: { phone: phoneNumber, otp_code: otpToVerify },
       });
 
       if (response.success) {
         const data = response.data?.data;
         const token = data?.token;
-        const user = data?.user; // ✅ Get user object
+        const user = data?.user;
 
         console.log('User data from OTP:', user);
 
         if (token) {
           await AsyncStorage.setItem('token', token);
 
-          // ✅ FIXED: Properly dispatch user details with correct field mapping
           dispatch(
             setUserDetails({
               name: user?.name || '',
               email: user?.email || '',
-              profilePhoto: user?.profile_photo_url || '', // ✅ Correct field name
+              profilePhoto: user?.profile_photo_url || '',
             }),
           );
 
-          // Navigate based on profile completeness
           if (user?.name && user?.email) {
             dispatch(setAuth(true));
           } else {
@@ -133,10 +177,66 @@ const OtpScreen = () => {
     }
   };
 
-  const handleOtpFilled = (otpValue: any) => {
-    console.log('OTP Filled:', otpValue);
-    // Just log when OTP is filled, don't auto-verify
+  const sendOTP = async () => {
+    if (!phoneNumber) {
+      Alert.alert('Error', 'Please enter your mobile number');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await apiRequest({
+        url: ApiList.SEND_OTP,
+        method: 'POST',
+        body: { phone: phoneNumber },
+      });
+
+      // if (response.success) {
+      //   await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
+
+      //   // Directly navigate without alert here
+      //   navigation.navigate('Otp', {
+      //     phoneNumber: formattedNumber,
+      //     maskedPhone: formattedNumber
+      //       ? '****' + formattedNumber.slice(-4)
+      //       : '****',
+      //   });
+      // } else {
+      //   Alert.alert('Error', 'Failed to send OTP, Please try again later');
+      //   console.error('error otp', response.error);
+      // }
+    } catch (error) {
+      Alert.alert('Error', error?.message || 'Unknown error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleResendCode = () => {
+    setResendTime(30);
+    setOtp('');
+
+    console.log(
+      ':::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::',
+      phoneNumber,
+    );
+    sendOTP;
+  };
+
+  const data = [
+    { image: require('../../../assets/images/loginCarousel_images/img_1.jpg') },
+    { image: require('../../../assets/images/loginCarousel_images/img_2.jpg') },
+    { image: require('../../../assets/images/loginCarousel_images/img_3.jpg') },
+    { image: require('../../../assets/images/loginCarousel_images/img_4.jpg') },
+  ];
+
+  useEffect(() => {
+    if (resendTime > 0) {
+      const timer = setTimeout(() => setResendTime(resendTime - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTime]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,35 +271,25 @@ const OtpScreen = () => {
                 Sent to mobile ending with {maskedPhone}
               </Text>
 
+              {/* Add auto-read indicator */}
+              {hasSmsPermission && (
+                <Text style={styles.autoReadText}>
+                  📱 Auto-reading OTP from messages...
+                </Text>
+              )}
+
               <View style={styles.otpContainer}>
                 <OtpInput
                   numberOfDigits={4}
                   focusColor="#D4AF37"
-                  autoFocus={false}
+                  autoFocus={true}
                   hideStick={true}
                   placeholder="•"
-                  blurOnFilled={true}
-                  disabled={false}
-                  type="numeric"
-                  secureTextEntry={false}
-                  focusStickBlinkingDuration={500}
-                  onFocus={() => console.log('Focused')}
-                  onBlur={() => console.log('Blurred')}
-                  onTextChange={value => {
-                    console.log('OTP changed:', value);
-                    setOtp(value);
-                  }}
-                  onFilled={handleOtpFilled}
-                  textInputProps={{
-                    accessibilityLabel: 'One-Time Password',
-                  }}
-                  textProps={{
-                    accessibilityRole: 'text',
-                    accessibilityLabel: 'OTP digit',
-                    allowFontScaling: false,
-                  }}
+                  blurOnFilled={false} // Changed to false for better UX
+                  value={otp} // Controlled component
+                  onTextChange={value => setOtp(value)}
+                  onFilled={handleVerify} // Auto-verify when filled manually
                   theme={{
-                    containerStyle: styles.otpContainer,
                     pinCodeContainerStyle: styles.otpInput,
                     pinCodeTextStyle: {
                       fontSize: 20,
@@ -215,22 +305,15 @@ const OtpScreen = () => {
                       borderWidth: 2,
                       backgroundColor: '#fff',
                     },
-                    placeholderTextStyle: {
-                      color: '#ccc',
-                    },
-                    filledPinCodeContainerStyle: {
-                      borderColor: '#D4AF37',
-                      backgroundColor: '#fff',
-                    },
-                    disabledPinCodeContainerStyle: {
-                      backgroundColor: '#e0e0e0',
-                      borderColor: '#aaa',
-                    },
                   }}
                 />
               </View>
 
-              <GradientButton title="Continue" onPress={handleVerify} />
+              <GradientButton
+                title={isLoading ? 'Verifying...' : 'Continue'}
+                onPress={() => handleVerify()}
+                disabled={isLoading}
+              />
 
               <TouchableOpacity
                 style={styles.resendButton}

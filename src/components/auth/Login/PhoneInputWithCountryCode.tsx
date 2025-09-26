@@ -13,163 +13,52 @@ const PhoneInputWithCountryCode = () => {
   const phoneInput = useRef<PhoneInput>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+
   const sendOTP = async () => {
-  if (!phoneNumber) {
-    Alert.alert('Error', 'Please enter your mobile number');
-    return;
-  }
+    if (!phoneNumber) {
+      Alert.alert('Error', 'Please enter your mobile number');
+      return;
+    }
 
-  const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-  if (!isValid) {
-    Alert.alert('Error', 'Please enter a valid phone number');
-    return;
-  }
+    const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+    if (!isValid) {
+      Alert.alert('Error', 'Please enter a valid phone number');
+      return;
+    }
 
-  const formattedNumber =
-    phoneInput.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber;
+    const formattedNumber =
+      phoneInput.current?.getNumberAfterPossiblyEliminatingZero()
+        .formattedNumber;
 
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    const response = await apiRequest({
-      url: ApiList.SEND_OTP,
-      method: 'POST',
-      body: { phone: formattedNumber },
-    });
-
-    if (response.success) {
-      await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
-
-      // Directly navigate without alert here
-      navigation.navigate('Otp', {
-        phoneNumber: formattedNumber,
-        maskedPhone: formattedNumber
-          ? '****' + formattedNumber.slice(-4)
-          : '****',
+      const response = await apiRequest({
+        url: ApiList.SEND_OTP,
+        method: 'POST',
+        body: { phone: formattedNumber },
       });
 
-    } else {
-      Alert.alert('Error', 'Failed to send OTP, Please try again later');
-      console.error('error otp', response.error);
+      if (response.success) {
+        await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
+
+        // Directly navigate without alert here
+        navigation.navigate('Otp', {
+          phoneNumber: formattedNumber,
+          maskedPhone: formattedNumber
+            ? '****' + formattedNumber.slice(-4)
+            : '****',
+        });
+      } else {
+        Alert.alert('Error', 'Failed to send OTP, Please try again later');
+        console.error('error otp', response.error);
+      }
+    } catch (error) {
+      Alert.alert('Error', error?.message || 'Unknown error occurred');
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    Alert.alert('Error', error?.message || 'Unknown error occurred');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-  //  const sendOTP = async () => {
-  //   if (!phoneNumber) {
-  //     Alert.alert('Error', 'Please enter your mobile number');
-  //     return;
-  //   }
-  //   const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-  //   if (!isValid) {
-  //     Alert.alert('Error', 'Please enter a valid phone number');
-  //     return;
-  //   }
-  //   const formattedNumber =
-  //     phoneInput.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber;
-
-  //   try {
-  //     setIsLoading(true);
-  //     // USE THE API UTILITY INSTEAD OF AXIOS DIRECTLY
-  //     const response = await apiRequest({
-  //       url: ApiList.SEND_OTP,
-  //       method: 'POST',
-  //       body: { phone: formattedNumber },
-  //     });
-  //     if (response.success) {
-  //       await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
-  //       Alert.alert('Success', 'OTP sent successfully!', [
-  //         {
-  //           text: 'OK',
-  //           onPress: () =>
-  //             (navigation).navigate('Otp', {
-  //               phoneNumber: formattedNumber,
-  //               maskedPhone: formattedNumber
-  //                 ? '****' + formattedNumber.slice(-4)
-  //                 : '****',
-  //             }),
-  //         },
-  //       ]);
-  //     } else {
-  //       Alert.alert('Error', 'Failed to send OTP , Please try again later');
-  //       console.log('error otp' ,response.error);     
-  //     }
-  //   } catch (error) {
-  //     Alert.alert('Error', error?.message || 'Unknown error occurred');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-//   const sendOTP = async () => {
-//     if (!phoneNumber) {
-//       Alert.alert('Error', 'Please enter your mobile number');
-//       return;
-//     }
-
-//     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
-
-//     if (!isValid) {
-//       Alert.alert('Error', 'Please enter a valid phone number');
-//       return;
-//     }
-
-//     const formattedNumber =
-//       phoneInput.current?.getNumberAfterPossiblyEliminatingZero()
-//         .formattedNumber;
-
-//     try {
-//       setIsLoading(true);
-
-//       const response = await axios.post(
-//         ApiList.SEND_OTP,
-//         { phone: formattedNumber },
-//         { headers: { 'Content-Type': 'application/json' } },
-//       );
-//       if (response.status === 200) {
-//         await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
-
-//         Alert.alert('Success', 'OTP sent successfully!', [
-//           {
-//             text: 'OK',
-//             onPress: () =>
-//               // Ensure formattedNumber is defined and cast navigation to any to avoid type errors
-//               (navigation as any).navigate('Otp', {
-//                 phoneNumber: formattedNumber,
-//               maskedPhone: formattedNumber
-//   ? '****' + formattedNumber.slice(-4)
-//   : '****',
-
-//               }),
-//           },
-//         ]);
-//       }
-//     // } catch (error: any) {
-//     //   console.error('Error sending OTP:', error);
-//     //   Alert.alert(
-//     //     'Error',
-//     //     error.response?.data?.message ||
-//     //       'Failed to send OTP. Please try again.',
-//     //   );
-//     // }
-//     } catch (error: any) {
-//   console.error("Axios error:", error);
-//   Alert.alert(
-//     'Error',
-//     error?.response?.data?.message ??
-//     error?.message ??
-//     'Unknown error occurred'
-//   );
-// }
-//      finally {
-//       setIsLoading(false);
-//     }
-//   };
+  };
 
   return (
     <View style={{ width: '100%' }}>
@@ -223,6 +112,8 @@ const PhoneInputWithCountryCode = () => {
     </View>
   );
 };
+
+export default PhoneInputWithCountryCode;
 
 // // Styles
 // const styles = StyleSheet.create({
@@ -298,4 +189,113 @@ const PhoneInputWithCountryCode = () => {
 //   },
 // });
 
-export default PhoneInputWithCountryCode;
+//  const sendOTP = async () => {
+//   if (!phoneNumber) {
+//     Alert.alert('Error', 'Please enter your mobile number');
+//     return;
+//   }
+//   const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+//   if (!isValid) {
+//     Alert.alert('Error', 'Please enter a valid phone number');
+//     return;
+//   }
+//   const formattedNumber =
+//     phoneInput.current?.getNumberAfterPossiblyEliminatingZero().formattedNumber;
+
+//   try {
+//     setIsLoading(true);
+//     // USE THE API UTILITY INSTEAD OF AXIOS DIRECTLY
+//     const response = await apiRequest({
+//       url: ApiList.SEND_OTP,
+//       method: 'POST',
+//       body: { phone: formattedNumber },
+//     });
+//     if (response.success) {
+//       await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
+//       Alert.alert('Success', 'OTP sent successfully!', [
+//         {
+//           text: 'OK',
+//           onPress: () =>
+//             (navigation).navigate('Otp', {
+//               phoneNumber: formattedNumber,
+//               maskedPhone: formattedNumber
+//                 ? '****' + formattedNumber.slice(-4)
+//                 : '****',
+//             }),
+//         },
+//       ]);
+//     } else {
+//       Alert.alert('Error', 'Failed to send OTP , Please try again later');
+//       console.log('error otp' ,response.error);
+//     }
+//   } catch (error) {
+//     Alert.alert('Error', error?.message || 'Unknown error occurred');
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+//   const sendOTP = async () => {
+//     if (!phoneNumber) {
+//       Alert.alert('Error', 'Please enter your mobile number');
+//       return;
+//     }
+
+//     const isValid = phoneInput.current?.isValidNumber(phoneNumber);
+
+//     if (!isValid) {
+//       Alert.alert('Error', 'Please enter a valid phone number');
+//       return;
+//     }
+
+//     const formattedNumber =
+//       phoneInput.current?.getNumberAfterPossiblyEliminatingZero()
+//         .formattedNumber;
+
+//     try {
+//       setIsLoading(true);
+
+//       const response = await axios.post(
+//         ApiList.SEND_OTP,
+//         { phone: formattedNumber },
+//         { headers: { 'Content-Type': 'application/json' } },
+//       );
+//       if (response.status === 200) {
+//         await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
+
+//         Alert.alert('Success', 'OTP sent successfully!', [
+//           {
+//             text: 'OK',
+//             onPress: () =>
+//               // Ensure formattedNumber is defined and cast navigation to any to avoid type errors
+//               (navigation as any).navigate('Otp', {
+//                 phoneNumber: formattedNumber,
+//               maskedPhone: formattedNumber
+//   ? '****' + formattedNumber.slice(-4)
+//   : '****',
+
+//               }),
+//           },
+//         ]);
+//       }
+//     // } catch (error: any) {
+//     //   console.error('Error sending OTP:', error);
+//     //   Alert.alert(
+//     //     'Error',
+//     //     error.response?.data?.message ||
+//     //       'Failed to send OTP. Please try again.',
+//     //   );
+//     // }
+//     } catch (error: any) {
+//   console.error("Axios error:", error);
+//   Alert.alert(
+//     'Error',
+//     error?.response?.data?.message ??
+//     error?.message ??
+//     'Unknown error occurred'
+//   );
+// }
+//      finally {
+//       setIsLoading(false);
+//     }
+//   };
