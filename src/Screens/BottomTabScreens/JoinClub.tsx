@@ -17,9 +17,9 @@ const ARROW_ICON = require('../../assets/images/onBoarding.png');
 
 export default function MembershipScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedTab, setSelectedTab] = useState('Plan1'); // First tab auto selected
+  const [selectedTab, setSelectedTab] = useState('Plan1'); // First tab auto selected
 
- const tabContent = {
+  const tabContent = {
     Plan1: {
       title: 'Basic Plan',
       price: '₹21,000 / year',
@@ -40,8 +40,6 @@ export default function MembershipScreen() {
     },
   };
 
-
-
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
@@ -58,6 +56,46 @@ export default function MembershipScreen() {
             </Text>
           </View>
         </View>
+
+        <ScrollView
+          style={{}}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.tabBarContainer}>
+            {['Plan1', 'Plan2', 'Plan3'].map(plan => (
+              <TouchableOpacity
+                key={plan}
+                style={[styles.tabItem]}
+                onPress={() => setSelectedTab(plan)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    selectedTab === plan && styles.tabTextSelected,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.tabContentContainer,
+                      selectedTab === plan && styles.tabItemSelected,
+                    ]}
+                  >
+                    <Text style={styles.tabContentTitle}>
+                      {tabContent[plan].title}
+                    </Text>
+                    <Text style={styles.tabContentText}>
+                      {tabContent[plan].price}
+                    </Text>
+                    <Text style={styles.tabContentText}>
+                      {tabContent[plan].description}
+                    </Text>
+                  </View>
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
 
         {/* Main Card */}
         <View style={styles.card}>
@@ -163,37 +201,37 @@ export default function MembershipScreen() {
             voucher for 1 pax).
           </Text>
         </View>
-<ScrollView
-  style={{}}
-  horizontal={true}
-  showsHorizontalScrollIndicator={false}
->
-       <View style={styles.tabBarContainer}>
-        {['Plan1', 'Plan2', 'Plan3'].map((plan) => (
-          <TouchableOpacity
-            key={plan}
-            style={[
-              styles.tabItem,
-            ]}
-            onPress={() => setSelectedTab(plan)}
-          >
-        <Text style={[
-  styles.tabText,
-  selectedTab === plan && styles.tabTextSelected,
-]}>
-  <View style={[styles.tabContentContainer ,    selectedTab === plan && styles.tabItemSelected,]}>
-    <Text style={styles.tabContentTitle}>{tabContent[plan].title}</Text>
-    <Text style={styles.tabContentText}>{tabContent[plan].price}</Text>
-    <Text style={styles.tabContentText}>{tabContent[plan].description}</Text>
-  </View>
-</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      </ScrollView>
-   
 
-        <GradientButton
+        {/* <View style={styles.joinClubContainer}>
+          <GradientButton
+            title="Join Club"
+            onPress={() => setIsModalVisible(true)}
+          />
+        </View> */}
+
+        <View style={styles.joinClubContainer}>
+          <GradientButton
+            title="Join Club"
+            onPress={() => setIsModalVisible(true)}
+            style={{
+              marginTop: 20,
+              marginBottom: 100,
+              width: 350,
+              alignSelf: 'center',
+            }}
+          />
+        </View>
+
+        <MembershipModal
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+        />
+
+        {/* // <Xyz */}
+        {/* //   visible={isModalVisible}
+        //   onClose={() => setIsModalVisible(false)}
+        // /> */}
+        {/* <GradientButton
           title="Join Club"
           onPress={() => Linking.openURL('https://razorpay.com/')}
          // onPress={() => setIsModalVisible(true)} // open modal
@@ -206,12 +244,10 @@ export default function MembershipScreen() {
         />
 
         {/* Membership Modal */}
-        <MembershipModal
+        {/* <MembershipModal
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
-        />
-
-        
+        /> */}
       </ScrollView>
     </View>
   );
@@ -305,7 +341,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'montserrat',
   },
-   tabContentContainer: {
+  tabContentContainer: {
     backgroundColor: '#222222',
     marginHorizontal: 12,
     marginTop: 20,
@@ -319,33 +355,32 @@ const styles = StyleSheet.create({
     fontFamily: 'montserrat',
     fontSize: 14,
     fontWeight: '400',
-    marginBottom:5
+    marginBottom: 5,
   },
-  tabText:{
-    color:'#fff'
+  tabText: {
+    color: '#fff',
   },
-  tabBarContainer:{
-    flex:1,
-    flexDirection:'row',
-    marginHorizontal:15,
-    marginTop:20,
-    
+  tabBarContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    marginHorizontal: 15,
+    marginTop: 20,
   },
-  tabItem:{
-    width:300,
-    flex:1,
+  tabItem: {
+    width: 300,
+    flex: 1,
     //height:180
   },
-  tabContentTitle:{
-     color: '#fff',
-   // fontFamily: 'montserrat',
+  tabContentTitle: {
+    color: '#fff',
+    // fontFamily: 'montserrat',
     fontSize: 14,
     fontWeight: 'bold',
-    marginVertical:8
+    marginVertical: 8,
   },
   tabItemSelected: {
-  borderColor: 'blue',
-  borderWidth: 1,
-  borderRadius: 12, // match the container rounding for smooth border
-}
+    borderColor: 'blue',
+    borderWidth: 1,
+    borderRadius: 12, // match the container rounding for smooth border
+  },
 });

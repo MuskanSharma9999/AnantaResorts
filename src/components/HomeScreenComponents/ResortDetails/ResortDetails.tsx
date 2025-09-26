@@ -135,7 +135,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
           contentContainerStyle={styles.galleryList}
           showsVerticalScrollIndicator={false}
         />
-        <View style={styles.joinClubContainer}>
+        {/* <View style={styles.joinClubContainer}>
           <GradientButton
             title="Join Club"
             onPress={() => setIsModalVisible(true)}
@@ -144,7 +144,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
         <Xyz
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
-        />
+        /> */}
       </View>
     ),
 

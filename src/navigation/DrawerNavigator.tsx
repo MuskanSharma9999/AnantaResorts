@@ -1,44 +1,38 @@
-import React, { use, useEffect, useState } from 'react';
+// Fixed CustomDrawerContent function with proper logout
+
+import React, { useEffect, useState } from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
-  DrawerItemList,
 } from '@react-navigation/drawer';
 import { DrawerParamList } from './types';
 import { BottomTabNavigator } from './BottomTabNavigator';
-import ProfileScreen from '../Screens/BottomTabScreens/ProfileScreen/ProfileScreen';
 import {
   Alert,
   Dimensions,
   Image,
-  Platform,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import SettingScreen from '../Screens/SettingScreen';
 import { useNavigation } from '@react-navigation/native';
-import { DrawerActions } from '@react-navigation/native';
-import Logo from '../assets/images/AnantaLogo.svg';
-import MenuIcon from '../assets/images/MenuIcon.svg';
-import LogoutIcon from '../assets/images/Logout.svg';
-import HomeIcon from '../assets/images/home.svg';
-import SettingIcon from '../assets/images/Settings.svg';
 import LinearGradient from 'react-native-linear-gradient';
-import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import TravediseScreen from '../Screens/TravediseScreen';
-import { apiRequest } from '../Api_List/apiUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { setAuth } from '../redux/slices/authSlice';
+import HomeIcon from '../assets/images/home.svg';
+import LogoutIcon from '../assets/images/Logout.svg';
+import { apiRequest } from '../Api_List/apiUtils';
 import ApiList from '../Api_List/apiList';
-import CardIcon from '../assets/images/Credit Card.svg';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
 
-const BlankScreen = () => <View />;
-
 function CustomDrawerContent(props) {
   const { state, navigation, descriptors } = props;
+  const dispatch = useDispatch(); // ✅ Add this line - it was missing!
+
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -92,11 +86,41 @@ function CustomDrawerContent(props) {
     };
   }, [navigation]);
 
+  // ✅ Fixed handleLogout function - matches ProfileScreen logic
+  const handleLogout = async () => {
+    try {
+      // Clear AsyncStorage - use the same method as ProfileScreen
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.setItem('isAuth', 'false');
+
+      // ✅ Update Redux state to trigger re-render (this was missing!)
+      dispatch(setAuth(false));
+
+      // The AppNavigator will automatically switch to AuthNavigator
+      // because isAuthenticated will be false
+    } catch (err) {
+      console.error('Logout Error:', err);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    }
+  };
+
+  const showLogoutConfirmation = () => {
+    Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: handleLogout,
+      },
+    ]);
+  };
+
+  // Rest of your component remains the same...
   return (
     <DrawerContentScrollView
       {...props}
-      contentContainerStyle={{ paddingTop: 50 }} // Add some top padding
-      style={{ backgroundColor: '#000' }} // Ensure black background
+      contentContainerStyle={{ paddingTop: 50 }}
+      style={{ backgroundColor: '#000' }}
     >
       {/* User Profile Section */}
       <View
@@ -113,7 +137,6 @@ function CustomDrawerContent(props) {
             height: 50,
             borderRadius: 25,
             overflow: 'hidden',
-            //  backgroundColor: '#a9a599ff',
             marginRight: 15,
           }}
         >
@@ -134,6 +157,7 @@ function CustomDrawerContent(props) {
         </View>
       </View>
 
+      {/* Navigation Items */}
       {state.routes.map((route, index) => {
         const focused = state.index === index;
         const { title, drawerIcon } = descriptors[route.key].options;
@@ -146,7 +170,7 @@ function CustomDrawerContent(props) {
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
-            style={{ marginVertical: 4 }} // Reduced margin
+            style={{ marginVertical: 4 }}
           >
             {focused ? (
               <LinearGradient
@@ -160,7 +184,7 @@ function CustomDrawerContent(props) {
                   borderTopRightRadius: 50,
                   borderBottomRightRadius: 50,
                   marginRight: 10,
-                  paddingLeft: 0, // Change this from 20 to 0
+                  paddingLeft: 0,
                 }}
               >
                 <View style={{ paddingLeft: 10 }}>
@@ -185,7 +209,7 @@ function CustomDrawerContent(props) {
                   alignItems: 'center',
                   paddingVertical: 10,
                   paddingRight: 20,
-                  paddingLeft: 0, // Change this from 20 to 0
+                  paddingLeft: 0,
                 }}
               >
                 <View style={{ paddingLeft: 10 }}>
@@ -206,6 +230,34 @@ function CustomDrawerContent(props) {
           </TouchableOpacity>
         );
       })}
+
+      {/* Logout Button */}
+      <TouchableOpacity
+        onPress={showLogoutConfirmation}
+        style={{ marginVertical: 4, marginTop: 20 }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+            paddingRight: 20,
+            paddingLeft: 10,
+          }}
+        >
+          <LogoutIcon width={24} height={24} fill="#fff" />
+          <Text
+            style={{
+              color: '#fff',
+              marginLeft: 16,
+              fontSize: 16,
+              fontWeight: '400',
+            }}
+          >
+            Log Out
+          </Text>
+        </View>
+      </TouchableOpacity>
     </DrawerContentScrollView>
   );
 }
@@ -218,8 +270,8 @@ export const DrawerNavigator = () => {
       drawerContent={props => <CustomDrawerContent {...props} />}
       screenOptions={{
         drawerStyle: {
-          backgroundColor: '#000', // Changed from red to black
-          width: width * 0.7, // Increased width to match design
+          backgroundColor: '#000',
+          width: width * 0.7,
         },
         drawerActiveTintColor: '#D4AF37',
         drawerInactiveTintColor: '#fff',
@@ -236,8 +288,12 @@ export const DrawerNavigator = () => {
           ),
         }}
       />
+    </Drawer.Navigator>
+  );
+};
 
-      {/* <Drawer.Screen
+{
+  /* <Drawer.Screen
         name="Setting"
         component={SettingScreen}
         options={({ navigation }) => ({
@@ -266,8 +322,10 @@ export const DrawerNavigator = () => {
             </TouchableOpacity>
           ),
         })}
-      /> */}
-      <Drawer.Screen
+      /> */
+}
+{
+  /* <Drawer.Screen
         name="Travedise"
         component={TravediseScreen}
         options={({ navigation }) => ({
@@ -296,41 +354,5 @@ export const DrawerNavigator = () => {
             </TouchableOpacity>
           ),
         })}
-      />
-
-      <Drawer.Screen
-        name="Logout"
-        component={BlankScreen}
-        options={{
-          title: 'Log Out',
-          drawerIcon: ({ color, size }) => (
-            <LogoutIcon width={size} height={size} fill="#fff" />
-          ),
-        }}
-        listeners={({ navigation }) => ({
-          drawerItemPress: e => {
-            e.preventDefault();
-            Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Logout',
-                style: 'destructive',
-                onPress: async () => {
-                  try {
-                    await AsyncStorage.clear();
-                    navigation.reset({
-                      index: 0,
-                      routes: [{ name: 'Login' }],
-                    });
-                  } catch (err) {
-                    Alert.alert('Error', 'Failed to logout');
-                  }
-                },
-              },
-            ]);
-          },
-        })}
-      />
-    </Drawer.Navigator>
-  );
-};
+      /> */
+}

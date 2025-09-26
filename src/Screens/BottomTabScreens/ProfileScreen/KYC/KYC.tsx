@@ -80,12 +80,59 @@ const styles = {
   elementDropdownIcon: {
     tintColor: '#FFE2B8',
   },
+  documentSection: {
+    marginBottom: 20,
+    padding: 12,
+    borderColor: '#FFE2B8',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  sectionHeader: {
+    color: '#FFE2B8',
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: 'Montserrat',
+    marginBottom: 8,
+  },
+  requiredBadge: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  optionalBadge: {
+    color: '#4CAF50',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  completedBadge: {
+    color: '#4CAF50',
+    fontSize: 12,
+    marginLeft: 4,
+    fontWeight: '700',
+  },
 };
 
 const KYC = () => {
-  const [selectedDocType, setSelectedDocType] = useState('');
-  const [docNumber, setDocNumber] = useState('');
-  const [docFile, setDocFile] = useState(null);
+  // State for each document
+  const [panData, setPanData] = useState({
+    docNumber: '',
+    docFile: null,
+    completed: false,
+  });
+
+  const [aadhaarData, setAadhaarData] = useState({
+    docNumber: '',
+    docFile: null,
+    completed: false,
+  });
+
+  const [optionalDocData, setOptionalDocData] = useState({
+    selectedDocType: '',
+    docNumber: '',
+    docFile: null,
+    completed: false,
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [documentTypes, setDocumentTypes] = useState([]);
   const [usingDynamicTypes, setUsingDynamicTypes] = useState(false);
@@ -104,7 +151,6 @@ const KYC = () => {
         return;
       }
 
-      // Check if your API endpoint for document types exists
       if (!apiList.GET_DOCUMENT_TYPES) {
         console.log(
           'No document types endpoint configured, using hardcoded types',
@@ -124,15 +170,13 @@ const KYC = () => {
         response.data.data &&
         response.data.data.length > 0
       ) {
-        // Transform backend response to dropdown format
         const types = response.data.data.map(docType => ({
           label: docType.name,
-          value: docType.id, // This should be the UUID
-          originalType: docType.type || docType.name.toLowerCase(), // Keep original type for mapping
+          value: docType.id,
+          originalType: docType.type || docType.name.toLowerCase(),
         }));
         setDocumentTypes(types);
         setUsingDynamicTypes(true);
-        console.log('Using dynamic document types:', types);
       } else {
         setUsingDynamicTypes(false);
       }
@@ -142,53 +186,64 @@ const KYC = () => {
     }
   };
 
-  // Hardcoded document type UUIDs - USE THE CORRECT ONES FROM YOUR BACKEND
+  // Hardcoded document type UUIDs
   const documentTypeMap = {
-    aadhaar: 'Aadhar Card', // This might be incorrect - get the right UUID
+    aadhaar: 'Aadhar Card',
     pan: 'pan',
     drivingLicense: 'YOUR_DL_UUID_HERE',
+    voterId: 'YOUR_VOTER_ID_UUID_HERE',
+    passport: 'YOUR_PASSPORT_UUID_HERE',
   };
 
-  // Fallback items for when dynamic loading fails
-  const fallbackItems = [
-    { label: 'Aadhaar Card', value: 'aadhaar', id: documentTypeMap.aadhaar },
-    { label: 'PAN Card', value: 'pan', id: documentTypeMap.pan },
+  // Fallback items for optional documents
+  const fallbackOptionalItems = [
     {
       label: 'Driving License',
       value: 'drivingLicense',
       id: documentTypeMap.drivingLicense,
     },
+    { label: 'Voter ID', value: 'voterId', id: documentTypeMap.voterId },
+    { label: 'Passport', value: 'passport', id: documentTypeMap.passport },
   ];
 
-  // Use dynamic types if available, otherwise use fallback
-  const dropdownItems = usingDynamicTypes ? documentTypes : fallbackItems;
+  const optionalDropdownItems = usingDynamicTypes
+    ? documentTypes.filter(
+        item =>
+          !item.originalType?.includes('pan') &&
+          !item.originalType?.includes('aadhaar'),
+      )
+    : fallbackOptionalItems;
 
-  const getDocLabel = () => {
-    const selectedItem = dropdownItems.find(item =>
-      usingDynamicTypes
-        ? item.value === selectedDocType
-        : item.value === selectedDocType,
-    );
+  // Update completion status
+  useEffect(() => {
+    setPanData(prev => ({
+      ...prev,
+      completed: prev.docNumber.trim() !== '' && prev.docFile !== null,
+    }));
+  }, [panData.docNumber, panData.docFile]);
 
-    if (selectedItem) {
-      return `${selectedItem.label} Number`;
-    }
-    return 'Document Number';
-  };
+  useEffect(() => {
+    setAadhaarData(prev => ({
+      ...prev,
+      completed: prev.docNumber.trim() !== '' && prev.docFile !== null,
+    }));
+  }, [aadhaarData.docNumber, aadhaarData.docFile]);
 
-  const getDocNumberMaxLength = () => {
-    if (!selectedDocType) return 20;
+  useEffect(() => {
+    setOptionalDocData(prev => ({
+      ...prev,
+      completed:
+        prev.selectedDocType !== '' &&
+        prev.docNumber.trim() !== '' &&
+        prev.docFile !== null,
+    }));
+  }, [
+    optionalDocData.selectedDocType,
+    optionalDocData.docNumber,
+    optionalDocData.docFile,
+  ]);
 
-    const docType = usingDynamicTypes
-      ? documentTypes.find(item => item.value === selectedDocType)?.originalType
-      : selectedDocType;
-
-    if (docType?.includes('aadhaar')) return 12;
-    if (docType?.includes('pan')) return 10;
-    return 20;
-  };
-
-  const pickDocument = async () => {
+  const pickDocument = async documentType => {
     try {
       const options = {
         mediaType: 'photo',
@@ -202,12 +257,34 @@ const KYC = () => {
         } else if (response.errorCode) {
           Alert.alert('Error', response.errorMessage || 'Something went wrong');
         } else {
-          setDocFile(response.assets[0]);
+          const file = response.assets[0];
+          switch (documentType) {
+            case 'pan':
+              setPanData(prev => ({ ...prev, docFile: file }));
+              break;
+            case 'aadhaar':
+              setAadhaarData(prev => ({ ...prev, docFile: file }));
+              break;
+            case 'optional':
+              setOptionalDocData(prev => ({ ...prev, docFile: file }));
+              break;
+          }
         }
       });
     } catch (error) {
       console.error('Image picker error:', error);
       Alert.alert('Error', 'Failed to pick document');
+    }
+  };
+
+  const validateDocument = (type, number) => {
+    switch (type) {
+      case 'pan':
+        return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(number);
+      case 'aadhaar':
+        return /^\d{12}$/.test(number);
+      default:
+        return number.trim().length > 0;
     }
   };
 
@@ -236,62 +313,28 @@ const KYC = () => {
     );
   };
 
-  const getDocumentTypeId = () => {
+  const getDocumentTypeId = (docType, value) => {
     if (usingDynamicTypes) {
-      // For dynamic types, the value IS the UUID
-      return selectedDocType;
+      return value;
     } else {
-      // For fallback items, map the value to UUID
-      return documentTypeMap[selectedDocType];
+      return documentTypeMap[value] || documentTypeMap[docType];
     }
   };
 
   const handleSubmit = async () => {
-    if (!selectedDocType || !docNumber || !docFile) {
-      Alert.alert('Error', 'Please complete all fields');
+    // Validate required documents
+    if (!panData.completed) {
+      Alert.alert('Error', 'Please complete PAN card details');
       return;
     }
 
-    const documentTypeId = getDocumentTypeId();
-
-    // Validate that we have a proper UUID (basic check for UUID format)
-    if (
-      !documentTypeId ||
-      documentTypeId.includes('YOUR_') ||
-      documentTypeId.includes('GET_CORRECT')
-    ) {
-      Alert.alert(
-        'Configuration Error',
-        'Document type not properly configured. Please contact support or try again later.',
-      );
+    if (!aadhaarData.completed) {
+      Alert.alert('Error', 'Please complete Aadhaar card details');
       return;
     }
 
-    // Basic UUID format validation
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(documentTypeId)) {
-      Alert.alert(
-        'Error',
-        'Invalid document type configuration. Please contact support.',
-      );
-      return;
-    }
-
-    // Validate document number based on type
-    const docType = usingDynamicTypes
-      ? documentTypes.find(item => item.value === selectedDocType)?.originalType
-      : selectedDocType;
-
-    if (docType?.includes('aadhaar') && !/^\d{12}$/.test(docNumber)) {
-      Alert.alert('Error', 'Please enter a valid 12-digit Aadhaar number');
-      return;
-    }
-
-    if (
-      docType?.includes('pan') &&
-      !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(docNumber)
-    ) {
+    // Validate PAN number
+    if (!validateDocument('pan', panData.docNumber)) {
       Alert.alert(
         'Error',
         'Please enter a valid PAN number (e.g., ABCDE1234F)',
@@ -299,19 +342,18 @@ const KYC = () => {
       return;
     }
 
+    // Validate Aadhaar number
+    if (!validateDocument('aadhaar', aadhaarData.docNumber)) {
+      Alert.alert('Error', 'Please enter a valid 12-digit Aadhaar number');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append('document_type_id', documentTypeId);
-      formData.append('document_number', docNumber);
-      formData.append('document', {
-        uri: docFile.uri,
-        name: docFile.fileName || `kyc_document_${Date.now()}.jpg`,
-        type: docFile.type || 'image/jpeg',
-      });
-
       const token = await AsyncStorage.getItem('token');
+
       if (!token) {
         Alert.alert(
           'Error',
@@ -321,10 +363,60 @@ const KYC = () => {
         return;
       }
 
-      console.log('Sending KYC data...');
-      console.log('Document Type ID:', documentTypeId);
-      console.log('Document Number:', docNumber);
-      console.log('Using dynamic types:', usingDynamicTypes);
+      // Add PAN document
+      const panTypeId = getDocumentTypeId('pan', 'pan');
+      formData.append(
+        'documents[]',
+        JSON.stringify({
+          document_type_id: panTypeId,
+          document_number: panData.docNumber,
+        }),
+      );
+      formData.append('documents[]', {
+        uri: panData.docFile.uri,
+        name: panData.docFile.fileName || `pan_document_${Date.now()}.jpg`,
+        type: panData.docFile.type || 'image/jpeg',
+      });
+
+      // Add Aadhaar document
+      const aadhaarTypeId = getDocumentTypeId('aadhaar', 'aadhaar');
+      formData.append(
+        'documents[]',
+        JSON.stringify({
+          document_type_id: aadhaarTypeId,
+          document_number: aadhaarData.docNumber,
+        }),
+      );
+      formData.append('documents[]', {
+        uri: aadhaarData.docFile.uri,
+        name:
+          aadhaarData.docFile.fileName || `aadhaar_document_${Date.now()}.jpg`,
+        type: aadhaarData.docFile.type || 'image/jpeg',
+      });
+
+      // Add optional document if completed
+      if (optionalDocData.completed) {
+        const optionalTypeId = getDocumentTypeId(
+          optionalDocData.selectedDocType,
+          optionalDocData.selectedDocType,
+        );
+        formData.append(
+          'documents[]',
+          JSON.stringify({
+            document_type_id: optionalTypeId,
+            document_number: optionalDocData.docNumber,
+          }),
+        );
+        formData.append('documents[]', {
+          uri: optionalDocData.docFile.uri,
+          name:
+            optionalDocData.docFile.fileName ||
+            `optional_document_${Date.now()}.jpg`,
+          type: optionalDocData.docFile.type || 'image/jpeg',
+        });
+      }
+
+      console.log('Submitting KYC with documents...');
 
       const response = await axios.post(apiList.UPDATE_KYC, formData, {
         headers: {
@@ -338,22 +430,21 @@ const KYC = () => {
 
       if (response.data.success) {
         Alert.alert('Success', 'KYC submitted successfully!');
-        setSelectedDocType('');
-        setDocNumber('');
-        setDocFile(null);
+        // Reset all forms
+        setPanData({ docNumber: '', docFile: null, completed: false });
+        setAadhaarData({ docNumber: '', docFile: null, completed: false });
+        setOptionalDocData({
+          selectedDocType: '',
+          docNumber: '',
+          docFile: null,
+          completed: false,
+        });
       } else {
         Alert.alert('Error', response.data.message || 'Failed to submit KYC');
       }
     } catch (error) {
       console.error('KYC Submit Error:', error);
-
-      if (error.response?.data?.message?.includes('Invalid document type')) {
-        Alert.alert(
-          'Error',
-          'The document type UUID is not recognized by the server. Please contact support with error ID: ' +
-            (error.response.data.errorId || 'N/A'),
-        );
-      } else if (error.response) {
+      if (error.response) {
         Alert.alert(
           'Error',
           error.response.data?.message || 'Server error occurred',
@@ -371,82 +462,146 @@ const KYC = () => {
     }
   };
 
+  const allRequiredCompleted = panData.completed && aadhaarData.completed;
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>KYC Verification</Text>
 
-      <Text style={styles.inputLabel}>Select Document Type</Text>
-      <Dropdown
-        data={dropdownItems}
-        labelField="label"
-        valueField={usingDynamicTypes ? 'value' : 'value'}
-        value={selectedDocType}
-        onChange={item => {
-          setSelectedDocType(item.value);
-          setDocNumber('');
-          setDocFile(null);
-        }}
-        placeholder="Choose Document Type"
-        style={styles.elementDropdown}
-        selectedTextStyle={styles.elementDropdownSelectedTextStyle}
-        placeholderStyle={styles.elementDropdownPlaceholder}
-        containerStyle={{
-          backgroundColor: '#19191A',
-          borderColor: '#FFE2B8',
-          borderWidth: 1,
-          borderRadius: 8,
-          marginTop: 2,
-        }}
-        itemTextStyle={{
-          color: '#FFE2B8',
-          fontFamily: 'Montserrat',
-          fontSize: 15,
-        }}
-        activeColor="#2A2A2B"
-        dropdownPosition="auto"
-        iconStyle={styles.elementDropdownIcon}
-        renderItem={renderDropdownItem}
-      />
+      {/* PAN Card Section */}
+      <View style={styles.documentSection}>
+        <Text style={styles.sectionHeader}>
+          PAN Card{' '}
+          {panData.completed ? (
+            <Text style={styles.completedBadge}>✓ Completed</Text>
+          ) : (
+            <Text style={styles.requiredBadge}>(Required)</Text>
+          )}
+        </Text>
 
-      {selectedDocType && (
-        <>
-          <Text style={styles.inputLabel}>{getDocLabel()}</Text>
-          <TextInput
-            style={styles.inputField}
-            placeholder={`Enter ${getDocLabel()}`}
-            placeholderTextColor="#bbb"
-            keyboardType={
-              getDocLabel().includes('Aadhaar') ? 'numeric' : 'default'
-            }
-            autoCapitalize={
-              getDocLabel().includes('PAN') ? 'characters' : 'none'
-            }
-            maxLength={getDocNumberMaxLength()}
-            value={docNumber}
-            onChangeText={setDocNumber}
-          />
+        <Text style={styles.inputLabel}>PAN Number</Text>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Enter PAN Number (e.g., ABCDE1234F)"
+          placeholderTextColor="#bbb"
+          autoCapitalize="characters"
+          maxLength={10}
+          value={panData.docNumber}
+          onChangeText={text =>
+            setPanData(prev => ({ ...prev, docNumber: text }))
+          }
+        />
 
-          <View style={{ marginBottom: 20 }}>
-            <Text style={styles.inputLabel}>Upload Document</Text>
-            <TouchableOpacity onPress={pickDocument}>
-              <Text style={styles.uploadButtonText}>
-                {docFile?.fileName || 'Choose Document Image'}
-              </Text>
-            </TouchableOpacity>
-            {docFile && (
-              <Text style={{ color: '#4CAF50', marginTop: 5, fontSize: 12 }}>
-                File selected: {docFile.fileName}
-              </Text>
-            )}
-          </View>
-        </>
-      )}
+        <Text style={styles.inputLabel}>Upload PAN Card</Text>
+        <TouchableOpacity onPress={() => pickDocument('pan')}>
+          <Text style={styles.uploadButtonText}>
+            {panData.docFile?.fileName || 'Choose PAN Card Image'}
+          </Text>
+        </TouchableOpacity>
+        {panData.docFile && (
+          <Text style={{ color: '#4CAF50', marginTop: 5, fontSize: 12 }}>
+            File selected: {panData.docFile.fileName}
+          </Text>
+        )}
+      </View>
+
+      {/* Aadhaar Card Section */}
+      <View style={styles.documentSection}>
+        <Text style={styles.sectionHeader}>
+          Aadhaar Card{' '}
+          {aadhaarData.completed ? (
+            <Text style={styles.completedBadge}>✓ Completed</Text>
+          ) : (
+            <Text style={styles.requiredBadge}>(Required)</Text>
+          )}
+        </Text>
+
+        <Text style={styles.inputLabel}>Aadhaar Number</Text>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Enter 12-digit Aadhaar Number"
+          placeholderTextColor="#bbb"
+          keyboardType="numeric"
+          maxLength={12}
+          value={aadhaarData.docNumber}
+          onChangeText={text =>
+            setAadhaarData(prev => ({ ...prev, docNumber: text }))
+          }
+        />
+
+        <Text style={styles.inputLabel}>Upload Aadhaar Card</Text>
+        <TouchableOpacity onPress={() => pickDocument('aadhaar')}>
+          <Text style={styles.uploadButtonText}>
+            {aadhaarData.docFile?.fileName || 'Choose Aadhaar Card Image'}
+          </Text>
+        </TouchableOpacity>
+        {aadhaarData.docFile && (
+          <Text style={{ color: '#4CAF50', marginTop: 5, fontSize: 12 }}>
+            File selected: {aadhaarData.docFile.fileName}
+          </Text>
+        )}
+      </View>
+
+      {/* Optional Document Section */}
+      <View style={styles.documentSection}>
+        <Text style={styles.sectionHeader}>
+          Additional Document{' '}
+          <Text style={styles.optionalBadge}>(Optional)</Text>
+        </Text>
+
+        <Text style={styles.inputLabel}>
+          If you already have an Physical card
+        </Text>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Enter Physical card Number"
+          placeholderTextColor="#bbb"
+          value={optionalDocData.docNumber}
+          onChangeText={text =>
+            setOptionalDocData(prev => ({
+              ...prev,
+              docNumber: text,
+              completed: text.trim().length > 0, // Mark as completed if number is entered
+              selectedDocType: 'manualEntry', // Use fixed type if not using dropdown
+            }))
+          }
+        />
+
+        <Text style={styles.inputLabel}>Upload Card Image</Text>
+        <TouchableOpacity onPress={() => pickDocument('optional')}>
+          <Text style={styles.uploadButtonText}>
+            {optionalDocData.docFile?.fileName || 'Choose Document Image'}
+          </Text>
+        </TouchableOpacity>
+        {optionalDocData.docFile && (
+          <Text style={{ color: '#4CAF50', marginTop: 5, fontSize: 12 }}>
+            File selected: {optionalDocData.docFile.fileName}
+          </Text>
+        )}
+      </View>
 
       <GradientButton
-        title={isLoading ? 'Submitting...' : 'Submit KYC'}
+        title={
+          isLoading
+            ? 'Submitting...'
+            : `Submit KYC ${allRequiredCompleted ? '✓' : ''}`
+        }
         onPress={handleSubmit}
-        disabled={isLoading}
+        disabled={isLoading || !allRequiredCompleted}
       />
+
+      {!allRequiredCompleted && (
+        <Text
+          style={{
+            color: '#FF6B6B',
+            textAlign: 'center',
+            marginTop: 10,
+            fontSize: 12,
+          }}
+        >
+          Please complete all required documents (PAN and Aadhaar) to submit
+        </Text>
+      )}
     </ScrollView>
   );
 };
