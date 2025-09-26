@@ -59,10 +59,7 @@ const OnboardingScreen = () => {
       >
         {/* <OnBoarding width={width} height={width} /> */}
         <View style={styles.onboardingImage}>
-          <Image
-            source={require('../../../assets/images/onBoarding.png')}
-           
-          />
+          <Image source={require('../../../assets/images/onBoarding.png')} />
         </View>
 
         <View>
@@ -95,8 +92,8 @@ const OnboardingScreen = () => {
         </View>
 
         <GradientButton
-        style={styles.button}
-          title={currentIndex < titles.length - 1 ? 'Next' : "Let's Go" }
+          style={styles.button}
+          title={currentIndex < titles.length - 1 ? 'Next' : "Let's Go"}
           onPress={handleNext}
         />
       </LinearGradient>

@@ -1,6 +1,5 @@
-// Fixed CustomDrawerContent function with proper logout
-
-import React, { useEffect, useState } from 'react';
+// DrawerNavigator.js - FIXED CustomDrawerContent
+import React, { useEffect } from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -19,8 +18,9 @@ import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setAuth } from '../redux/slices/authSlice';
+import { setUserDetails, clearUser } from '../redux/slices/userSlice';
 import HomeIcon from '../assets/images/home.svg';
 import LogoutIcon from '../assets/images/Logout.svg';
 import { apiRequest } from '../Api_List/apiUtils';
@@ -31,73 +31,65 @@ const { width } = Dimensions.get('window');
 
 function CustomDrawerContent(props) {
   const { state, navigation, descriptors } = props;
-  const dispatch = useDispatch(); // ✅ Add this line - it was missing!
+  const dispatch = useDispatch();
 
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    profile_photo_url: '',
-  });
+  // ✅ FIXED: Correct Redux selector
+  const { name, email, profilePhoto } = useSelector(state => state.user);
 
-  const fetchProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        Alert.alert('Error', 'Authentication token missing');
-        return;
-      }
-      const response = await apiRequest({
-        url: ApiList.GET_PROFILE,
-        method: 'GET',
-        token,
-      });
-      if (response.success) {
-        const user = response.data.data.user;
-        setProfile({
-          name: user.name || '',
-          email: user.email || '',
-          profile_photo_url: user.profile_photo_url || '',
-        });
-      } else {
-        Alert.alert('Error', response.error || 'Failed to fetch profile');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'Failed to load profile data');
-    }
-  };
+  console.log('Drawer - Redux User State:', { name, email, profilePhoto });
 
+  // ✅ Fetch user profile on drawer mount if not already loaded
   useEffect(() => {
-    fetchProfile();
+    const fetchUserProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
 
-    const unsubscribeDrawerOpen = navigation.addListener('drawerOpen', () => {
-      fetchProfile();
-    });
+        console.log('Fetching user profile in drawer...');
+        const response = await apiRequest({
+          url: ApiList.GET_PROFILE,
+          method: 'GET',
+          token,
+        });
 
-    const unsubscribeProfileUpdated = navigation.addListener(
-      'profileUpdated',
-      () => {
-        fetchProfile();
-      },
-    );
+        console.log('Drawer API Response:', response);
 
-    return () => {
-      unsubscribeDrawerOpen();
-      unsubscribeProfileUpdated();
+        if (response.success) {
+          // ✅ FIXED: Handle nested response structure
+          const user = response.data?.data?.user || response.data?.user;
+          console.log('User data from API:', user);
+
+          const userData = {
+            name: user?.name || '',
+            email: user?.email || '',
+            profilePhoto: user?.profile_photo_url || '',
+          };
+
+          console.log('Dispatching user data:', userData);
+          // Update Redux with fetched user data
+          dispatch(setUserDetails(userData));
+        } else {
+          console.error('Failed to fetch profile:', response.error);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile in drawer:', error);
+      }
     };
-  }, [navigation]);
 
-  // ✅ Fixed handleLogout function - matches ProfileScreen logic
+    // Always fetch to ensure latest data
+    fetchUserProfile();
+  }, [dispatch]);
+
   const handleLogout = async () => {
     try {
-      // Clear AsyncStorage - use the same method as ProfileScreen
       await AsyncStorage.removeItem('token');
       await AsyncStorage.setItem('isAuth', 'false');
-
-      // ✅ Update Redux state to trigger re-render (this was missing!)
       dispatch(setAuth(false));
-
-      // The AppNavigator will automatically switch to AuthNavigator
-      // because isAuthenticated will be false
+      dispatch(clearUser()); // ✅ Clear user data from Redux
+      console.log('Logout successful');
     } catch (err) {
       console.error('Logout Error:', err);
       Alert.alert('Error', 'Failed to logout. Please try again.');
@@ -107,15 +99,10 @@ function CustomDrawerContent(props) {
   const showLogoutConfirmation = () => {
     Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: handleLogout,
-      },
+      { text: 'Logout', style: 'destructive', onPress: handleLogout },
     ]);
   };
 
-  // Rest of your component remains the same...
   return (
     <DrawerContentScrollView
       {...props}
@@ -138,26 +125,41 @@ function CustomDrawerContent(props) {
             borderRadius: 25,
             overflow: 'hidden',
             marginRight: 15,
+            backgroundColor: '#333', // Fallback background
           }}
         >
-          {profile.profile_photo_url ? (
+          {profilePhoto ? (
             <Image
-              source={{ uri: profile.profile_photo_url }}
-              style={{ width: 50, height: 50, borderRadius: 25 }}
+              source={{ uri: profilePhoto }}
+              style={styles.avatar}
+              onError={() => console.log('Failed to load profile photo')}
             />
-          ) : null}
+          ) : (
+            <Image
+              source={require('../assets/images/Profile_Image.png')}
+              style={styles.avatar}
+            />
+          )}
         </View>
         <View>
           <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-            {profile.name}
+            {name || 'Guest User'}
           </Text>
           <Text style={{ color: '#fff', fontSize: 14, opacity: 0.7 }}>
-            {profile.email}
+            {email || 'guest@example.com'}
           </Text>
         </View>
       </View>
 
-      {/* Navigation Items */}
+      {/* Debug Info - Remove in production */}
+      {/* <View style={{ paddingHorizontal: 10, marginBottom: 20 }}>
+        <Text style={{ color: '#666', fontSize: 12 }}>
+          Debug: {name ? `Name: ${name}` : 'No name'},{' '}
+          {email ? `Email: ${email}` : 'No email'}
+        </Text>
+      </View> */}
+
+      {/* Drawer Items */}
       {state.routes.map((route, index) => {
         const focused = state.index === index;
         const { title, drawerIcon } = descriptors[route.key].options;
@@ -261,6 +263,16 @@ function CustomDrawerContent(props) {
     </DrawerContentScrollView>
   );
 }
+
+const styles = {
+  avatar: {
+    width: 50,
+    height: 50,
+    resizeMode: 'cover',
+  },
+};
+
+export default CustomDrawerContent;
 
 export const DrawerNavigator = () => {
   const insets = useSafeAreaInsets();
