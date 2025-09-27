@@ -22,10 +22,9 @@ import ApiList from '../../../Api_List/apiList';
 import { BlurView } from '@react-native-community/blur';
 import { clearUser, setUserDetails, updateProfilePhoto } from '../../../redux/slices/userSlice';
 
-
 const ProfileScreen = () => {
   // ✅ All hooks declared at top level
-   // ✅ Get user data from Redux store
+  // ✅ Get user data from Redux store
   const user = useSelector(state => state.user);
   
   // ✅ Initialize local state with Redux data
@@ -47,10 +46,7 @@ const ProfileScreen = () => {
     setName(user.name || '');
   }, [user]);
 
-
-
-
-   useEffect(() => {
+  useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
@@ -91,8 +87,84 @@ const ProfileScreen = () => {
     fetchProfile();
   }, [dispatch]);
 
+  // ✅ FIXED: Convert image to base64 before sending
+  const convertImageToBase64 = (uri) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        const reader = new FileReader();
+        reader.onloadend = function() {
+          resolve(reader.result);
+        };
+        reader.readAsDataURL(xhr.response);
+      };
+      xhr.onerror = reject;
+      xhr.open('GET', uri);
+      xhr.responseType = 'blob';
+      xhr.send();
+    });
+  };
+
+  // ✅ OPTION 1: Using FormData (Recommended)
+  const uploadImageWithFormData = async (imageUri, token) => {
+    try {
+      const formData = new FormData();
+      formData.append('profile_photo', {
+        uri: imageUri,
+        type: 'image/jpeg', // or image/png
+        name: 'profile_photo.jpg',
+      });
+      formData.append('email', email);
+      formData.append('name', name);
+
+      const response = await fetch(ApiList.UPDATE_PROFILE, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // ✅ OPTION 2: Using base64 (Alternative)
+  const uploadImageWithBase64 = async (imageUri, token) => {
+    try {
+      // Convert image to base64
+      const base64Image = await convertImageToBase64(imageUri);
+      
+      const payload = { 
+        email, 
+        name, 
+        profile_photo_url: base64Image // Send as base64
+      };
+
+      const response = await apiRequest({
+        url: ApiList.UPDATE_PROFILE,
+        method: 'PUT',
+        body: payload,
+        token,
+      });
+
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const pickImageFromGallery = () => {
-    const options = { mediaType: 'photo', quality: 1.0 };
+    const options = { 
+      mediaType: 'photo', 
+      quality: 0.8, // Reduce quality to decrease file size
+      maxWidth: 800,
+      maxHeight: 800
+    };
+    
     launchImageLibrary(options, async (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
@@ -100,7 +172,7 @@ const ProfileScreen = () => {
         Alert.alert('Error', response.errorMessage || 'Something went wrong');
       } else if (response.assets?.[0]?.uri) {
         const uri = response.assets[0].uri;
-        setProfile_photo_url(uri);
+        setProfile_photo_url(uri); // Show preview immediately
 
         try {
           const token = await AsyncStorage.getItem('token');
@@ -109,34 +181,38 @@ const ProfileScreen = () => {
             return;
           }
 
-          const payload = { email, name, profile_photo_url: uri };
-
-          console.log('[pickImageFromGallery] Sending PUT request...', payload);
-
-          const response = await apiRequest({
-            url: ApiList.UPDATE_PROFILE,
-            method: 'PUT',
-            body: payload,
-            token,
+          console.log('[pickImageFromGallery] Starting image upload...', {
+            uri,
+            email,
+            name
           });
 
+          // ✅ CHOOSE ONE OF THESE METHODS:
+
+          // Method 1: Using FormData (Recommended for file uploads)
+          // const response = await uploadImageWithBase64(uri, token);
+
+          // Method 2: Using base64 (Uncomment if your API expects base64)
+          const response = await uploadImageWithBase64(uri, token);
+ 
           if (response.success) {
             // ✅ Update Redux store with new profile photo
             dispatch(updateProfilePhoto(uri));
             Alert.alert('Success', 'Profile photo updated successfully!');
           } else {
             Alert.alert('Error', response.error || 'Failed to update profile photo');
+            // Revert the preview on failure
+            setProfile_photo_url(user.profilePhoto || '');
           }
         } catch (error) {
           console.error('Error updating profile photo:', error);
           Alert.alert('Error', 'Failed to update profile photo');
+          // Revert the preview on failure
+          setProfile_photo_url(user.profilePhoto || '');
         }
       }
     });
   };
-
-
-
 
   const handleLogout = () => {
     Alert.alert(
@@ -165,8 +241,6 @@ const ProfileScreen = () => {
     );
   };
 
-
-
   const handleUpdateProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -175,7 +249,15 @@ const ProfileScreen = () => {
         return;
       }
 
-      const payload = { email: tempEmail, name: tempName, profile_photo_url };
+      // ✅ FIXED: Don't send local URI, send the actual profile_photo_url from server
+      const payload = { 
+        email: tempEmail, 
+        name: tempName, 
+        // Only include profile_photo_url if it's a valid server URL, not local URI
+        ...(profile_photo_url && !profile_photo_url.startsWith('file://') && {
+          profile_photo_url: profile_photo_url
+        })
+      };
 
       console.log('[handleUpdateProfile] Sending PUT request...', payload);
 
@@ -210,9 +292,8 @@ const ProfileScreen = () => {
     }
   };
 
-
   return (
- <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Profile Header */}
       {(name || email || profile_photo_url) && (
         <TouchableOpacity
@@ -244,8 +325,6 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       )}
 
-
-
       {/* Account Settings Section */}
       <View style={styles.AccountSettingsSection}>
         <Text style={styles.AccountSettingTitle}>Account settings</Text>
@@ -265,14 +344,19 @@ const ProfileScreen = () => {
           <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
         </TouchableOpacity>
 
+
+        <TouchableOpacity style={styles.menuItem}  onPress={console.log("My Vouchers Clicked")}>
+          <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
+            <Text style={styles.chevron}>></Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Email Update Modal */}
-
-   <Modal visible={isProfileModalVisible} transparent animationType="slide">
+      {/* Profile Update Modal */}
+      <Modal visible={isProfileModalVisible} transparent animationType="slide">
         <BlurView
           style={{ flex: 1 }}
           blurType="light"
@@ -303,7 +387,7 @@ const ProfileScreen = () => {
 
               <TouchableOpacity
                 style={{ backgroundColor: 'green', padding: 12, borderRadius: 8 }}
-                onPress={handleUpdateProfile} // Use the function directly
+                onPress={handleUpdateProfile}
               >
                 <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
                   Save
@@ -320,8 +404,6 @@ const ProfileScreen = () => {
           </View>
         </BlurView>
       </Modal>
-
-
     </ScrollView>
   );
 };

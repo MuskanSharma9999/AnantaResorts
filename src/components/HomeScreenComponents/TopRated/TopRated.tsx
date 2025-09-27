@@ -89,15 +89,15 @@ export const TopRated = () => {
           },
         });
 
-        console.log(
-          '[TopRated] Full API Response:',
-          JSON.stringify(response.data, null, 2),
-        );
+        // console.log(
+        //   '[TopRated] Full API Response:',
+        //   JSON.stringify(response.data, null, 2),
+        // );
 
         if (Array.isArray(response.data?.data)) {
           const sanitizedResorts = sanitizeResortImages(response.data.data);
           setResorts(sanitizedResorts);
-          console.log('[TopRated] Resorts set:', sanitizedResorts.length);
+          // console.log('[TopRated] Resorts set:', sanitizedResorts.length);
         } else {
           console.warn(
             '[TopRated] Unexpected response structure:',

@@ -14,9 +14,9 @@ if (Platform.OS === 'android') {
 }
 
 // For live/production (optional):
-url = 'http://103.191.132.144/ap/api'; // Live server
+// url = 'http://103.191.132.144/ap/api'; // Live server
 
-// url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
+url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
 
 export const ApiList = {
   SEND_OTP: `${url}/auth/send-otp`,
@@ -24,6 +24,7 @@ export const ApiList = {
   GET_PROFILE: `${url}/auth/profile`,
   UPDATE_PROFILE: `${url}/auth/profile`,
   GET_ALL_RESORTS: `${url}/resorts`,
+  GET_ALL_ROOMS: `${url}/rooms`,
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,
   UPDATE_KYC: `${url}/kyc/upload`,
 };

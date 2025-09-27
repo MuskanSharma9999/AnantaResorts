@@ -54,7 +54,7 @@ const HomeScreen = () => {
             profilePhoto: user?.profile_photo_url || '',
           };
 
-          console.log('Dispatching user data:', userData);
+          // console.log('Dispatching user data:', userData);
           dispatch(setUserDetails(userData));
         } else {
           console.error('Failed to fetch profile:', response.error);

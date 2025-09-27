@@ -68,7 +68,7 @@ function CustomDrawerContent(props) {
             profilePhoto: user?.profile_photo_url || '',
           };
 
-          console.log('Dispatching user data:', userData);
+          // console.log('Dispatching user data:', userData);
           // Update Redux with fetched user data
           dispatch(setUserDetails(userData));
         } else {

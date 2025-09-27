@@ -18,6 +18,8 @@ import {
   MapPin,
   ChevronLeft,
   Star,
+  Users,
+  Square,
 } from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
 import GradientButton from '../../Buttons/GradientButton';
@@ -44,13 +46,16 @@ const ResortDetails: React.FC = ({ navigation }) => {
     { key: 'about', title: 'About Resort' },
     { key: 'gallery', title: 'Gallery' },
     { key: 'reviews', title: 'Reviews' },
-    { key: 'services', title: 'Resort Services & Offers' },
+    { key: 'rooms', title: 'Rooms' },
   ]);
+
+  const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
     const fetchResort = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
+
         const response = await axios.get(ApiList.GET_RESORT_BY_ID(resortId), {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,11 +69,71 @@ const ResortDetails: React.FC = ({ navigation }) => {
         setLoading(false);
       }
     };
+
+    const fetchRooms = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.error('No token found. Aborting fetch.');
+          return;
+        }
+
+        console.log('Fetching rooms for resort:', resortId);
+        console.log(
+          'API URL:',
+          `${ApiList.GET_ALL_ROOMS}?resort_id=${resortId}`,
+        );
+
+        const response = await axios.get(
+          `${ApiList.GET_ALL_ROOMS}?resort_id=${resortId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        console.log('Rooms API Response:', response.data);
+        setRooms(response.data?.data || []);
+        console.log('Fetched rooms:', response.data?.data);
+      } catch (err) {
+        console.error(
+          'Failed to fetch rooms:',
+          err.response?.data || err.message,
+        );
+        // Set empty array on error to prevent undefined issues
+        setRooms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchResort();
+    fetchRooms();
   }, [resortId]);
 
   const handleJoinClub = () => {
     console.log('handle join club pressed');
+  };
+
+  const getStatusColor = status => {
+    switch (status) {
+      case 'clean':
+        return '#10B981'; // Green
+      case 'dirty':
+        return '#EF4444'; // Red
+      case 'out_of_order':
+        return '#F59E0B'; // Amber
+      case 'occupied':
+        return '#3B82F6'; // Blue
+      default:
+        return '#6B7280'; // Gray
+    }
+  };
+
+  const getStatusText = status => {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const gallery = resort?.image_gallery?.map(img => ({ uri: img.url })) ?? [
@@ -135,16 +200,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
           contentContainerStyle={styles.galleryList}
           showsVerticalScrollIndicator={false}
         />
-        {/* <View style={styles.joinClubContainer}>
-          <GradientButton
-            title="Join Club"
-            onPress={() => setIsModalVisible(true)}
-          />
-        </View>
-        <Xyz
-          visible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
-        /> */}
       </View>
     ),
 
@@ -207,21 +262,113 @@ const ResortDetails: React.FC = ({ navigation }) => {
       </ScrollView>
     ),
 
-    services: () => (
+    rooms: () => (
       <ScrollView
-        style={styles.contentPadding}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        style={styles.roomsContainer}
+        contentContainerStyle={styles.roomsContentContainer}
       >
-        {(resort.servicesAndOffers || []).map((service, index) => (
-          <View key={index} style={styles.serviceItem}>
-            <Text style={styles.serviceTitle}>{service.service}</Text>
-            <Text style={styles.serviceDescription}>{service.description}</Text>
+        <Text style={styles.sectionTitle}>Available Rooms</Text>
+        <Text style={styles.roomsSubtitle}>
+          {rooms.length} rooms found at this resort
+        </Text>
+
+        {(rooms || []).map((room, index) => (
+          <View key={room.id || index} style={styles.roomCard}>
+            <View style={styles.roomHeader}>
+              <View>
+                {/* <Text style={styles.roomNumber}>Room #{room.room_number}</Text> */}
+                <Text style={styles.roomNumber}>
+                  {room.roomType?.room_type || 'Standard Room'}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: getStatusColor(room.room_status) },
+                ]}
+              >
+                <Text style={styles.statusText}>
+                  {getStatusText(room.room_status)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.roomDetails}>
+              <View style={styles.detailRow}>
+                <View style={styles.detailItem}>
+                  <Square size={16} color="#FBCF9C" />
+                  <Text style={styles.detailText}>
+                    {room.roomType?.max_occupancy || 2} guests
+                  </Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Users size={16} color="#FBCF9C" />
+                  <Text style={styles.detailText}>
+                    Max: {room.roomType?.max_occupancy || 2}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.detailRow}>
+                <View style={styles.detailItem}>
+                  <MapPin size={16} color="#FBCF9C" />
+                  <Text style={styles.detailText}>
+                    {room.room_view?.replace(/_/g, ' ') || 'Garden view'}
+                  </Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailText}>
+                    Floor: {room.floor_number || 1}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.roomFooter}>
+              <View>
+                <Text style={styles.priceLabel}>Price per night</Text>
+                <Text style={styles.price}>
+                  ₹{room.roomType?.price_per_night || '0.00'}
+                </Text>
+              </View>
+              {/* <TouchableOpacity
+                style={[
+                  styles.bookButton,
+                  room.room_status !== 'clean' && styles.bookButtonDisabled,
+                ]}
+                disabled={room.room_status !== 'clean'}
+              >
+                <Text style={styles.bookButtonText}>
+                  {room.room_status === 'clean' ? 'Book Now' : 'Not Available'}
+                </Text>
+              </TouchableOpacity> */}
+            </View>
+
+            {room.housekeeping_status && (
+              <View style={styles.housekeepingInfo}>
+                <Text style={styles.housekeepingLabel}>Housekeeping:</Text>
+                <Text style={styles.housekeepingStatus}>
+                  {room.housekeeping_status.replace(/_/g, ' ')}
+                </Text>
+              </View>
+            )}
+
+            {room.notes && (
+              <View style={styles.notesContainer}>
+                <Text style={styles.notesLabel}>Notes:</Text>
+                <Text style={styles.notesText}>{room.notes}</Text>
+              </View>
+            )}
           </View>
         ))}
-        {(resort.servicesAndOffers || []).length === 0 && (
-          <Text style={styles.descriptionText}>
-            No services or offers available
-          </Text>
+
+        {(rooms || []).length === 0 && (
+          <View style={styles.noRoomsContainer}>
+            <Text style={styles.noRoomsText}>No rooms available</Text>
+            <Text style={styles.noRoomsSubtext}>
+              Please check back later for availability
+            </Text>
+          </View>
         )}
       </ScrollView>
     ),
@@ -243,12 +390,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
           imageStyle={styles.headerImageStyle}
         >
           {/* Back button */}
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
             <ChevronLeft size={24} color="#fff" />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
           {/* Resort info overlay */}
           <View style={styles.headerOverlay}>
