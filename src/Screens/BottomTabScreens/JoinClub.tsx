@@ -41,8 +41,12 @@ export default function MembershipScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header Image and Arrow */}
         <View style={styles.headerContainer}>
           <Image source={BACKGROUND_IMAGE} style={styles.headerImage} />
@@ -202,53 +206,23 @@ export default function MembershipScreen() {
           </Text>
         </View>
 
-        {/* <View style={styles.joinClubContainer}>
-          <GradientButton
-            title="Join Club"
-            onPress={() => setIsModalVisible(true)}
-          />
-        </View> */}
-
-        <View style={styles.joinClubContainer}>
-          <GradientButton
-            title="Join Club"
-            onPress={() => setIsModalVisible(true)}
-            style={{
-              marginTop: 20,
-              marginBottom: 100,
-              width: 350,
-              alignSelf: 'center',
-            }}
-          />
-        </View>
-
-        <MembershipModal
-          visible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
-        />
-
-        {/* // <Xyz */}
-        {/* //   visible={isModalVisible}
-        //   onClose={() => setIsModalVisible(false)}
-        // /> */}
-        {/* <GradientButton
-          title="Join Club"
-          onPress={() => Linking.openURL('https://razorpay.com/')}
-         // onPress={() => setIsModalVisible(true)} // open modal
-          style={{
-            marginTop: 20,
-            marginBottom: 100,
-            width: 350,
-            alignSelf: 'center',
-          }}
-        />
-
-        {/* Membership Modal */}
-        {/* <MembershipModal
-          visible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
-        /> */}
+        {/* Add extra padding at bottom to prevent content from being hidden behind button */}
+        <View style={styles.bottomPadding} />
       </ScrollView>
+
+      {/* Fixed Join Club Button - positioned outside ScrollView */}
+      <View style={styles.fixedButtonContainer}>
+        <GradientButton
+          title="Join Club"
+          onPress={() => setIsModalVisible(true)}
+          style={styles.fixedButton}
+        />
+      </View>
+
+      <MembershipModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />
     </View>
   );
 }
@@ -258,6 +232,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100, // Extra padding to ensure content isn't hidden behind button
   },
   headerContainer: {
     position: 'relative',
@@ -339,7 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 3,
     fontWeight: '700',
-    fontFamily: 'montserrat',
+    fontFamily: 'Montserrat-Regular',
   },
   tabContentContainer: {
     backgroundColor: '#222222',
@@ -369,11 +349,9 @@ const styles = StyleSheet.create({
   tabItem: {
     width: 300,
     flex: 1,
-    //height:180
   },
   tabContentTitle: {
     color: '#fff',
-    // fontFamily: 'montserrat',
     fontSize: 14,
     fontWeight: 'bold',
     marginVertical: 8,
@@ -381,6 +359,61 @@ const styles = StyleSheet.create({
   tabItemSelected: {
     borderColor: 'blue',
     borderWidth: 1,
-    borderRadius: 12, // match the container rounding for smooth border
+    borderRadius: 12,
+  },
+  // Fixed button container that stays at the bottom
+  fixedButtonContainer: {
+    position: 'absolute',
+    bottom: 90,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  fixedButton: {
+    width: 350,
+  },
+  // Extra padding at bottom of scroll content
+  bottomPadding: {
+    height: 80,
   },
 });
+
+{
+  /* // <Xyz */
+}
+{
+  /* //   visible={isModalVisible}
+        //   onClose={() => setIsModalVisible(false)}
+        // /> */
+}
+{
+  /* <GradientButton
+          title="Join Club"
+          onPress={() => Linking.openURL('https://razorpay.com/')}
+         // onPress={() => setIsModalVisible(true)} // open modal
+          style={{
+            marginTop: 20,
+            marginBottom: 100,
+            width: 350,
+            alignSelf: 'center',
+          }}
+        />
+
+        {/* Membership Modal */
+}
+{
+  /* <MembershipModal
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+        /> */
+}
+
+{
+  /* <View style={styles.joinClubContainer}>
+          <GradientButton
+            title="Join Club"
+            onPress={() => setIsModalVisible(true)}
+          />
+        </View> */
+}
