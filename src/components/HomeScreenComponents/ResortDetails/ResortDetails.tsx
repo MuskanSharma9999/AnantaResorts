@@ -390,12 +390,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
           imageStyle={styles.headerImageStyle}
         >
           {/* Back button */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
             <ChevronLeft size={24} color="#fff" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Resort info overlay */}
           <View style={styles.headerOverlay}>

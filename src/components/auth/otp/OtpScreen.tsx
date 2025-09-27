@@ -146,6 +146,7 @@ const OtpScreen = () => {
 
         if (token) {
           await AsyncStorage.setItem('token', token);
+          await AsyncStorage.setItem('isAuth', 'true');
 
           dispatch(
             setUserDetails({

@@ -9,7 +9,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setAuth } from '../redux/slices/authSlice';
 
 export const AppNavigator = () => {
-  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated,
+  );
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
 
