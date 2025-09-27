@@ -9,6 +9,9 @@ import {
   SafeAreaView,
   FlatList,
   Image,
+  TextInput,
+  Modal,
+  Alert,
 } from 'react-native';
 import {
   Monitor,
@@ -22,8 +25,6 @@ import {
   Square,
 } from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
-import GradientButton from '../../Buttons/GradientButton';
-import Xyz from '../../../Screens/MembershipModal';
 import { useRoute } from '@react-navigation/native';
 import { ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -39,6 +40,9 @@ const ResortDetails: React.FC = ({ navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [resort, setResort] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const layout = Dimensions.get('window');
   const [tabIndex, setTabIndex] = useState(0);
@@ -52,84 +56,257 @@ const ResortDetails: React.FC = ({ navigation }) => {
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
-    const fetchResort = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
+    fetchResort();
+    fetchRooms();
+    fetchReviews();
+  }, [resortId]);
 
-        const response = await axios.get(ApiList.GET_RESORT_BY_ID(resortId), {
+  const fetchResort = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get(ApiList.GET_RESORT_BY_ID(resortId), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      setResort(response.data?.data);
+    } catch (err) {
+      console.error('Failed to fetch resort details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('No token found. Aborting fetch.');
+        return;
+      }
+
+      const response = await axios.get(
+        `${ApiList.GET_ALL_ROOMS}?resort_id=${resortId}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-        });
-        setResort(response.data?.data);
-      } catch (err) {
-        console.error('Failed to fetch resort details:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+        },
+      );
 
-    const fetchRooms = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          console.error('No token found. Aborting fetch.');
-          return;
-        }
+      setRooms(response.data?.data || []);
+    } catch (err) {
+      console.error(
+        'Failed to fetch rooms:',
+        err.response?.data || err.message,
+      );
+      setRooms([]);
+    }
+  };
 
-        console.log('Fetching rooms for resort:', resortId);
-        console.log(
-          'API URL:',
-          `${ApiList.GET_ALL_ROOMS}?resort_id=${resortId}`,
-        );
+  const fetchReviews = async () => {
+    try {
+      setReviewLoading(true);
+      const token = await AsyncStorage.getItem('token');
 
-        const response = await axios.get(
-          `${ApiList.GET_ALL_ROOMS}?resort_id=${resortId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+      // Updated API endpoint for fetching reviews
+      const response = await axios.get(
+        `${ApiList.SUBMIT_REVIEW}/${resortId}/reviews`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-        );
+        },
+      );
+      console.log('fetch Reviewssssss ', response);
 
-        console.log('Rooms API Response:', response.data);
-        setRooms(response.data?.data || []);
-        console.log('Fetched rooms:', response.data?.data);
-      } catch (err) {
-        console.error(
-          'Failed to fetch rooms:',
-          err.response?.data || err.message,
+      setReviews(response.data?.data || response.data || []);
+    } catch (err) {
+      console.error(
+        'Failed to fetch reviews:',
+        err.response?.data || err.message,
+      );
+      setReviews([]);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  const submitReview = async reviewData => {
+    try {
+      setSubmittingReview(true);
+      const token = await AsyncStorage.getItem('token');
+
+      // Updated API endpoint and payload structure
+      const response = await axios.post(
+        `${ApiList.SUBMIT_REVIEW}/${resortId}/reviews`,
+        {
+          rating: reviewData.rating.toString(), // Convert to string as per your payload
+          title: reviewData.title || 'Great experience', // Add title field
+          comment: reviewData.comment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (response.data.success) {
+        Alert.alert('Success', 'Review submitted successfully!');
+        fetchReviews(); // Refresh reviews
+        return true;
+      } else {
+        Alert.alert(
+          'Error',
+          response.data.message || 'Failed to submit review. Please try again.',
         );
-        // Set empty array on error to prevent undefined issues
-        setRooms([]);
-      } finally {
-        setLoading(false);
+        return false;
       }
-    };
-
-    fetchResort();
-    fetchRooms();
-  }, [resortId]);
-
-  const handleJoinClub = () => {
-    console.log('handle join club pressed');
+    } catch (err) {
+      console.error(
+        'Failed to submit review:',
+        err.response?.data || err.message,
+      );
+      Alert.alert(
+        'Error',
+        err.response?.data?.message ||
+          'Failed to submit review. Please try again.',
+      );
+      return false;
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   const getStatusColor = status => {
     switch (status) {
       case 'clean':
-        return '#10B981'; // Green
+        return '#10B981';
       case 'dirty':
-        return '#EF4444'; // Red
+        return '#EF4444';
       case 'out_of_order':
-        return '#F59E0B'; // Amber
+        return '#F59E0B';
       case 'occupied':
-        return '#3B82F6'; // Blue
+        return '#3B82F6';
       default:
-        return '#6B7280'; // Gray
+        return '#6B7280';
     }
+  };
+
+  const ReviewModal = ({ visible, onClose, onSubmit, submitting }) => {
+    const [rating, setRating] = useState(0);
+    const [title, setTitle] = useState('');
+    const [comment, setComment] = useState('');
+
+    const handleSubmit = async () => {
+      if (rating === 0 || !comment.trim()) {
+        alert('Please provide both rating and comment');
+        return;
+      }
+
+      const success = await onSubmit({
+        rating,
+        title: title.trim() || `Rating: ${rating} stars`, // Default title if empty
+        comment,
+      });
+
+      if (success) {
+        setRating(0);
+        setTitle('');
+        setComment('');
+        onClose();
+      }
+    };
+
+    const handleClose = () => {
+      setRating(0);
+      setTitle('');
+      setComment('');
+      onClose();
+    };
+
+    return (
+      <Modal visible={visible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Write a Review</Text>
+              <TouchableOpacity onPress={handleClose} disabled={submitting}>
+                <Text style={styles.closeButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Rating */}
+            <View style={styles.ratingSection}>
+              <Text style={styles.ratingLabel}>Rate your experience:</Text>
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    disabled={submitting}
+                  >
+                    <Text
+                      style={[
+                        styles.starInput,
+                        {
+                          color: star <= rating ? '#FFD700' : '#CCC',
+                          fontSize: 40,
+                        },
+                      ]}
+                    >
+                      ★
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Title Input */}
+            <TextInput
+              style={styles.modalTitleInput}
+              placeholder="Review title (optional)"
+              value={title}
+              onChangeText={setTitle}
+              maxLength={100}
+              editable={!submitting}
+            />
+
+            {/* Comment Input */}
+            <TextInput
+              style={styles.modalCommentInput}
+              placeholder="Tell us about your experience... *"
+              value={comment}
+              onChangeText={setComment}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              editable={!submitting}
+            />
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[
+                styles.modalSubmitButton,
+                submitting && styles.modalSubmitButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={submitting || rating === 0 || !comment.trim()}
+            >
+              <Text style={styles.modalSubmitButtonText}>
+                {submitting ? 'Submitting...' : 'Submit Review'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
   };
 
   const getStatusText = status => {
@@ -137,12 +314,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
   };
 
   const gallery = resort?.image_gallery?.map(img => ({ uri: img.url })) ?? [
-    { uri: 'https://picsum.photos/400/304' },
-    { uri: 'https://picsum.photos/400/305' },
-    { uri: 'https://picsum.photos/400/306' },
-    { uri: 'https://picsum.photos/400/304' },
-    { uri: 'https://picsum.photos/400/305' },
-    { uri: 'https://picsum.photos/400/306' },
     { uri: 'https://picsum.photos/400/304' },
     { uri: 'https://picsum.photos/400/305' },
     { uri: 'https://picsum.photos/400/306' },
@@ -155,6 +326,15 @@ const ResortDetails: React.FC = ({ navigation }) => {
     'Free Breakfast',
   ];
 
+  // Calculate average rating
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((sum, review) => sum + parseInt(review.rating), 0) /
+          reviews.length
+        ).toFixed(1)
+      : 0;
+
   if (loading) return <ActivityIndicator size="large" color="#E0C48F" />;
   if (!resort)
     return <Text style={styles.descriptionText}>Resort not found</Text>;
@@ -165,8 +345,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         style={styles.contentPadding}
         contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
-        bounces={true}
-        scrollEventThrottle={16}
       >
         <Text style={styles.sectionTitle}>About {resort.name}</Text>
         <Text style={styles.descriptionText}>
@@ -176,7 +354,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {(resort.amenities || []).map((amenity, index) => (
             <View key={index} style={styles.amenityTag}>
-              <Text style={styles.amenityTagText}>{amenity}</Text>{' '}
+              <Text style={styles.amenityTagText}>{amenity}</Text>
             </View>
           ))}
           {(resort.amenities || []).length === 0 && (
@@ -205,59 +383,106 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
     reviews: () => (
       <ScrollView style={styles.reviewsContainer}>
-        <Text style={styles.clientsSayTitle}>See what clients are saying</Text>
-        <Text style={styles.clientsSaySubtitle}>
-          Hear from our guests about their unforgettable experiences
-        </Text>
-
-        <View style={styles.videoCard}>
-          <Image
-            source={{ uri: 'https://picsum.photos/400/300' }}
-            style={styles.videoImage}
-          />
-          <View style={styles.playButton}>
-            <Text style={styles.playIcon}>▶</Text>
-          </View>
-        </View>
-
-        <Text style={styles.reviewDate}>23 Nov 2021</Text>
-
-        {(resort.reviews || []).map((review, index) => (
-          <View key={index} style={styles.reviewCard}>
-            <View style={styles.reviewHeader}>
-              <Image source={{ uri: review.avatar }} style={styles.avatar} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.userName}>{review.user}</Text>
-                <Text style={styles.userHandle}>{review.handle}</Text>
-              </View>
-            </View>
-            {review.isVerified && (
-              <View style={styles.verifiedContainer}>
-                <Text style={styles.verifiedText}>✓ Verified Purchase</Text>
-              </View>
-            )}
-            <View style={styles.ratingContainer}>
-              {Array.from({ length: 5 }).map((_, starIndex) => (
+        {/* Reviews Header */}
+        <View style={styles.reviewsHeader}>
+          <View style={styles.ratingSummary}>
+            <Text style={styles.averageRating}>{averageRating}</Text>
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map(star => (
                 <Star
-                  key={starIndex}
-                  size={18}
-                  color={starIndex < review.rating ? '#FFD700' : '#444'}
-                  fill={starIndex < review.rating ? '#FFD700' : 'none'}
+                  key={star}
+                  size={20}
+                  color={star <= averageRating ? '#FFD700' : '#DDD'}
+                  fill={star <= averageRating ? '#FFD700' : 'none'}
                 />
               ))}
             </View>
-            <Text style={styles.reviewComment} numberOfLines={3}>
-              {review.comment}
-            </Text>
-            <TouchableOpacity>
-              <Text style={styles.showMoreText}>Show more ⌄</Text>
-            </TouchableOpacity>
-            <Text style={styles.reviewDate}>{review.date}</Text>
+            <Text style={styles.totalReviews}>({reviews.length} reviews)</Text>
           </View>
-        ))}
 
-        {(resort.reviews || []).length === 0 && (
-          <Text style={styles.descriptionText}>No reviews available</Text>
+          <TouchableOpacity
+            style={styles.addReviewButton}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.addReviewButtonText}>Add Review</Text>
+          </TouchableOpacity>
+        </View>
+
+        {reviewLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#E0C48F"
+            style={styles.loadingIndicator}
+          />
+        ) : (
+          <>
+            {reviews.length > 0 ? (
+              reviews.map((review, index) => (
+                <View key={review.id || index} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <Image
+                      source={{
+                        uri:
+                          review.user_avatar ||
+                          review.user?.avatar ||
+                          'https://via.placeholder.com/40',
+                      }}
+                      style={styles.avatar}
+                    />
+                    <View style={styles.reviewUserInfo}>
+                      <Text style={styles.userName}>
+                        {review.user_name ||
+                          review.user?.name ||
+                          'Anonymous User'}
+                      </Text>
+                      <Text style={styles.reviewDate}>
+                        {new Date(
+                          review.created_at || review.date,
+                        ).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <View style={styles.ratingContainer}>
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <Star
+                          key={starIndex}
+                          size={16}
+                          color={
+                            starIndex < parseInt(review.rating)
+                              ? '#FFD700'
+                              : '#444'
+                          }
+                          fill={
+                            starIndex < parseInt(review.rating)
+                              ? '#FFD700'
+                              : 'none'
+                          }
+                        />
+                      ))}
+                    </View>
+                  </View>
+
+                  {review.title && (
+                    <Text style={styles.reviewTitle}>{review.title}</Text>
+                  )}
+
+                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.noReviewsContainer}>
+                <Text style={styles.noReviewsText}>No reviews yet</Text>
+                <Text style={styles.noReviewsSubtext}>
+                  Be the first to share your experience!
+                </Text>
+                <TouchableOpacity
+                  style={styles.addReviewButton}
+                  onPress={() => setIsModalVisible(true)}
+                >
+                  <Text style={styles.addReviewButtonText}>Write a Review</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     ),
@@ -274,9 +499,9 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
         {(rooms || []).map((room, index) => (
           <View key={room.id || index} style={styles.roomCard}>
+            {/* Room card content remains the same */}
             <View style={styles.roomHeader}>
               <View>
-                {/* <Text style={styles.roomNumber}>Room #{room.room_number}</Text> */}
                 <Text style={styles.roomNumber}>
                   {room.roomType?.room_type || 'Standard Room'}
                 </Text>
@@ -331,17 +556,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   ₹{room.roomType?.price_per_night || '0.00'}
                 </Text>
               </View>
-              {/* <TouchableOpacity
-                style={[
-                  styles.bookButton,
-                  room.room_status !== 'clean' && styles.bookButtonDisabled,
-                ]}
-                disabled={room.room_status !== 'clean'}
-              >
-                <Text style={styles.bookButtonText}>
-                  {room.room_status === 'clean' ? 'Book Now' : 'Not Available'}
-                </Text>
-              </TouchableOpacity> */}
             </View>
 
             {room.housekeeping_status && (
@@ -389,15 +603,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
           style={styles.headerImage}
           imageStyle={styles.headerImageStyle}
         >
-          {/* Back button */}
-          {/* <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <ChevronLeft size={24} color="#fff" />
-          </TouchableOpacity> */}
-
-          {/* Resort info overlay */}
           <View style={styles.headerOverlay}>
             <Text style={styles.resortName}>{resort.name}</Text>
             <View style={styles.locationRow}>
@@ -455,6 +660,14 @@ const ResortDetails: React.FC = ({ navigation }) => {
             </ScrollView>
           </View>
         )}
+      />
+
+      {/* Review Modal */}
+      <ReviewModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onSubmit={submitReview}
+        submitting={submittingReview}
       />
     </SafeAreaView>
   );

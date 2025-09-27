@@ -604,4 +604,183 @@ export const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
     textAlign: 'center',
   },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#FFF',
+    marginBottom: 8,
+  },
+
+  ratingSummary: {
+    alignItems: 'center',
+  },
+
+  averageRating: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  totalReviews: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+
+  addReviewButton: {
+    backgroundColor: '#E0C48F',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+
+  addReviewButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+
+  reviewCard: {
+    backgroundColor: '#FFF',
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  reviewDate: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+
+  reviewComment: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+
+  noReviewsContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+
+  noReviewsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: 8,
+  },
+
+  noReviewsSubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  closeButton: {
+    fontSize: 24,
+    color: '#666',
+  },
+
+  ratingSection: {
+    marginBottom: 20,
+  },
+
+  ratingLabel: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 10,
+  },
+
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+
+  starInput: {
+    marginHorizontal: 5,
+  },
+
+  modalCommentInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 120,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+  },
+
+  modalSubmitButton: {
+    backgroundColor: '#E0C48F',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
+  modalSubmitButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+
+  modalSubmitButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

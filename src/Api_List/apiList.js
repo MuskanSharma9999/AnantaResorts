@@ -27,6 +27,11 @@ export const ApiList = {
   GET_ALL_ROOMS: `${url}/rooms`,
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,
   UPDATE_KYC: `${url}/kyc/upload`,
+
+  SUBMIT_REVIEW: `${url}/resorts`,
+  GET_REVIEW: `${url}/resorts`,
+
+  GET_MEMBERSHIP_PLANS: `${url}/memberships/plans`,
 };
 
 export default ApiList;
