@@ -39,6 +39,7 @@ const ProfileScreen = () => {
 
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [tempName, setTempName] = useState(name);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setProfile_photo_url(user.profilePhoto || '');
@@ -87,38 +88,25 @@ const ProfileScreen = () => {
     fetchProfile();
   }, [dispatch]);
 
-  // ✅ FIXED: Convert image to base64 before sending
-  const convertImageToBase64 = (uri) => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function() {
-        const reader = new FileReader();
-        reader.onloadend = function() {
-          resolve(reader.result);
-        };
-        reader.readAsDataURL(xhr.response);
-      };
-      xhr.onerror = reject;
-      xhr.open('GET', uri);
-      xhr.responseType = 'blob';
-      xhr.send();
-    });
-  };
-
-  // ✅ OPTION 1: Using FormData (Recommended)
-  const uploadImageWithFormData = async (imageUri, token) => {
+  // ✅ SEPARATED: Profile photo upload using UPDATE_PROFILE_PHOTO API
+  const uploadProfilePhoto = async (imageUri, token) => {
     try {
+      setIsUploading(true);
+      
       const formData = new FormData();
       formData.append('profile_photo', {
         uri: imageUri,
-        type: 'image/jpeg', // or image/png
+        type: 'image/jpeg', // or image/png based on the image
         name: 'profile_photo.jpg',
       });
-      formData.append('email', email);
-      formData.append('name', name);
 
-      const response = await fetch(ApiList.UPDATE_PROFILE, {
-        method: 'PUT',
+      console.log('[uploadProfilePhoto] Starting profile photo upload...', {
+        uri: imageUri,
+        api: ApiList.UPDATE_PROFILE_PHOTO
+      });
+
+      const response = await fetch(ApiList.UPDATE_PROFILE_PHOTO, {
+        method: 'PUT', // or 'POST' depending on your API
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
@@ -126,23 +114,39 @@ const ProfileScreen = () => {
         body: formData,
       });
 
-      return await response.json();
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // ✅ Update Redux store with new profile photo
+        dispatch(updateProfilePhoto(imageUri));
+        
+        // If the API returns the new photo URL, use that instead
+        const newPhotoUrl = result.data?.profile_photo_url || imageUri;
+        setProfile_photo_url(newPhotoUrl);
+        
+        Alert.alert('Success', 'Profile photo updated successfully!');
+        return result;
+      } else {
+        throw new Error(result.error || 'Failed to upload profile photo');
+      }
     } catch (error) {
+      console.error('Error uploading profile photo:', error);
       throw error;
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  // ✅ OPTION 2: Using base64 (Alternative)
-  const uploadImageWithBase64 = async (imageUri, token) => {
+  // ✅ SEPARATED: Profile update (name and email only) using UPDATE_PROFILE API
+  const updateProfileInfo = async (name, email, token) => {
     try {
-      // Convert image to base64
-      const base64Image = await convertImageToBase64(imageUri);
-      
       const payload = { 
-        email, 
-        name, 
-        profile_photo_url: base64Image // Send as base64
+        email: email, 
+        name: name
+        // Don't include profile_photo_url here anymore
       };
+
+      console.log('[updateProfileInfo] Sending profile update request...', payload);
 
       const response = await apiRequest({
         url: ApiList.UPDATE_PROFILE,
@@ -153,11 +157,17 @@ const ProfileScreen = () => {
 
       return response;
     } catch (error) {
+      console.error('Error updating profile info:', error);
       throw error;
     }
   };
 
   const pickImageFromGallery = () => {
+    if (isUploading) {
+      Alert.alert('Please wait', 'Profile photo upload in progress...');
+      return;
+    }
+
     const options = { 
       mediaType: 'photo', 
       quality: 0.8, // Reduce quality to decrease file size
@@ -181,32 +191,15 @@ const ProfileScreen = () => {
             return;
           }
 
-          console.log('[pickImageFromGallery] Starting image upload...', {
-            uri,
-            email,
-            name
-          });
-
-          // ✅ CHOOSE ONE OF THESE METHODS:
-
-          // Method 1: Using FormData (Recommended for file uploads)
-          // const response = await uploadImageWithBase64(uri, token);
-
-          // Method 2: Using base64 (Uncomment if your API expects base64)
-          const response = await uploadImageWithBase64(uri, token);
- 
-          if (response.success) {
-            // ✅ Update Redux store with new profile photo
-            dispatch(updateProfilePhoto(uri));
-            Alert.alert('Success', 'Profile photo updated successfully!');
-          } else {
-            Alert.alert('Error', response.error || 'Failed to update profile photo');
-            // Revert the preview on failure
-            setProfile_photo_url(user.profilePhoto || '');
+          // ✅ Use separate API for profile photo upload
+          const result = await uploadProfilePhoto(uri, token);
+          
+          if (result.success) {
+            console.log('Profile photo uploaded successfully');
           }
         } catch (error) {
           console.error('Error updating profile photo:', error);
-          Alert.alert('Error', 'Failed to update profile photo');
+          Alert.alert('Error', error.message || 'Failed to update profile photo');
           // Revert the preview on failure
           setProfile_photo_url(user.profilePhoto || '');
         }
@@ -249,31 +242,15 @@ const ProfileScreen = () => {
         return;
       }
 
-      // ✅ FIXED: Don't send local URI, send the actual profile_photo_url from server
-      const payload = { 
-        email: tempEmail, 
-        name: tempName, 
-        // Only include profile_photo_url if it's a valid server URL, not local URI
-        ...(profile_photo_url && !profile_photo_url.startsWith('file://') && {
-          profile_photo_url: profile_photo_url
-        })
-      };
-
-      console.log('[handleUpdateProfile] Sending PUT request...', payload);
-
-      const response = await apiRequest({
-        url: ApiList.UPDATE_PROFILE,
-        method: 'PUT',
-        body: payload,
-        token,
-      });
+      // ✅ Now only update name and email using UPDATE_PROFILE API
+      const response = await updateProfileInfo(tempName, tempEmail, token);
 
       if (response.success) {
         // ✅ Update Redux store with new data
         dispatch(setUserDetails({
           name: tempName,
           email: tempEmail,
-          profilePhoto: profile_photo_url
+          profilePhoto: profile_photo_url // Keep existing profile photo
         }));
         
         // ✅ Update local state
@@ -314,6 +291,11 @@ const ProfileScreen = () => {
                 }
                 style={styles.avatar}
               />
+              {isUploading && (
+                <View style={styles.uploadingOverlay}>
+                  <Text style={styles.uploadingText}>Uploading...</Text>
+                </View>
+              )}
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.name}>{name}</Text>
@@ -329,8 +311,14 @@ const ProfileScreen = () => {
       <View style={styles.AccountSettingsSection}>
         <Text style={styles.AccountSettingTitle}>Account settings</Text>
 
-        <TouchableOpacity style={styles.menuItem} onPress={pickImageFromGallery}>
-          <Text style={styles.menuText}>Update profile photo</Text>
+        <TouchableOpacity 
+          style={[styles.menuItem, isUploading && styles.disabledMenuItem]} 
+          onPress={pickImageFromGallery}
+          disabled={isUploading}
+        >
+          <Text style={[styles.menuText, isUploading && styles.disabledText]}>
+            Update profile photo {isUploading ? '(Uploading...)' : ''}
+          </Text>
           <Text style={styles.chevron}>></Text>
         </TouchableOpacity>
 
@@ -343,7 +331,6 @@ const ProfileScreen = () => {
           <Text style={[styles.menuText, styles.logoutText]}>KYC</Text>
           <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
         </TouchableOpacity>
-
 
         <TouchableOpacity style={styles.menuItem}  onPress={console.log("My Vouchers Clicked")}>
           <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
@@ -409,7 +396,6 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
-
 
 
 

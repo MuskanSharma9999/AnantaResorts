@@ -15,12 +15,14 @@ import {
   Animated,
   PanResponder,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ApiList from '../Api_List/apiList';
 import axios from 'axios';
 import PhoneInput from 'react-native-phone-number-input';
 import GradientButton from '../components/Buttons/GradientButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { height } = Dimensions.get('window');
 
@@ -34,7 +36,8 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
   onClose,
 }) => {
   const [name, setName] = useState('');
-  const [age, setAge] = useState('');
+  const [dob, setDob] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
@@ -95,23 +98,93 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
     }),
   ).current;
 
+  // const fetchProfile = async () => {
+  //   try {
+  //     // console.log('[fetchProfile] fetching...');
+
+  //     // Retrieve token with the correct key
+  //     const token = await AsyncStorage.getItem('token');
+
+  //     if (!token) {
+  //       console.warn('[fetchProfile] No token found in storage');
+  //       Alert.alert('Error', 'Please login again');
+  //       return;
+  //     }
+
+  //     // console.log(
+  //     //   '[fetchProfile] Token found:',
+  //     //   token.substring(0, 20) + '...',
+  //     // ); // Log first part of token
+
+  //     const response = await axios.get(ApiList.GET_PROFILE, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     // console.log(
+  //     //   '[fetchProfile] Full response:',
+  //     //   JSON.stringify(response.data, null, 2),
+  //     // );
+
+  //     if (response.data?.success && response.data?.data?.user) {
+  //       const { name, email, phone, city, age } = response.data.data.user;
+
+  //       setName(name || '');
+  //       setEmail(email || '');
+  //       setPhone(stripCountryCode(phone || ''));
+  //       setCity(city || '');
+  //       setAge(age ? String(age) : ''); // make sure age is string for TextInput
+
+  //       // console.log('[fetchProfile] Profile data set:', { name, email, phone });
+  //     } else {
+  //       console.warn(
+  //         '[fetchProfile] Invalid response structure:',
+  //         response.data,
+  //       );
+  //       Alert.alert('Error', 'Failed to load profile data');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('[fetchProfile] Error:', error);
+  //     if (error.response) {
+  //       console.error(
+  //         '[fetchProfile] API error response:',
+  //         error.response.data,
+  //       );
+  //       if (error.response.status === 401) {
+  //         Alert.alert('Error', 'Session expired. Please login again.');
+  //       } else {
+  //         Alert.alert(
+  //           'Error',
+  //           'Failed to fetch profile: ' + error.response.data.message,
+  //         );
+  //       }
+  //     } else if (error.request) {
+  //       console.error('[fetchProfile] Network error:', error.request);
+  //       Alert.alert('Error', 'Network error. Please check your connection.');
+  //     } else {
+  //       console.error('[fetchProfile] Unexpected error:', error.message);
+  //       Alert.alert('Error', 'An unexpected error occurred');
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const stripCountryCode = (fullPhone: string): string => {
+    // Removes leading + and country code (e.g. +91)
+    return fullPhone.replace(/^\+\d{1,2}/, '');
+  };
+
   const fetchProfile = async () => {
     try {
-      // console.log('[fetchProfile] fetching...');
-
-      // Retrieve token with the correct key
       const token = await AsyncStorage.getItem('token');
 
       if (!token) {
-        console.warn('[fetchProfile] No token found in storage');
         Alert.alert('Error', 'Please login again');
         return;
       }
-
-      // console.log(
-      //   '[fetchProfile] Token found:',
-      //   token.substring(0, 20) + '...',
-      // ); // Log first part of token
 
       const response = await axios.get(ApiList.GET_PROFILE, {
         headers: {
@@ -120,49 +193,42 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         },
       });
 
-      // console.log(
-      //   '[fetchProfile] Full response:',
-      //   JSON.stringify(response.data, null, 2),
-      // );
-
       if (response.data?.success && response.data?.data?.user) {
-        const { name, email, phone } = response.data.data.user;
+        const { name, email, phone, city, date_of_birth } =
+          response.data.data.user;
+
+        setDob(date_of_birth ? new Date(date_of_birth) : null);
+
         setName(name || '');
         setEmail(email || '');
-        setPhone(phone || '');
-        // console.log('[fetchProfile] Profile data set:', { name, email, phone });
+        setPhone(stripCountryCode(phone || '')); // 👈 strip country code
+        setCity((city || '').trim()); // 👈 clean extra spaces
       } else {
-        console.warn(
-          '[fetchProfile] Invalid response structure:',
-          response.data,
-        );
         Alert.alert('Error', 'Failed to load profile data');
       }
     } catch (error: any) {
-      console.error('[fetchProfile] Error:', error);
-      if (error.response) {
-        console.error(
-          '[fetchProfile] API error response:',
-          error.response.data,
-        );
-        if (error.response.status === 401) {
-          Alert.alert('Error', 'Session expired. Please login again.');
-        } else {
-          Alert.alert(
-            'Error',
-            'Failed to fetch profile: ' + error.response.data.message,
-          );
-        }
-      } else if (error.request) {
-        console.error('[fetchProfile] Network error:', error.request);
-        Alert.alert('Error', 'Network error. Please check your connection.');
-      } else {
-        console.error('[fetchProfile] Unexpected error:', error.message);
-        Alert.alert('Error', 'An unexpected error occurred');
-      }
+      Alert.alert('Error', 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
+  };
+
+  const isAbove18 = (date: Date | null) => {
+    if (!date) return false;
+    const today = new Date();
+    const ageDiff = today.getFullYear() - date.getFullYear();
+
+    if (
+      ageDiff > 18 ||
+      (ageDiff === 18 && today.getMonth() > date.getMonth()) ||
+      (ageDiff === 18 &&
+        today.getMonth() === date.getMonth() &&
+        today.getDate() >= date.getDate())
+    ) {
+      return true;
+    }
+
+    return false;
   };
 
   const handleSubmit = async () => {
@@ -176,9 +242,14 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
     //   agreeToTerms,
     // });
 
-    if (!name || !age || !phone || !email || !city) {
+    if (!name || !dob || !phone || !email || !city) {
       console.warn('[handleSubmit] Missing fields');
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!dob || !isAbove18(dob)) {
+      Alert.alert('Error', 'You must be at least 18 years old to continue.');
       return;
     }
 
@@ -200,10 +271,10 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         ApiList.UPDATE_PROFILE,
         {
           name,
-          age,
           phone,
           email,
           city,
+          date_of_birth: dob ? dob.toISOString() : null, // 👈 Send ISO string
         },
         {
           headers: {
@@ -274,8 +345,37 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                   />
                 </View>
 
-                <Text style={styles.label}>Age</Text>
-                <View style={styles.inputContainer}>
+                <Text style={styles.label}>Date of Birth</Text>
+                <TouchableOpacity
+                  style={styles.inputContainer}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text
+                    style={[
+                      styles.input,
+                      { paddingTop: 12, color: dob ? '#000' : '#999' },
+                    ]}
+                  >
+                    {dob ? dob.toDateString() : 'Select Date of Birth'}
+                  </Text>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={dob || new Date(2000, 0, 1)}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    maximumDate={new Date()}
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setDob(selectedDate);
+                      }
+                    }}
+                  />
+                )}
+
+                {/* <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
                     placeholder="Enter Age"
@@ -284,7 +384,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                     keyboardType="numeric"
                     placeholderTextColor="#999"
                   />
-                </View>
+                </View> */}
 
                 <Text style={styles.label}>Waiting to hear from you on</Text>
 
@@ -339,7 +439,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                     keyboardType="email-address"
                     autoCapitalize="none"
                     placeholderTextColor="#999"
-                     editable={false} 
+                    editable={false}
                   />
                 </View>
 
@@ -371,7 +471,16 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
                   </View>
                   <Text style={styles.termsText}>
                     By signing up you agree to our{' '}
-                    <Text style={styles.termsLink}>
+                    <Text
+                      style={styles.termsLink}
+                      onPress={() => {
+                        // Replace with real link if available
+                        const dummyURL = 'https://example.com/terms';
+                        Linking.openURL(dummyURL).catch(err =>
+                          Alert.alert('Error', 'Failed to open link'),
+                        );
+                      }}
+                    >
                       Terms and Conditions of Use
                     </Text>
                   </Text>

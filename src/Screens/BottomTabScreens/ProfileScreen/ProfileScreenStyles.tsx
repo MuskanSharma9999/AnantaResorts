@@ -136,6 +136,28 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     fontFamily: 'Montserrat',
   },
+  disabledMenuItem: {
+    opacity: 0.5,
+  },
+  disabledText: {
+    color: '#999',
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50, // should match your avatar borderRadius
+  },
+  uploadingText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });
 
 export default styles;

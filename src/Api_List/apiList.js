@@ -23,6 +23,8 @@ export const ApiList = {
   VERIFY_OTP: `${url}/auth/verify-otp`,
   GET_PROFILE: `${url}/auth/profile`,
   UPDATE_PROFILE: `${url}/auth/profile`,
+  UPDATE_PROFILE_PHOTO: `${url}/auth/upload-profile-photo`,
+
   GET_ALL_RESORTS: `${url}/resorts`,
   GET_ALL_ROOMS: `${url}/rooms`,
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,

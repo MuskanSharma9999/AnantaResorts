@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import GradientButton from '../../components/Buttons/GradientButton';
 import MembershipModal from '../MembershipModal';
@@ -16,6 +17,7 @@ import { apiRequest } from '../../Api_List/apiUtils';
 // Replace these with the correct local images or URLs
 const BACKGROUND_IMAGE = require('../../assets/images/signUpCarousel_images/img_1.jpg');
 const ARROW_ICON = require('../../assets/images/onBoarding.png');
+import styles from './JoinClubStyles';
 
 export default function MembershipScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -29,7 +31,7 @@ export default function MembershipScreen() {
       return {
         Plan1: {
           title: 'Basic Plan',
-          price: '₹2,008 / 30 days',
+          price: '₹21000 / days',
           description:
             'Enjoy the essentials with access to select resorts and basic amenities for a flexible holiday experience.',
           benefits: ['Basic resort access', 'Standard amenities'],
@@ -55,13 +57,25 @@ export default function MembershipScreen() {
     membershipPlans.forEach((plan, index) => {
       const planKey = `Plan${index + 1}`;
 
-      const benefits =
-        plan && plan.benefits
-          ? plan.benefits
-              .split(',')
-              .map(benefit => benefit.trim().replace(/[\\"]/g, ''))
-              .filter(benefit => benefit.length > 0)
-          : ['Standard membership benefits'];
+      // Parse benefits from the string format in your API response
+      let benefits = [];
+      if (plan && plan.benefits) {
+        try {
+          // Clean and parse the benefits string
+          const cleanedBenefits = plan.benefits
+            .replace(/[\[\]']/g, '') // Remove brackets and quotes
+            .split(',') // Split by comma
+            .map(benefit => benefit.trim()) // Trim whitespace
+            .filter(benefit => benefit.length > 0); // Remove empty strings
+
+          benefits = cleanedBenefits;
+        } catch (error) {
+          console.error('Error parsing benefits:', error);
+          benefits = ['Standard membership benefits'];
+        }
+      } else {
+        benefits = ['Standard membership benefits'];
+      }
 
       tabContent[planKey] = {
         title: (plan && plan.name) || `Plan ${index + 1}`,
@@ -127,6 +141,9 @@ export default function MembershipScreen() {
 
   const tabContent = generateTabContent();
 
+  // Get current benefits based on selected tab
+  const currentBenefits = tabContent[selectedTab]?.benefits || [];
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -167,7 +184,9 @@ export default function MembershipScreen() {
               <TouchableOpacity
                 key={plan}
                 style={styles.tabItem}
-                onPress={() => setSelectedTab(plan)}
+                onPress={() => {
+                  setSelectedTab(plan);
+                }}
               >
                 <View
                   style={[
@@ -189,6 +208,22 @@ export default function MembershipScreen() {
             ))}
           </View>
         </ScrollView>
+
+        {/* Selected Plan Benefits Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {tabContent[selectedTab]?.title} Benefits
+          </Text>
+          <Text style={styles.cardSubTitle}>
+            Enjoy these exclusive benefits with your{' '}
+            {tabContent[selectedTab]?.title}:
+          </Text>
+          {currentBenefits.map((benefit, index) => (
+            <Text key={index} style={styles.listItem}>
+              • {benefit}
+            </Text>
+          ))}
+        </View>
 
         {/* Main Card */}
         <View style={styles.card}>
@@ -237,64 +272,6 @@ export default function MembershipScreen() {
           </Text>
         </View>
 
-        {/* Benefits of Ownership Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Benefits of Ownership</Text>
-          <Text style={styles.listItem}>
-            • A well furnished room - for 2 Adults & 2 Kids (below 12 years)/3
-            Adults.
-          </Text>
-          <Text style={styles.listItem}>
-            • 4 Welcome meal vouchers - a complimentary buffet/fixed meal for
-            two pax.
-          </Text>
-          <Text style={styles.listItem}>
-            • 2 Dining power vouchers - 50% discount on total food bill up to 10
-            pax every year.
-          </Text>
-          <Text style={styles.listItem}>
-            • 2 Celebration complimentary cake vouchers - Pineapple
-          </Text>
-          <Text style={styles.listItem}>
-            • One (1) certificate entitling the bearer to a Celebration bottle
-            of Indian House Wine or Five Indian Beer (330ML) or Five Mocktails
-            (Whilst Dining at any F&B Outlet) at Ananta Spa & Resort
-            Pushkar/Udaipur/Aijabgarh.
-          </Text>
-          <Text style={styles.listItem}>
-            • 4 Special room rate vouchers (Rs. 5500 + taxes) for The Ananta
-            Udaipur and Ananta Spa & Resorts Pushkar (every year).
-          </Text>
-          <Text style={styles.listItem}>
-            • 2 Special room rate vouchers (Rs. 6000 + taxes) for Ananta Spa &
-            Resorts Aijabgarh (every year).
-          </Text>
-          <Text style={styles.listItem}>
-            • 4 Special room rate vouchers (Rs. 4500 + taxes) for The Baagh
-            Ananta Elite, Ranthambore (every year).
-          </Text>
-          <Text style={styles.listItem}>
-            • 2 Special room rate vouchers (Rs. 3500 + taxes) for Siana Ananta
-            Elite, (Jaisalmer) / Richmond Ananta Elite, Goa (every year).
-          </Text>
-          <Text style={styles.listItem}>
-            • 2 vouchers of 50% discount on selected spa treatment (The Ananta
-            Udaipur, Ananta Spa & Resort Pushkar, Ananta Spa & Resorts Aiajgarh
-            and The Baagh Ananta Elite, Ranthambore) (wherever applicable)
-          </Text>
-          <Text style={styles.listItem}>
-            • 1 Bar celebration voucher - bar discount voucher of Rs. 1000/-
-            every year (Indian house brands).
-          </Text>
-          <Text style={styles.listItem}>
-            • 7 complimentary laundry vouchers each year.
-          </Text>
-          <Text style={styles.listItem}>
-            • 5 vouchers of complimentary entry in Den at The Ananta Udaipur (1
-            voucher for 1 pax).
-          </Text>
-        </View>
-
         <View style={styles.bottomPadding} />
       </ScrollView>
 
@@ -314,162 +291,6 @@ export default function MembershipScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-  },
-  loadingText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Montserrat',
-  },
-  headerContainer: {
-    position: 'relative',
-    height: 220,
-  },
-  headerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  arrowContainer: {
-    position: 'absolute',
-    top: 16,
-    left: 12,
-    backgroundColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 20,
-    padding: 4,
-    zIndex: 2,
-  },
-  arrowIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
-  },
-  headerTextContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'black',
-    opacity: 0.5,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  headerTitle: {
-    fontSize: 22,
-    color: '#FFE2B8',
-    fontWeight: '600',
-    fontFamily: 'Cormorant',
-    marginBottom: 5,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '400',
-    fontFamily: 'serif',
-  },
-  card: {
-    backgroundColor: '#19191A',
-    borderRadius: 18,
-    marginHorizontal: 12,
-    marginTop: 16,
-    padding: 16,
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-  },
-  cardTitle: {
-    color: '#FFE2B8',
-    fontSize: 22,
-    fontWeight: '600',
-    fontFamily: 'Cormorant',
-    marginBottom: 8,
-  },
-  cardBody: {
-    color: '#fff',
-    fontSize: 13,
-    marginBottom: 8,
-    fontWeight: '400',
-    fontFamily: 'Montserrat',
-  },
-  cardSubTitle: {
-    color: '#fff',
-    fontSize: 22,
-    marginVertical: 6,
-    fontWeight: '500',
-    fontFamily: 'Cormorant',
-  },
-  listItem: {
-    color: '#FFE2B8',
-    fontSize: 13,
-    marginBottom: 3,
-    fontWeight: '700',
-    fontFamily: 'Montserrat-Regular',
-  },
-  tabScrollView: {
-    flexGrow: 0,
-  },
-  tabBarContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingTop: 20,
-  },
-  tabItem: {
-    width: 300,
-    marginRight: 12,
-  },
-  tabContentContainer: {
-    backgroundColor: '#222222',
-    padding: 16,
-    borderRadius: 12,
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-  },
-  tabContentTitle: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  tabContentText: {
-    color: '#FFE2B8',
-    fontFamily: 'montserrat',
-    fontSize: 14,
-    fontWeight: '400',
-    marginBottom: 5,
-  },
-  tabItemSelected: {
-    borderColor: 'blue',
-    borderWidth: 2,
-  },
-  fixedButtonContainer: {
-    position: 'absolute',
-    bottom: 90,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  fixedButton: {
-    width: 350,
-  },
-  bottomPadding: {
-    height: 80,
-  },
-});
 
 {
   /* // <Xyz */

@@ -384,8 +384,8 @@ const ResortDetails: React.FC = ({ navigation }) => {
     reviews: () => (
       <ScrollView style={styles.reviewsContainer}>
         {/* Reviews Header */}
-        <View style={styles.reviewsHeader}>
-          <View style={styles.ratingSummary}>
+        {/* <View style={styles.reviewsHeader}> */}
+        {/* <View style={styles.ratingSummary}>
             <Text style={styles.averageRating}>{averageRating}</Text>
             <View style={styles.starsContainer}>
               {[1, 2, 3, 4, 5].map(star => (
@@ -398,15 +398,15 @@ const ResortDetails: React.FC = ({ navigation }) => {
               ))}
             </View>
             <Text style={styles.totalReviews}>({reviews.length} reviews)</Text>
-          </View>
+          </View> */}
 
-          <TouchableOpacity
+        {/* <TouchableOpacity
             style={styles.addReviewButton}
             onPress={() => setIsModalVisible(true)}
           >
             <Text style={styles.addReviewButtonText}>Add Review</Text>
-          </TouchableOpacity>
-        </View>
+          </TouchableOpacity> */}
+        {/* </View> */}
 
         {reviewLoading ? (
           <ActivityIndicator
@@ -506,7 +506,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   {room.roomType?.room_type || 'Standard Room'}
                 </Text>
               </View>
-              <View
+              {/* <View
                 style={[
                   styles.statusBadge,
                   { backgroundColor: getStatusColor(room.room_status) },
@@ -515,7 +515,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 <Text style={styles.statusText}>
                   {getStatusText(room.room_status)}
                 </Text>
-              </View>
+              </View> */}
             </View>
 
             <View style={styles.roomDetails}>
@@ -558,21 +558,21 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </View>
             </View>
 
-            {room.housekeeping_status && (
+            {/* {room.housekeeping_status && (
               <View style={styles.housekeepingInfo}>
                 <Text style={styles.housekeepingLabel}>Housekeeping:</Text>
                 <Text style={styles.housekeepingStatus}>
                   {room.housekeeping_status.replace(/_/g, ' ')}
                 </Text>
               </View>
-            )}
+            )} */}
 
-            {room.notes && (
+            {/* {room.notes && (
               <View style={styles.notesContainer}>
                 <Text style={styles.notesLabel}>Notes:</Text>
                 <Text style={styles.notesText}>{room.notes}</Text>
               </View>
-            )}
+            )} */}
           </View>
         ))}
 

@@ -5,22 +5,37 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  ScrollView,
-  StyleSheet,
+  Alert,
 } from 'react-native';
 
-const ReviewModal = ({ visible, onClose, onSubmit }) => {
+const ReviewModal = ({ visible, onClose, onSubmit, submitting }) => {
   const [rating, setRating] = useState(0);
+  const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0 || !comment.trim()) {
-      alert('Please provide both rating and comment');
+      Alert.alert('Required Fields', 'Please provide both rating and comment');
       return;
     }
 
-    onSubmit({ rating, comment });
+    const success = await onSubmit({
+      rating,
+      title: title.trim() || `Rating: ${rating} stars`,
+      comment,
+    });
+
+    if (success) {
+      setRating(0);
+      setTitle('');
+      setComment('');
+      onClose();
+    }
+  };
+
+  const handleClose = () => {
     setRating(0);
+    setTitle('');
     setComment('');
     onClose();
   };
@@ -32,7 +47,7 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
           {/* Header */}
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Write a Review</Text>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose} disabled={submitting}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
           </View>
@@ -42,12 +57,16 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
             <Text style={styles.ratingLabel}>Rate your experience:</Text>
             <View style={styles.starsContainer}>
               {[1, 2, 3, 4, 5].map(star => (
-                <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setRating(star)}
+                  disabled={submitting}
+                >
                   <Text
                     style={[
                       styles.starInput,
                       {
-                        color: star <= rating ? '#FFD700' : '#CCC',
+                        color: star <= rating ? '#FFD700' : '#444',
                       },
                     ]}
                   >
@@ -58,23 +77,43 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
             </View>
           </View>
 
+          {/* Title Input */}
+          <TextInput
+            style={styles.modalTitleInput}
+            placeholder="Review title (optional)"
+            placeholderTextColor="#888"
+            value={title}
+            onChangeText={setTitle}
+            maxLength={100}
+            editable={!submitting}
+          />
+
           {/* Comment Input */}
           <TextInput
             style={styles.modalCommentInput}
-            placeholder="Tell us about your experience..."
+            placeholder="Tell us about your experience... *"
+            placeholderTextColor="#888"
             value={comment}
             onChangeText={setComment}
             multiline
             numberOfLines={6}
             textAlignVertical="top"
+            editable={!submitting}
           />
 
           {/* Submit Button */}
           <TouchableOpacity
-            style={styles.modalSubmitButton}
+            style={[
+              styles.modalSubmitButton,
+              (submitting || rating === 0 || !comment.trim()) &&
+                styles.modalSubmitButtonDisabled,
+            ]}
             onPress={handleSubmit}
+            disabled={submitting || rating === 0 || !comment.trim()}
           >
-            <Text style={styles.modalSubmitButtonText}>Submit Review</Text>
+            <Text style={styles.modalSubmitButtonText}>
+              {submitting ? 'Submitting...' : 'Submit Review'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -82,197 +121,91 @@ const ReviewModal = ({ visible, onClose, onSubmit }) => {
   );
 };
 
-const Reviews = ({ resort }) => {
-  const [reviews, setReviews] = useState(resort?.reviews || []);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-
-  const handleSubmitReview = reviewData => {
-    const newReview = {
-      ...reviewData,
-      id: Date.now(),
-      user: 'Current User',
-      handle: '@user123',
-      date: new Date().toLocaleDateString('en-GB'),
-      isVerified: true,
-      avatar: 'https://picsum.photos/100/100',
-    };
-
-    setReviews([newReview, ...reviews]);
-  };
-
-  return (
-    <ScrollView style={styles.reviewsContainer}>
-      {/* Add Review Button */}
-      <TouchableOpacity
-        style={styles.addReviewButton}
-        onPress={() => setShowReviewModal(true)}
-      >
-        <Text style={styles.addReviewButtonText}>+ Write a Review</Text>
-      </TouchableOpacity>
-
-      {/* Heading */}
-      <Text style={styles.clientsSayTitle}>See what clients are saying</Text>
-
-      {/* List of Reviews */}
-      {reviews.length > 0 ? (
-        reviews.map(review => (
-          <View key={review.id} style={styles.reviewCard}>
-            <Text style={styles.reviewUser}>{review.user}</Text>
-            <Text style={styles.reviewHandle}>{review.handle}</Text>
-            <Text style={styles.reviewDate}>{review.date}</Text>
-            <View style={styles.reviewStars}>
-              {[...Array(5)].map((_, index) => (
-                <Text
-                  key={index}
-                  style={{
-                    color: index < review.rating ? '#FFD700' : '#CCC',
-                    fontSize: 20,
-                  }}
-                >
-                  ★
-                </Text>
-              ))}
-            </View>
-            <Text style={styles.reviewComment}>{review.comment}</Text>
-          </View>
-        ))
-      ) : (
-        <Text style={styles.noReviewsText}>No reviews yet. Be the first!</Text>
-      )}
-
-      {/* Review Modal */}
-      <ReviewModal
-        visible={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
-        onSubmit={handleSubmitReview}
-      />
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  reviewsContainer: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-
-  addReviewButton: {
-    backgroundColor: '#007BFF',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  addReviewButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-
-  clientsSayTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-  },
-
-  reviewCard: {
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  reviewUser: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  reviewHandle: {
-    color: '#777',
-    fontSize: 14,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#aaa',
-    marginVertical: 5,
-  },
-  reviewStars: {
-    flexDirection: 'row',
-    marginVertical: 5,
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: '#333',
-    marginTop: 5,
-  },
-  noReviewsText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    marginTop: 20,
-  },
-
-  // Modal styles
+const styles = {
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
     padding: 20,
     width: '90%',
+    maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: '#333',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   closeButton: {
-    fontSize: 20,
-    color: '#333',
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   ratingSection: {
-    marginVertical: 15,
+    marginBottom: 20,
   },
   ratingLabel: {
     fontSize: 16,
     marginBottom: 10,
+    color: '#fff',
   },
   starsContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
   },
   starInput: {
     fontSize: 40,
     marginHorizontal: 5,
   },
+  modalTitleInput: {
+    borderWidth: 1,
+    borderColor: '#444',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 12,
+  },
   modalCommentInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#444',
+    backgroundColor: '#2a2a2a',
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 120,
     marginBottom: 20,
-    fontSize: 14,
-    height: 100,
+    textAlignVertical: 'top',
+    color: '#fff',
   },
   modalSubmitButton: {
-    backgroundColor: '#007BFF',
-    padding: 12,
+    backgroundColor: '#E0C48F',
+    padding: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
-  modalSubmitButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+  modalSubmitButtonDisabled: {
+    backgroundColor: '#6B7280',
+    opacity: 0.6,
   },
-});
+  modalSubmitButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+};
 
-export default Reviews;
+export default ReviewModal;
