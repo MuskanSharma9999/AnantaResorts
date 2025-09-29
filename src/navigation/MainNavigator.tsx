@@ -9,6 +9,7 @@ import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from '../components/auth/Login/LoginScreen';
 import KYC from '../Screens/BottomTabScreens/ProfileScreen/KYC/KYC';
+import MyVouchers from '../Screens/BottomTabScreens/ProfileScreen/My Vouchers/MyVouchers';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -41,6 +42,23 @@ export const MainNavigator = () => {
       <RootStack.Screen
         name="KYC"
         component={KYC}
+        options={{
+          headerShown: true,
+          gestureEnabled: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 50 + insets.top : 50 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+
+      <RootStack.Screen
+        name="MyVouchers"
+        component={MyVouchers}
         options={{
           headerShown: true,
           gestureEnabled: true,

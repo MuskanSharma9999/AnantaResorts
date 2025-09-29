@@ -218,6 +218,10 @@ const ProfileScreen = () => {
           style: "destructive",
           onPress: async () => {
             try {
+
+                  
+
+
               await AsyncStorage.removeItem("token");
               await AsyncStorage.setItem("isAuth", "false");
               dispatch(setAuth(false));
@@ -332,7 +336,7 @@ const ProfileScreen = () => {
           <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}  onPress={console.log("My Vouchers Clicked")}>
+        <TouchableOpacity style={styles.menuItem}      onPress={() => navigation.navigate('MyVouchers')}> 
           <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
             <Text style={styles.chevron}>></Text>
         </TouchableOpacity>
