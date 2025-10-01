@@ -14,9 +14,9 @@ if (Platform.OS === 'android') {
 }
 
 // For live/production (optional):
-// url = 'http://103.191.132.144/ap/api'; // Live server
+url = 'http://103.191.132.144/ap/api'; // Live server
 
-url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
+// url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
 
 export const ApiList = {
   SEND_OTP: `${url}/auth/send-otp`,
