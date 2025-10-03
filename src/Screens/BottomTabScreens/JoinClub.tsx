@@ -1,8 +1,3 @@
-// ✅ FIXED: Correct Redux selector
-// const { name, email, profilePhoto, activeMembership } = useSelector(
-//   state => state.user,
-// );
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -11,32 +6,107 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import GradientButton from '../../components/Buttons/GradientButton';
 import MembershipModal from '../MembershipModal';
 import ApiList from '../../Api_List/apiList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiRequest } from '../../Api_List/apiUtils';
+import styles from './JoinClubStyles';
+import { useSelector, useDispatch } from 'react-redux';
+import { useIsFocused } from '@react-navigation/native';
+import { fetchUserProfile } from '../../redux/slices/userSlice';
 
-// Replace these with the correct local images or URLs
 const BACKGROUND_IMAGE = require('../../assets/images/signUpCarousel_images/img_1.jpg');
 const ARROW_ICON = require('../../assets/images/onBoarding.png');
-import styles from './JoinClubStyles';
-import { useSelector } from 'react-redux';
 
 export default function MembershipScreen() {
+  const dispatch = useDispatch();
+  const isFocused = useIsFocused();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTab, setSelectedTab] = useState('Plan1');
   const [membershipPlans, setMembershipPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ Get activeMembership from Redux
   const activeMembership = useSelector(state => state.user.activeMembership);
+  const userLoading = useSelector(state => state.user.isLoading);
 
-  console.log('::::::::::::::::::::::::::::::::::::', activeMembership);
+  console.log('[MembershipScreen] Active Membership:', activeMembership);
+
+  // ✅ Fetch user profile when screen focuses to ensure activeMembership is up-to-date
+  useEffect(() => {
+    if (!isFocused) return;
+
+    console.log('[MembershipScreen] Screen focused, refreshing user data...');
+    dispatch(fetchUserProfile(false)); // Use cache if available
+  }, [isFocused, dispatch]);
+
+  // ✅ Fetch membership plans
+  useEffect(() => {
+    const fetchMembershipPlans = async () => {
+      try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem('token');
+
+        if (!token) {
+          console.log('[MembershipScreen] No token found');
+          setLoading(false);
+          return;
+        }
+
+        console.log('[MembershipScreen] Fetching membership plans...');
+        const response = await apiRequest({
+          url: ApiList.GET_MEMBERSHIP_PLANS,
+          method: 'GET',
+          token,
+        });
+
+        if (response.success) {
+          const plans = response.data;
+          console.log('[MembershipScreen] Plans fetched:', plans);
+
+          // Ensure we're setting an array
+          if (Array.isArray(plans)) {
+            setMembershipPlans(plans);
+          } else if (plans && typeof plans === 'object') {
+            // If response.data is an object, try to extract array from common property names
+            setMembershipPlans(
+              plans.plans || plans.data || plans.membership_plans || [],
+            );
+          } else {
+            console.warn(
+              '[MembershipScreen] API response data is not in expected format:',
+              plans,
+            );
+            setMembershipPlans([]);
+          }
+        } else {
+          console.error(
+            '[MembershipScreen] Failed to fetch membership plans:',
+            response.error,
+          );
+          setMembershipPlans([]);
+        }
+      } catch (error) {
+        console.error(
+          '[MembershipScreen] Error fetching membership plans:',
+          error,
+        );
+        setMembershipPlans([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembershipPlans();
+  }, []);
 
   const generateTabContent = () => {
     const tabContent = {};
+
     membershipPlans.forEach((plan, index) => {
       const planKey = `Plan${index + 1}`;
 
@@ -53,7 +123,7 @@ export default function MembershipScreen() {
 
           benefits = cleanedBenefits;
         } catch (error) {
-          console.error('Error parsing benefits:', error);
+          console.error('[MembershipScreen] Error parsing benefits:', error);
           benefits = ['Standard membership benefits'];
         }
       } else {
@@ -75,61 +145,16 @@ export default function MembershipScreen() {
     return tabContent;
   };
 
-  useEffect(() => {
-    const fetchMembershipPlans = async () => {
-      try {
-        setLoading(true);
-        const token = await AsyncStorage.getItem('token');
-
-        if (!token) {
-          console.log('No token found');
-          return;
-        }
-
-        const response = await apiRequest({
-          url: ApiList.GET_MEMBERSHIP_PLANS,
-          method: 'GET',
-          token,
-        });
-
-        if (response.success) {
-          const plans = response.data;
-          console.log('Plans fetched:', plans);
-          // Ensure we're setting an array
-          if (Array.isArray(plans)) {
-            setMembershipPlans(plans);
-          } else if (plans && typeof plans === 'object') {
-            // If response.data is an object, try to extract array from common property names
-            setMembershipPlans(
-              plans.plans || plans.data || plans.membership_plans || [],
-            );
-          } else {
-            console.warn('API response data is not in expected format:', plans);
-            setMembershipPlans([]);
-          }
-        } else {
-          console.error('Failed to fetch membership plans:', response.error);
-          setMembershipPlans([]);
-        }
-      } catch (error) {
-        console.error('Error fetching membership plans:', error);
-        setMembershipPlans([]); // Set empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMembershipPlans();
-  }, []);
-
   const tabContent = generateTabContent();
 
   // Get current benefits based on selected tab
   const currentBenefits = tabContent[selectedTab]?.benefits || [];
 
-  if (loading) {
+  // ✅ Show loading state
+  if (loading || userLoading) {
     return (
       <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FBCF9C" />
         <Text style={styles.loadingText}>Loading membership plans...</Text>
       </View>
     );
@@ -258,8 +283,8 @@ export default function MembershipScreen() {
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* Fixed Join Club Button */}
-      {!activeMembership && ( // short-circuit rendering
+      {/* Fixed Join Club Button - Only show if no active membership */}
+      {!activeMembership && (
         <View style={styles.fixedButtonContainer}>
           <GradientButton
             title="Join Club"
@@ -269,9 +294,31 @@ export default function MembershipScreen() {
         </View>
       )}
 
+      {/* Show membership status if user has active membership */}
+      {/* {activeMembership && (
+        <View
+          style={[styles.fixedButtonContainer, { backgroundColor: '#1a1a1a' }]}
+        >
+          <Text
+            style={{
+              color: '#FBCF9C',
+              textAlign: 'center',
+              fontSize: 16,
+              fontWeight: 'bold',
+            }}
+          >
+            ✓ You are an active member
+          </Text>
+        </View>
+      )} */}
+
       <MembershipModal
         visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
+        onClose={() => {
+          setIsModalVisible(false);
+          // ✅ Refresh user data after modal closes (in case membership was purchased)
+          dispatch(fetchUserProfile(true));
+        }}
       />
     </View>
   );

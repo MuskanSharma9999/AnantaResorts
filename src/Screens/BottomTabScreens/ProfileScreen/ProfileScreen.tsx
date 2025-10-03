@@ -8,135 +8,118 @@ import {
   Alert,
   TextInput,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import styles from './ProfileScreenStyles';
 import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuth } from '../../../redux/slices/authSlice';
 import { apiRequest } from '../../../Api_List/apiUtils';
 import ApiList from '../../../Api_List/apiList';
 import { BlurView } from '@react-native-community/blur';
-import { clearUser, setUserDetails, updateProfilePhoto } from '../../../redux/slices/userSlice';
+import {
+  clearUser,
+  setUserDetails,
+  updateProfilePhoto,
+  fetchUserProfile,
+} from '../../../redux/slices/userSlice';
 import GradientButton from '../../../components/Buttons/GradientButton';
+import userService from '../../../utils/userService';
 
 const ProfileScreen = () => {
-  // ✅ All hooks declared at top level
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const isFocused = useIsFocused();
+
   // ✅ Get user data from Redux store
   const user = useSelector(state => state.user);
-  
-  // ✅ Initialize local state with Redux data
-  const [profile_photo_url, setProfile_photo_url] = useState(user.profilePhoto || '');
-  const [email, setEmail] = useState(user.email || '');
-  const [name, setName] = useState(user.name || '');
+  const {
+    name: reduxName,
+    email: reduxEmail,
+    profilePhoto: reduxProfilePhoto,
+    activeMembership,
+    isLoading: userLoading,
+  } = user;
+
+  // ✅ Local state synced with Redux
+  const [profile_photo_url, setProfile_photo_url] = useState(reduxProfilePhoto || '');
+  const [email, setEmail] = useState(reduxEmail || '');
+  const [name, setName] = useState(reduxName || '');
   const [isEmailModalVisible, setIsEmailModalVisible] = useState(false);
   const [tempEmail, setTempEmail] = useState(email);
   const [isKYCSubmitted, setIsKYCSubmitted] = useState(false);
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [tempName, setTempName] = useState(name);
   const [isUploading, setIsUploading] = useState(false);
-    const activeMembership = useSelector(state => state.user.activeMembership);
-  
 
+  // ✅ Sync local state with Redux when Redux updates
   useEffect(() => {
-    setProfile_photo_url(user.profilePhoto || '');
-    setEmail(user.email || '');
-    setName(user.name || '');
-  }, [user]);
+    setProfile_photo_url(reduxProfilePhoto || '');
+    setEmail(reduxEmail || '');
+    setName(reduxName || '');
+    setTempEmail(reduxEmail || '');
+    setTempName(reduxName || '');
+  }, [reduxProfilePhoto, reduxEmail, reduxName]);
 
+  // ✅ Fetch profile when screen focuses
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Error', 'Authentication token missing');
-          return;
-        }
+    if (!isFocused) return;
 
-        const response = await apiRequest({
-          url: ApiList.GET_PROFILE,
-          method: 'GET',
-          token,
-        });
-
-        if (response.success) {
-          console.log('response:::::::', response);
-          
-          const user = response.data.data.user;
-          setProfile_photo_url(user.profile_photo_url || '');
-          setEmail(user.email || '');
-          setName(user.name || '');
-          
-          // ✅ Update Redux store with fetched data
-
-          dispatch(setUserDetails({
-  name: user.name || '',
-  email: user.email || '',
-  profilePhoto: user.profile_photo_url || '',
-  activeMembership: activeMembership, // if available
-  kycStatus: user.kyc_status || ''
-}));
-        } else {
-          console.log('Failed to fetch profile:', response.error);
-        }
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-        Alert.alert('Error', 'Failed to load profile data');
-      }
-    };
-
-    fetchProfile();
-  }, [dispatch]);
+    console.log('[ProfileScreen] Screen focused, fetching user profile...');
+    dispatch(fetchUserProfile(false)); // Use cached data if available
+  }, [isFocused, dispatch]);
 
   // ✅ SEPARATED: Profile photo upload using UPDATE_PROFILE_PHOTO API
   const uploadProfilePhoto = async (imageUri, token) => {
     try {
       setIsUploading(true);
-      
+
       const formData = new FormData();
       formData.append('profile_photo', {
         uri: imageUri,
-        type: 'image/jpeg', // or image/png based on the image
+        type: 'image/jpeg',
         name: 'profile_photo.jpg',
       });
 
-      console.log('[uploadProfilePhoto] Starting profile photo upload...', {
+      console.log('[ProfileScreen] Starting profile photo upload...', {
         uri: imageUri,
-        api: ApiList.UPDATE_PROFILE_PHOTO
+        api: ApiList.UPDATE_PROFILE_PHOTO,
       });
 
       const response = await fetch(ApiList.UPDATE_PROFILE_PHOTO, {
-        method: 'PUT', // or 'POST' depending on your API
+        method: 'PUT',
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
 
       const result = await response.json();
-      
+
       if (response.ok && result.success) {
-        // ✅ Update Redux store with new profile photo
-        dispatch(updateProfilePhoto(imageUri));
-        
-        // If the API returns the new photo URL, use that instead
         const newPhotoUrl = result.data?.profile_photo_url || imageUri;
+
+        // ✅ Update Redux store
+        dispatch(updateProfilePhoto(newPhotoUrl));
+
+        // ✅ Update service cache
+        userService.updateCache({ profilePhoto: newPhotoUrl });
+
+        // ✅ Update local state
         setProfile_photo_url(newPhotoUrl);
-        
+
         Alert.alert('Success', 'Profile photo updated successfully!');
         return result;
       } else {
         throw new Error(result.error || 'Failed to upload profile photo');
       }
     } catch (error) {
-      console.error('Error uploading profile photo:', error);
+      console.error('[ProfileScreen] Error uploading profile photo:', error);
       throw error;
     } finally {
       setIsUploading(false);
@@ -146,13 +129,12 @@ const ProfileScreen = () => {
   // ✅ SEPARATED: Profile update (name and email only) using UPDATE_PROFILE API
   const updateProfileInfo = async (name, email, token) => {
     try {
-      const payload = { 
-        email: email, 
-        name: name
-        // Don't include profile_photo_url here anymore
+      const payload = {
+        email: email,
+        name: name,
       };
 
-      console.log('[updateProfileInfo] Sending profile update request...', payload);
+      console.log('[ProfileScreen] Sending profile update request...', payload);
 
       const response = await apiRequest({
         url: ApiList.UPDATE_PROFILE,
@@ -163,7 +145,7 @@ const ProfileScreen = () => {
 
       return response;
     } catch (error) {
-      console.error('Error updating profile info:', error);
+      console.error('[ProfileScreen] Error updating profile info:', error);
       throw error;
     }
   };
@@ -174,16 +156,16 @@ const ProfileScreen = () => {
       return;
     }
 
-    const options = { 
-      mediaType: 'photo', 
-      quality: 0.8, // Reduce quality to decrease file size
+    const options = {
+      mediaType: 'photo',
+      quality: 0.8,
       maxWidth: 800,
-      maxHeight: 800
+      maxHeight: 800,
     };
-    
-    launchImageLibrary(options, async (response) => {
+
+    launchImageLibrary(options, async response => {
       if (response.didCancel) {
-        console.log('User cancelled image picker');
+        console.log('[ProfileScreen] User cancelled image picker');
       } else if (response.errorCode) {
         Alert.alert('Error', response.errorMessage || 'Something went wrong');
       } else if (response.assets?.[0]?.uri) {
@@ -199,15 +181,18 @@ const ProfileScreen = () => {
 
           // ✅ Use separate API for profile photo upload
           const result = await uploadProfilePhoto(uri, token);
-          
+
           if (result.success) {
-            console.log('Profile photo uploaded successfully');
+            console.log('[ProfileScreen] Profile photo uploaded successfully');
           }
         } catch (error) {
-          console.error('Error updating profile photo:', error);
-          Alert.alert('Error', error.message || 'Failed to update profile photo');
+          console.error('[ProfileScreen] Error updating profile photo:', error);
+          Alert.alert(
+            'Error',
+            error.message || 'Failed to update profile photo'
+          );
           // Revert the preview on failure
-          setProfile_photo_url(user.profilePhoto || '');
+          setProfile_photo_url(reduxProfilePhoto || '');
         }
       }
     });
@@ -215,27 +200,23 @@ const ProfileScreen = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      "Confirm Logout",
-      "Are you sure you want to log out?",
+      'Confirm Logout',
+      'Are you sure you want to log out?',
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Log Out",
-          style: "destructive",
+          text: 'Log Out',
+          style: 'destructive',
           onPress: async () => {
             try {
-
-                  
-
-
-              await AsyncStorage.removeItem("token");
-              await AsyncStorage.setItem("isAuth", "false");
+              await AsyncStorage.removeItem('token');
+              await AsyncStorage.setItem('isAuth', 'false');
               dispatch(setAuth(false));
-              // ✅ Clear user data from Redux on logout
+              // ✅ Clear user data from Redux and service cache
               dispatch(clearUser());
             } catch (error) {
-              console.error("Logout error:", error);
-              Alert.alert("Error", "Failed to log out. Please try again.");
+              console.error('[ProfileScreen] Logout error:', error);
+              Alert.alert('Error', 'Failed to log out. Please try again.');
             }
           },
         },
@@ -252,35 +233,55 @@ const ProfileScreen = () => {
         return;
       }
 
-      // ✅ Now only update name and email using UPDATE_PROFILE API
+      // ✅ Update name and email using UPDATE_PROFILE API
       const response = await updateProfileInfo(tempName, tempEmail, token);
 
       if (response.success) {
         // ✅ Update Redux store with new data
-        dispatch(setUserDetails({
+        dispatch(
+          setUserDetails({
+            name: tempName,
+            email: tempEmail,
+            profilePhoto: profile_photo_url,
+            activeMembership: activeMembership,
+            kycStatus: user.kycStatus,
+          })
+        );
+
+        // ✅ Update service cache
+        userService.updateCache({
           name: tempName,
           email: tempEmail,
-          profilePhoto: profile_photo_url // Keep existing profile photo
-        }));
-        
+        });
+
         // ✅ Update local state
         setName(tempName);
         setEmail(tempEmail);
-        
+
         Alert.alert('Success', 'Your profile has been updated!');
         setIsProfileModalVisible(false);
-        navigation.navigate('MainTabs', { profileUpdated: true });
+
+        // ✅ Force refresh user data
+        dispatch(fetchUserProfile(true));
       } else {
         Alert.alert('Error', response.error || 'Something went wrong');
       }
     } catch (error) {
-      console.error('[handleUpdateProfile] error:', error);
+      console.error('[ProfileScreen] handleUpdateProfile error:', error);
       Alert.alert('Error', 'Failed to update profile');
     }
   };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Show loading state */}
+      {userLoading && !name && !email ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 50 }}>
+          <ActivityIndicator size="large" color="#FBCF9C" />
+          <Text style={{ color: '#FBCF9C', marginTop: 10 }}>Loading profile...</Text>
+        </View>
+      ) : null}
+
       {/* Profile Header */}
       {(name || email || profile_photo_url) && (
         <TouchableOpacity
@@ -293,7 +294,7 @@ const ProfileScreen = () => {
         >
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
-              <Image 
+              <Image
                 source={
                   profile_photo_url
                     ? { uri: profile_photo_url }
@@ -303,6 +304,7 @@ const ProfileScreen = () => {
               />
               {isUploading && (
                 <View style={styles.uploadingOverlay}>
+                  <ActivityIndicator size="small" color="#fff" />
                   <Text style={styles.uploadingText}>Uploading...</Text>
                 </View>
               )}
@@ -321,8 +323,8 @@ const ProfileScreen = () => {
       <View style={styles.AccountSettingsSection}>
         <Text style={styles.AccountSettingTitle}>Account settings</Text>
 
-        <TouchableOpacity 
-          style={[styles.menuItem, isUploading && styles.disabledMenuItem]} 
+        <TouchableOpacity
+          style={[styles.menuItem, isUploading && styles.disabledMenuItem]}
           onPress={pickImageFromGallery}
           disabled={isUploading}
         >
@@ -332,24 +334,27 @@ const ProfileScreen = () => {
           <Text style={styles.chevron}>></Text>
         </TouchableOpacity>
 
-
-  {activeMembership && (   // here show the my vouchers only if the user has active membership
-         <TouchableOpacity style={styles.menuItem}      onPress={() => navigation.navigate('MyVouchers')}> 
-          <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
+        {activeMembership && (
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('MyVouchers')}
+          >
+            <Text style={[styles.menuText, styles.logoutText]}>My Vouchers</Text>
             <Text style={styles.chevron}>></Text>
-        </TouchableOpacity>
-    )}
-        <TouchableOpacity style={styles.menuItem} 
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() =>
             navigation.navigate('KYC', {
               onKYCSubmit: () => setIsKYCSubmitted(true),
             })
-          }>
+          }
+        >
           <Text style={[styles.menuText, styles.logoutText]}>KYC</Text>
-          <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
+          <Text style={styles.chevron}>{isKYCSubmitted ? '✓' : '>'}</Text>
         </TouchableOpacity>
-
-  
 
         <TouchableOpacity onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
@@ -365,8 +370,24 @@ const ProfileScreen = () => {
           reducedTransparencyFallbackColor="black"
         >
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ width: '85%', backgroundColor: 'black', padding: 20, borderRadius: 10, borderColor: '#FBCF9C', borderWidth: 1.5 }}>
-              <Text style={{ fontFamily: 'Cormorant-Bold', fontSize: 18, color: '#FBCF9C', marginBottom: 10 }}>
+            <View
+              style={{
+                width: '85%',
+                backgroundColor: 'black',
+                padding: 20,
+                borderRadius: 10,
+                borderColor: '#FBCF9C',
+                borderWidth: 1.5,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: 'Cormorant-Bold',
+                  fontSize: 18,
+                  color: '#FBCF9C',
+                  marginBottom: 10,
+                }}
+              >
                 Edit Profile
               </Text>
 
@@ -375,22 +396,17 @@ const ProfileScreen = () => {
                 onChangeText={setTempName}
                 placeholder="Enter name"
                 placeholderTextColor="#999"
-                style={{ borderWidth: 1, borderColor: '#FBCF9C', borderRadius: 8, padding: 10, marginBottom: 10, color: '#FBCF9C' }}
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#FBCF9C',
+                  borderRadius: 8,
+                  padding: 10,
+                  marginBottom: 15,
+                  color: '#FBCF9C',
+                }}
               />
-              <TextInput
-                value={tempEmail}
-                onChangeText={setTempEmail}
-                placeholder="Enter email"
-                keyboardType="email-address"
-                placeholderTextColor="#999"
-                style={{ borderWidth: 1, borderColor: '#FBCF9C', borderRadius: 8, padding: 10, marginBottom: 15, color: '#FBCF9C' }}
-              />
-{/* in this save buton change the button to gradient button  */}
 
-
-
-<GradientButton title='Save' onPress={handleUpdateProfile}></GradientButton>
-       
+              <GradientButton title="Save" onPress={handleUpdateProfile} />
 
               <TouchableOpacity
                 style={{ marginTop: 10 }}

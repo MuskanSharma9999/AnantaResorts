@@ -5,124 +5,96 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import styles from '../../styles/HomeScreenStyles';
 import Carousel from 'react-native-reanimated-carousel';
 import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TopRated } from '../../components/HomeScreenComponents/TopRated/TopRated';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useIsFocused } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApiList from '../../Api_List/apiList';
-import {
-  clearUser,
-  setUserDetails,
-  updateProfilePhoto,
-} from './././../../redux/slices/userSlice';
+import { fetchUserProfile } from './././../../redux/slices/userSlice';
 import { apiRequest } from '../../Api_List/apiUtils';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
+
+  // ✅ Get user state from Redux
+  const {
+    name,
+    email,
+    activeMembership,
+    isLoading: userLoading,
+  } = useSelector(state => state.user);
+
   const [Banners, setBanners] = useState<string[]>([]);
   const [BannersCount, setBannersCount] = useState<number>();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [bannersLoading, setBannersLoading] = useState(true);
 
   const { width, height } = Dimensions.get('window');
 
-  // ✅ FIXED: Fetch user profile when screen is focused
+  // ✅ ROBUST: Fetch user profile using Redux thunk when screen focuses
   useEffect(() => {
     if (!isFocused) return;
 
-    const fetchUserProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          console.log('No token found');
-          return;
-        }
+    console.log('[HomeScreen] Screen focused, fetching user profile...');
 
-        console.log('Fetching user profile in HomeScreen...');
-        const response = await apiRequest({
-          url: ApiList.GET_PROFILE,
-          method: 'GET',
-          token,
-        });
-
-        console.log('HomeScreen API Response:', response);
-
-        if (response.success) {
-          const user = response.data?.data?.user || response.data?.user;
-          console.log('User data from API:', user);
-
-          // Check if user has active membership
-          let activeMembershipValue = '';
-
-          if (user?.active_membership?.plan_id) {
-            activeMembershipValue = user.active_membership.plan_id;
-          } else if (user?.activeMembership?.plan_id) {
-            activeMembershipValue = user.activeMembership.plan_id;
-          } else if (user?.memberships && Array.isArray(user.memberships)) {
-            const activeMembership = user.memberships.find(
-              member => member.is_active === true,
-            );
-            if (activeMembership?.plan_id) {
-              activeMembershipValue = activeMembership.plan_id;
-            }
-          }
-
-          console.log('Active Membership Plan ID:', activeMembershipValue);
-
-          const userData = {
-            name: user?.name || '',
-            email: user?.email || '',
-            profilePhoto: user?.profile_photo_url || '',
-            activeMembership: activeMembershipValue,
-            kycStatus: user?.kyc_status || '',
-          };
-
-          console.log('User Data to be stored:', userData);
-          dispatch(setUserDetails(userData));
-        } else {
-          console.error('Failed to fetch profile:', response.error);
-        }
-      } catch (error) {
-        console.error('Error fetching user profile in HomeScreen:', error);
-      }
-    };
-
-    fetchUserProfile();
+    // Dispatch the async thunk
+    // forceRefresh on first load or when coming back to screen
+    dispatch(fetchUserProfile(false));
   }, [isFocused, dispatch]);
 
-  // ✅ Fetch banners on mount
+  // ✅ Optional: Log when user data changes
+  useEffect(() => {
+    if (name && email) {
+      console.log('[HomeScreen] User data loaded:', {
+        name,
+        email,
+        activeMembership,
+      });
+    }
+  }, [name, email, activeMembership]);
+
+  // ✅ Fetch banners independently
   useEffect(() => {
     const fetchBanners = async () => {
       try {
+        setBannersLoading(true);
         const token = await AsyncStorage.getItem('token');
         if (!token) {
-          console.log('No token found');
+          console.log('[HomeScreen] No token found for banners');
+          setBannersLoading(false);
           return;
         }
 
-        console.log('Fetching banners...');
+        console.log('[HomeScreen] Fetching banners...');
         const response = await apiRequest({
           url: ApiList.HOME_BANNER,
           method: 'GET',
           token,
         });
 
-        console.log('Banners API Response:', response);
+        console.log('[HomeScreen] Banners API Response:', response);
 
         if (response.success) {
           const banners = response.data.data.map(item => item.image_url);
           setBanners(banners);
           setBannersCount(banners.length);
         } else {
-          console.error('Failed to fetch banners:', response.error);
+          console.error(
+            '[HomeScreen] Failed to fetch banners:',
+            response.error,
+          );
         }
       } catch (error) {
-        console.error('Error fetching banners:', error);
+        console.error('[HomeScreen] Error fetching banners:', error);
+      } finally {
+        setBannersLoading(false);
       }
     };
 
@@ -135,40 +107,65 @@ const HomeScreen = () => {
       contentContainerStyle={{ paddingBottom: 60 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ maxHeight: 300 }}>
-        <Carousel
-          loop
-          autoPlay
-          width={width}
-          height={height * 0.65}
-          data={Banners}
-          scrollAnimationDuration={1000}
-          autoPlayInterval={2000}
-          pagingEnabled
-          onProgressChange={(_, absoluteProgress) => {
-            const newIndex = Math.round(absoluteProgress) % Banners.length;
-            setActiveIndex(newIndex);
+      {/* Show loading indicator for banners */}
+      {bannersLoading ? (
+        <View
+          style={{
+            height: height * 0.65,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
-          renderItem={({ item }) => (
-            <View style={styles.carouselItem}>
-              <Image source={{ uri: item }} style={styles.carouselImage} />
-            </View>
-          )}
-        />
-      </View>
+        >
+          <ActivityIndicator size="large" color="#FBCF9C" />
+        </View>
+      ) : Banners.length > 0 ? (
+        <>
+          <View style={{ maxHeight: 300 }}>
+            <Carousel
+              loop
+              autoPlay
+              width={width}
+              height={height * 0.65}
+              data={Banners}
+              scrollAnimationDuration={1000}
+              autoPlayInterval={2000}
+              pagingEnabled
+              onProgressChange={(_, absoluteProgress) => {
+                const newIndex = Math.round(absoluteProgress) % Banners.length;
+                setActiveIndex(newIndex);
+              }}
+              renderItem={({ item }) => (
+                <View style={styles.carouselItem}>
+                  <Image source={{ uri: item }} style={styles.carouselImage} />
+                </View>
+              )}
+            />
+          </View>
 
-      {/* Pagination */}
-      <View style={styles.paginationContainer}>
-        {Banners.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              activeIndex === index ? styles.activeDot : styles.inactiveDot,
-            ]}
-          />
-        ))}
-      </View>
+          {/* Pagination */}
+          <View style={styles.paginationContainer}>
+            {Banners.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  activeIndex === index ? styles.activeDot : styles.inactiveDot,
+                ]}
+              />
+            ))}
+          </View>
+        </>
+      ) : (
+        <View
+          style={{
+            height: 200,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ color: '#999' }}>No banners available</Text>
+        </View>
+      )}
 
       <TopRated />
       <TopRated />
