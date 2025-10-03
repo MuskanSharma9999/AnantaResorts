@@ -14,104 +14,6 @@ import axios from 'axios';
 import apiList from '../../../../Api_List/apiList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-    padding: 16,
-  },
-  sectionTitle: {
-    color: '#FFE2B8',
-    fontSize: 22,
-    fontWeight: '600',
-    fontFamily: 'Cormorant-Bold',
-    marginBottom: 12,
-  },
-  inputLabel: {
-    color: '#FFE2B8',
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: 'Montserrat-Regular',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  inputField: {
-    backgroundColor: '#19191A',
-    borderRadius: 8,
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-    color: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: 'Montserrat-Regular',
-  },
-  uploadButtonText: {
-    backgroundColor: '#19191A',
-    borderRadius: 8,
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-    color: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: 'Montserrat',
-    textAlign: 'center',
-  },
-  elementDropdown: {
-    backgroundColor: '#19191A',
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-  },
-  elementDropdownPlaceholder: {
-    color: '#bbb',
-    fontFamily: 'Montserrat',
-    paddingVertical: 10,
-  },
-  elementDropdownSelectedTextStyle: {
-    color: '#FFE2B8',
-    fontWeight: '700',
-    fontFamily: 'Montserrat',
-    paddingVertical: 10,
-  },
-  elementDropdownIcon: {
-    tintColor: '#FFE2B8',
-  },
-  documentSection: {
-    marginBottom: 20,
-    padding: 12,
-    borderColor: '#FFE2B8',
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  sectionHeader: {
-    color: '#FFE2B8',
-    fontSize: 16,
-    fontWeight: '700',
-    fontFamily: 'Montserrat',
-    marginBottom: 8,
-  },
-  requiredBadge: {
-    color: '#FF6B6B',
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  optionalBadge: {
-    color: '#4CAF50',
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  completedBadge: {
-    color: '#4CAF50',
-    fontSize: 12,
-    marginLeft: 4,
-    fontWeight: '700',
-  },
-};
-
 const KYC = () => {
   // State for each document
   const [panData, setPanData] = useState({
@@ -189,10 +91,7 @@ const KYC = () => {
   // Hardcoded document type UUIDs
   const documentTypeMap = {
     aadhaar: 'Aadhar Card',
-    pan: 'pan',
-    drivingLicense: 'YOUR_DL_UUID_HERE',
-    voterId: 'YOUR_VOTER_ID_UUID_HERE',
-    passport: 'YOUR_PASSPORT_UUID_HERE',
+    pan: 'PAN Card',
   };
 
   // Fallback items for optional documents
@@ -372,7 +271,15 @@ const KYC = () => {
           document_number: panData.docNumber,
         }),
       );
-      formData.append('documents[]', {
+      // formData.append('documents[]', {
+      //   uri: panData.docFile.uri,
+      //   name: panData.docFile.fileName || `pan_document_${Date.now()}.jpg`,
+      //   type: panData.docFile.type || 'image/jpeg',
+      // });
+
+      formData.append('documents[0][document_type_id]', panTypeId);
+      formData.append('documents[0][document_number]', panData.docNumber);
+      formData.append('documents[0][document_file]', {
         uri: panData.docFile.uri,
         name: panData.docFile.fileName || `pan_document_${Date.now()}.jpg`,
         type: panData.docFile.type || 'image/jpeg',
@@ -604,6 +511,104 @@ const KYC = () => {
       )}
     </ScrollView>
   );
+};
+
+const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+    padding: 16,
+  },
+  sectionTitle: {
+    color: '#FFE2B8',
+    fontSize: 22,
+    fontWeight: '600',
+    fontFamily: 'Cormorant-Bold',
+    marginBottom: 12,
+  },
+  inputLabel: {
+    color: '#FFE2B8',
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: 'Montserrat-Regular',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  inputField: {
+    backgroundColor: '#19191A',
+    borderRadius: 8,
+    borderColor: '#FFE2B8',
+    borderWidth: 1,
+    color: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+  },
+  uploadButtonText: {
+    backgroundColor: '#19191A',
+    borderRadius: 8,
+    borderColor: '#FFE2B8',
+    borderWidth: 1,
+    color: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontFamily: 'Montserrat',
+    textAlign: 'center',
+  },
+  elementDropdown: {
+    backgroundColor: '#19191A',
+    borderColor: '#FFE2B8',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+  },
+  elementDropdownPlaceholder: {
+    color: '#bbb',
+    fontFamily: 'Montserrat',
+    paddingVertical: 10,
+  },
+  elementDropdownSelectedTextStyle: {
+    color: '#FFE2B8',
+    fontWeight: '700',
+    fontFamily: 'Montserrat',
+    paddingVertical: 10,
+  },
+  elementDropdownIcon: {
+    tintColor: '#FFE2B8',
+  },
+  documentSection: {
+    marginBottom: 20,
+    padding: 12,
+    borderColor: '#FFE2B8',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  sectionHeader: {
+    color: '#FFE2B8',
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: 'Montserrat',
+    marginBottom: 8,
+  },
+  requiredBadge: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  optionalBadge: {
+    color: '#4CAF50',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  completedBadge: {
+    color: '#4CAF50',
+    fontSize: 12,
+    marginLeft: 4,
+    fontWeight: '700',
+  },
 };
 
 export default KYC;

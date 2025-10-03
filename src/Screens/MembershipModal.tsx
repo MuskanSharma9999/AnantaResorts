@@ -177,6 +177,42 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
     return fullPhone.replace(/^\+\d{1,2}/, '');
   };
 
+  // const fetchProfile = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+
+  //     if (!token) {
+  //       Alert.alert('Error', 'Please login again');
+  //       return;
+  //     }
+
+  //     const response = await axios.get(ApiList.GET_PROFILE, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     if (response.data?.success && response.data?.data?.user) {
+  //       const { name, email, phone, city, date_of_birth } =
+  //         response.data.data.user;
+
+  //       setDob(date_of_birth ? new Date(date_of_birth) : null);
+
+  //       setName(name || '');
+  //       setEmail(email || '');
+  //       setPhone(stripCountryCode(phone || '')); // 👈 strip country code
+  //       setCity((city || '').trim()); // 👈 clean extra spaces
+  //     } else {
+  //       Alert.alert('Error', 'Failed to load profile data');
+  //     }
+  //   } catch (error: any) {
+  //     Alert.alert('Error', 'An unexpected error occurred');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -197,16 +233,24 @@ const MembershipModal: React.FC<MembershipModalProps> = ({
         const { name, email, phone, city, date_of_birth } =
           response.data.data.user;
 
-        setDob(date_of_birth ? new Date(date_of_birth) : null);
-
         setName(name || '');
         setEmail(email || '');
-        setPhone(stripCountryCode(phone || '')); // 👈 strip country code
-        setCity((city || '').trim()); // 👈 clean extra spaces
+
+        // If phone starts with +91, strip it and set defaultCode to "IN"
+        if (phone && phone.startsWith('+91')) {
+          setPhone(phone.substring(3)); // Remove +91
+          // PhoneInput will automatically use IN as country code
+        } else {
+          setPhone(phone || '');
+        }
+
+        setCity((city || '').trim());
+        setDob(date_of_birth ? new Date(date_of_birth) : null);
       } else {
         Alert.alert('Error', 'Failed to load profile data');
       }
     } catch (error: any) {
+      console.error('Fetch profile error:', error);
       Alert.alert('Error', 'An unexpected error occurred');
     } finally {
       setLoading(false);

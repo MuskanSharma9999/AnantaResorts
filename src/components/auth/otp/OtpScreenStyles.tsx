@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
   },
   otpAlert: {
     fontSize: isSmallDevice ? 22 : 24,
-    fontWeight: '700',
     color: '#FBCF9C',
     letterSpacing: 2,
     textAlign: 'center',

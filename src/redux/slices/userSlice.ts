@@ -1,10 +1,11 @@
-// redux/userSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   name: '',
   email: '',
-  profilePhoto: '', // Could be a URL or Base64 string
+  activeMembership: '',
+  profilePhoto: '',
+  kycStatus: '', // <-- add this
 };
 
 const userSlice = createSlice({
@@ -12,10 +13,13 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserDetails: (state, action) => {
-      const { name, email, profilePhoto } = action.payload;
+      const { name, email, profilePhoto, activeMembership, kycStatus } =
+        action.payload;
       state.name = name || '';
       state.email = email || '';
       state.profilePhoto = profilePhoto || '';
+      state.activeMembership = activeMembership || '';
+      state.kycStatus = kycStatus || ''; // <-- add this
     },
     updateUserName: (state, action) => {
       state.name = action.payload;
@@ -26,10 +30,18 @@ const userSlice = createSlice({
     updateProfilePhoto: (state, action) => {
       state.profilePhoto = action.payload;
     },
+    updateActiveMembership: (state, action) => {
+      state.activeMembership = action.payload;
+    },
+    updateKycStatus: (state, action) => {
+      state.kycStatus = action.payload; // <-- add this
+    },
     clearUser: state => {
       state.name = '';
       state.email = '';
       state.profilePhoto = '';
+      state.activeMembership = '';
+      state.kycStatus = ''; // <-- add this
     },
   },
 });
@@ -39,6 +51,8 @@ export const {
   updateUserName,
   updateUserEmail,
   updateProfilePhoto,
+  updateActiveMembership,
+  updateKycStatus,
   clearUser,
 } = userSlice.actions;
 

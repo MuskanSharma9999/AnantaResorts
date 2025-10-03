@@ -12,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import ApiList from '../../../../Api_List/apiList';
 import { apiRequest } from '../../../../Api_List/apiUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import GradientButton from '../../../../components/Buttons/GradientButton';
 
 const { width } = Dimensions.get('window');
 
@@ -76,20 +77,20 @@ const MyVouchers = () => {
     const daysLeft = getDaysUntilExpiry(expiryDate);
     if (daysLeft < 0)
       return {
-        color: '#ef4444',
+        color: '#FBCF9C',
         text: 'Expired',
-        bgColor: '#fef2f2',
+        bgColor: '#2A1A0A',
       };
     if (daysLeft <= 3)
       return {
-        color: '#f59e0b',
+        color: '#FBCF9C',
         text: 'Expiring Soon',
-        bgColor: '#fffbeb',
+        bgColor: '#2A200A',
       };
     return {
-      color: '#10b981',
+      color: '#FBCF9C',
       text: 'Active',
-      bgColor: '#f0fdf4',
+      bgColor: '#1A2A0A',
     };
   };
 
@@ -97,7 +98,7 @@ const MyVouchers = () => {
     return (
       <View style={styles.centerContainer}>
         <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+          <ActivityIndicator size="large" color="#FBCF9C" />
           <Text style={styles.loadingText}>Loading your vouchers...</Text>
         </View>
       </View>
@@ -164,7 +165,7 @@ const MyVouchers = () => {
                   styles.urgencyProgress,
                   {
                     width: `${Math.min(100, (daysLeft / 30) * 100)}%`,
-                    backgroundColor: daysLeft <= 3 ? '#f59e0b' : '#10b981',
+                    backgroundColor: '#FBCF9C',
                   },
                 ]}
               />
@@ -182,7 +183,13 @@ const MyVouchers = () => {
             </View>
           </View>
 
-          <TouchableOpacity
+          <GradientButton
+            title={isExpired ? 'Expired' : 'Redeem Now'}
+            style={{ maxWidth: 150 }}
+            onPress={() => handleRedeem(item.id)}
+          ></GradientButton>
+
+          {/* <TouchableOpacity
             style={[
               styles.redeemButton,
               isExpired && styles.redeemButtonDisabled,
@@ -193,7 +200,7 @@ const MyVouchers = () => {
             <Text style={styles.redeemButtonText}>
               {isExpired ? 'Expired' : 'Redeem Now'}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Modern decorative elements */}
@@ -264,14 +271,14 @@ const MyVouchers = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#000000',
     paddingHorizontal: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#000000',
   },
   header: {
     paddingVertical: 24,
@@ -279,8 +286,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FBCF9C',
+    fontFamily: 'Cormorant-Bold',
     marginBottom: 16,
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -288,47 +295,49 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'white',
+    backgroundColor: '#1A1A1A',
     borderRadius: 20,
     padding: 20,
     marginHorizontal: 8,
-    shadowColor: '#000',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    elevation: 4,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#333333',
   },
   statItem: {
     alignItems: 'center',
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#8b5cf6',
+    color: '#FBCF9C',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: '#FBCF9C',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     fontWeight: '600',
+    opacity: 0.8,
   },
   listContainer: {
     paddingBottom: 24,
   },
   cardContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#1A1A1A',
     borderRadius: 24,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#FBCF9C',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -346,27 +355,28 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#FBCF9C',
     marginRight: 12,
     opacity: 0.8,
   },
   brandName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#475569',
+    color: '#FBCF9C',
   },
   offerType: {
     fontSize: 12,
-    color: '#8b5cf6',
+    color: '#FBCF9C',
     fontWeight: '500',
     marginTop: 2,
+    opacity: 0.8,
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#333333',
   },
   statusText: {
     fontSize: 12,
@@ -377,21 +387,22 @@ const styles = StyleSheet.create({
   },
   voucherName: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1e293b',
+    // fontWeight: 'bold',
+    color: '#FBCF9C',
     marginBottom: 8,
     lineHeight: 24,
     letterSpacing: -0.5,
   },
   voucherDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#FBCF9C',
     lineHeight: 20,
     marginBottom: 16,
+    opacity: 0.8,
   },
   urgencyBar: {
     height: 4,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#333333',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -409,9 +420,10 @@ const styles = StyleSheet.create({
   },
   expiryLabel: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: '#FBCF9C',
     marginBottom: 4,
     fontWeight: '500',
+    opacity: 0.7,
   },
   daysContainer: {
     flexDirection: 'row',
@@ -419,32 +431,31 @@ const styles = StyleSheet.create({
   },
   daysCount: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FBCF9C',
     marginRight: 4,
   },
   daysText: {
     fontSize: 14,
-    color: '#64748b',
-    fontWeight: '500',
+    color: '#FBCF9C',
+    opacity: 0.8,
   },
   redeemButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#FBCF9C',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 14,
-    shadowColor: '#8b5cf6',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 6,
   },
   redeemButtonDisabled: {
-    backgroundColor: '#cbd5e1',
-    shadowColor: '#64748b',
+    backgroundColor: '#333333',
+    shadowColor: '#333333',
   },
   redeemButtonText: {
-    color: 'white',
+    color: '#000000',
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -456,45 +467,47 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#8b5cf6',
-    opacity: 0.05,
+    backgroundColor: '#FBCF9C',
+    opacity: 0.1,
   },
   cornerAccentBottom: {
     top: 'auto',
     right: 'auto',
     bottom: -20,
     left: -20,
-    backgroundColor: '#10b981',
+    backgroundColor: '#FBCF9C',
+    opacity: 0.1,
   },
   loadingCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1A1A1A',
     padding: 32,
     borderRadius: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    shadowColor: '#000',
+    borderColor: '#de9797ff',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#64748b',
+    color: '#FBCF9C',
     fontWeight: '500',
+    opacity: 0.8,
   },
   errorCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1A1A1A',
     padding: 32,
     borderRadius: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    shadowColor: '#000',
+    borderColor: '#333333',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
     maxWidth: 300,
@@ -506,24 +519,25 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FBCF9C',
     marginBottom: 8,
   },
   errorText: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#FBCF9C',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 20,
+    opacity: 0.8,
   },
   retryButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#FBCF9C',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 14,
   },
   retryButtonText: {
-    color: 'white',
+    color: '#000000',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -534,15 +548,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#1A1A1A',
     padding: 32,
     borderRadius: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-    shadowColor: '#000',
+    borderColor: '#333333',
+    shadowColor: '#FBCF9C',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
     maxWidth: 300,
@@ -554,15 +568,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FBCF9C',
     marginBottom: 12,
     textAlign: 'center',
   },
   emptyDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#FBCF9C',
     textAlign: 'center',
     lineHeight: 20,
+    opacity: 0.8,
   },
 });
 

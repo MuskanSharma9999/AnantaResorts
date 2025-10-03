@@ -21,16 +21,20 @@ import {
   updateProfilePhoto,
 } from './././../../redux/slices/userSlice';
 import { apiRequest } from '../../Api_List/apiUtils';
-import { string } from 'yup';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
-
   const [Banners, setBanners] = useState<string[]>([]);
   const [BannersCount, setBannersCount] = useState<number>();
+  const [activeIndex, setActiveIndex] = useState(0);
 
+  const { width, height } = Dimensions.get('window');
+
+  // ✅ FIXED: Fetch user profile when screen is focused
   useEffect(() => {
+    if (!isFocused) return;
+
     const fetchUserProfile = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
@@ -39,35 +43,60 @@ const HomeScreen = () => {
           return;
         }
 
-        console.log('Fetching user profile in drawer...');
+        console.log('Fetching user profile in HomeScreen...');
         const response = await apiRequest({
           url: ApiList.GET_PROFILE,
           method: 'GET',
           token,
         });
 
-        console.log('Drawer API Response:', response);
+        console.log('HomeScreen API Response:', response);
 
         if (response.success) {
           const user = response.data?.data?.user || response.data?.user;
           console.log('User data from API:', user);
 
+          // Check if user has active membership
+          let activeMembershipValue = '';
+
+          if (user?.active_membership?.plan_id) {
+            activeMembershipValue = user.active_membership.plan_id;
+          } else if (user?.activeMembership?.plan_id) {
+            activeMembershipValue = user.activeMembership.plan_id;
+          } else if (user?.memberships && Array.isArray(user.memberships)) {
+            const activeMembership = user.memberships.find(
+              member => member.is_active === true,
+            );
+            if (activeMembership?.plan_id) {
+              activeMembershipValue = activeMembership.plan_id;
+            }
+          }
+
+          console.log('Active Membership Plan ID:', activeMembershipValue);
+
           const userData = {
             name: user?.name || '',
             email: user?.email || '',
             profilePhoto: user?.profile_photo_url || '',
+            activeMembership: activeMembershipValue,
+            kycStatus: user?.kyc_status || '',
           };
 
-          // console.log('Dispatching user data:', userData);
+          console.log('User Data to be stored:', userData);
           dispatch(setUserDetails(userData));
         } else {
           console.error('Failed to fetch profile:', response.error);
         }
       } catch (error) {
-        console.error('Error fetching user profile in drawer:', error);
+        console.error('Error fetching user profile in HomeScreen:', error);
       }
     };
 
+    fetchUserProfile();
+  }, [isFocused, dispatch]);
+
+  // ✅ Fetch banners on mount
+  useEffect(() => {
     const fetchBanners = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
@@ -76,35 +105,29 @@ const HomeScreen = () => {
           return;
         }
 
-        console.log('Fetching user profile in drawer...');
+        console.log('Fetching banners...');
         const response = await apiRequest({
           url: ApiList.HOME_BANNER,
           method: 'GET',
           token,
         });
 
-        console.log('Drawer API Response:', response);
+        console.log('Banners API Response:', response);
 
         if (response.success) {
           const banners = response.data.data.map(item => item.image_url);
           setBanners(banners);
-          setBannersCount(response.data.data.map.length);
+          setBannersCount(banners.length);
         } else {
-          console.error('Failed to fetch Banner:', response.error);
+          console.error('Failed to fetch banners:', response.error);
         }
       } catch (error) {
-        console.error('Error fetching Banner on home:', error);
+        console.error('Error fetching banners:', error);
       }
     };
 
-    if (isFocused) {
-      fetchUserProfile();
-    }
     fetchBanners();
-  }, [dispatch, isFocused]); // Runs when screen comes into focus
-
-  const { width, height } = Dimensions.get('window');
-  const [activeIndex, setActiveIndex] = useState(0);
+  }, []);
 
   return (
     <ScrollView
@@ -147,10 +170,9 @@ const HomeScreen = () => {
         ))}
       </View>
 
-      <TopRated></TopRated>
-      <TopRated></TopRated>
-
-      <TopRated></TopRated>
+      <TopRated />
+      <TopRated />
+      <TopRated />
     </ScrollView>
   );
 };

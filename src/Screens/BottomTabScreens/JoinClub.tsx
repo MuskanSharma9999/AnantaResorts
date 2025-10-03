@@ -1,3 +1,8 @@
+// ✅ FIXED: Correct Redux selector
+// const { name, email, profilePhoto, activeMembership } = useSelector(
+//   state => state.user,
+// );
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -18,6 +23,7 @@ import { apiRequest } from '../../Api_List/apiUtils';
 const BACKGROUND_IMAGE = require('../../assets/images/signUpCarousel_images/img_1.jpg');
 const ARROW_ICON = require('../../assets/images/onBoarding.png');
 import styles from './JoinClubStyles';
+import { useSelector } from 'react-redux';
 
 export default function MembershipScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -25,34 +31,11 @@ export default function MembershipScreen() {
   const [membershipPlans, setMembershipPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const generateTabContent = () => {
-    // Always return fallback content if membershipPlans is not a valid array
-    if (!Array.isArray(membershipPlans) || membershipPlans.length === 0) {
-      return {
-        Plan1: {
-          title: 'Basic Plan',
-          price: '₹21000 / days',
-          description:
-            'Enjoy the essentials with access to select resorts and basic amenities for a flexible holiday experience.',
-          benefits: ['Basic resort access', 'Standard amenities'],
-        },
-        Plan2: {
-          title: 'Standard Plan',
-          price: '₹4,554 / 4 days',
-          description:
-            'Get more flexibility, additional dining and spa vouchers, and priority booking privileges.',
-          benefits: ['Extended access', 'Dining vouchers'],
-        },
-        Plan3: {
-          title: 'Gold Membership',
-          price: '₹46,999 / 365 days',
-          description:
-            'Experience luxury with unlimited access to all resorts, exclusive events, and premium benefits.',
-          benefits: ['Premium access', 'Exclusive events'],
-        },
-      };
-    }
+  const activeMembership = useSelector(state => state.user.activeMembership);
 
+  console.log('::::::::::::::::::::::::::::::::::::', activeMembership);
+
+  const generateTabContent = () => {
     const tabContent = {};
     membershipPlans.forEach((plan, index) => {
       const planKey = `Plan${index + 1}`;
@@ -276,13 +259,15 @@ export default function MembershipScreen() {
       </ScrollView>
 
       {/* Fixed Join Club Button */}
-      <View style={styles.fixedButtonContainer}>
-        <GradientButton
-          title="Join Club"
-          onPress={() => setIsModalVisible(true)}
-          style={styles.fixedButton}
-        />
-      </View>
+      {!activeMembership && ( // short-circuit rendering
+        <View style={styles.fixedButtonContainer}>
+          <GradientButton
+            title="Join Club"
+            onPress={() => setIsModalVisible(true)}
+            style={styles.fixedButton}
+          />
+        </View>
+      )}
 
       <MembershipModal
         visible={isModalVisible}

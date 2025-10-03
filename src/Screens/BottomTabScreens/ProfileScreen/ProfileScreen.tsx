@@ -21,6 +21,7 @@ import { apiRequest } from '../../../Api_List/apiUtils';
 import ApiList from '../../../Api_List/apiList';
 import { BlurView } from '@react-native-community/blur';
 import { clearUser, setUserDetails, updateProfilePhoto } from '../../../redux/slices/userSlice';
+import GradientButton from '../../../components/Buttons/GradientButton';
 
 const ProfileScreen = () => {
   // ✅ All hooks declared at top level
@@ -40,6 +41,8 @@ const ProfileScreen = () => {
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [tempName, setTempName] = useState(name);
   const [isUploading, setIsUploading] = useState(false);
+    const activeMembership = useSelector(state => state.user.activeMembership);
+  
 
   useEffect(() => {
     setProfile_photo_url(user.profilePhoto || '');
@@ -71,11 +74,14 @@ const ProfileScreen = () => {
           setName(user.name || '');
           
           // ✅ Update Redux store with fetched data
+
           dispatch(setUserDetails({
-            name: user.name || '',
-            email: user.email || '',
-            profilePhoto: user.profile_photo_url || ''
-          }));
+  name: user.name || '',
+  email: user.email || '',
+  profilePhoto: user.profile_photo_url || '',
+  activeMembership: activeMembership, // if available
+  kycStatus: user.kyc_status || ''
+}));
         } else {
           console.log('Failed to fetch profile:', response.error);
         }
@@ -326,6 +332,13 @@ const ProfileScreen = () => {
           <Text style={styles.chevron}>></Text>
         </TouchableOpacity>
 
+
+  {activeMembership && (   // here show the my vouchers only if the user has active membership
+         <TouchableOpacity style={styles.menuItem}      onPress={() => navigation.navigate('MyVouchers')}> 
+          <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
+            <Text style={styles.chevron}>></Text>
+        </TouchableOpacity>
+    )}
         <TouchableOpacity style={styles.menuItem} 
           onPress={() =>
             navigation.navigate('KYC', {
@@ -336,10 +349,7 @@ const ProfileScreen = () => {
           <Text style={styles.chevron}>  {isKYCSubmitted ? '✓' : '>'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}      onPress={() => navigation.navigate('MyVouchers')}> 
-          <Text style={[styles.menuText, styles.logoutText]}>My Vouchers </Text>
-            <Text style={styles.chevron}>></Text>
-        </TouchableOpacity>
+  
 
         <TouchableOpacity onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
@@ -375,15 +385,12 @@ const ProfileScreen = () => {
                 placeholderTextColor="#999"
                 style={{ borderWidth: 1, borderColor: '#FBCF9C', borderRadius: 8, padding: 10, marginBottom: 15, color: '#FBCF9C' }}
               />
+{/* in this save buton change the button to gradient button  */}
 
-              <TouchableOpacity
-                style={{ backgroundColor: 'green', padding: 12, borderRadius: 8 }}
-                onPress={handleUpdateProfile}
-              >
-                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-                  Save
-                </Text>
-              </TouchableOpacity>
+
+
+<GradientButton title='Save' onPress={handleUpdateProfile}></GradientButton>
+       
 
               <TouchableOpacity
                 style={{ marginTop: 10 }}
