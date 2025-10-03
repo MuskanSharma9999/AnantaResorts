@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textAlign: 'center',
     marginBottom: 8,
-    fontFamily: 'sens-serif',
+    fontFamily: 'Cormorant-Bold',
   },
   otpInstructions: {
     fontSize: 14,

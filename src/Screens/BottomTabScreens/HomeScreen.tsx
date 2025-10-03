@@ -21,10 +21,14 @@ import {
   updateProfilePhoto,
 } from './././../../redux/slices/userSlice';
 import { apiRequest } from '../../Api_List/apiUtils';
+import { string } from 'yup';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
+
+  const [Banners, setBanners] = useState<string[]>([]);
+  const [BannersCount, setBannersCount] = useState<number>();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -64,41 +68,43 @@ const HomeScreen = () => {
       }
     };
 
+    const fetchBanners = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
+
+        console.log('Fetching user profile in drawer...');
+        const response = await apiRequest({
+          url: ApiList.HOME_BANNER,
+          method: 'GET',
+          token,
+        });
+
+        console.log('Drawer API Response:', response);
+
+        if (response.success) {
+          const banners = response.data.data.map(item => item.image_url);
+          setBanners(banners);
+          setBannersCount(response.data.data.map.length);
+        } else {
+          console.error('Failed to fetch Banner:', response.error);
+        }
+      } catch (error) {
+        console.error('Error fetching Banner on home:', error);
+      }
+    };
+
     if (isFocused) {
       fetchUserProfile();
     }
+    fetchBanners();
   }, [dispatch, isFocused]); // Runs when screen comes into focus
-
-  const featuredRooms = [
-    { id: 1, name: 'Deluxe Ocean View', price: '$299', image: null },
-    { id: 2, name: 'Premium Suite', price: '$459', image: null },
-    { id: 3, name: 'Villa with Pool', price: '$699', image: null },
-  ];
-
-  const amenities = [
-    { id: 1, name: 'Pool', icon: 'water' },
-    { id: 2, name: 'Spa', icon: 'flower' },
-    { id: 3, name: 'Restaurant', icon: 'restaurant' },
-    { id: 4, name: 'Gym', icon: 'fitness' },
-  ];
 
   const { width, height } = Dimensions.get('window');
   const [activeIndex, setActiveIndex] = useState(0);
-
-  const data = [
-    {
-      image: require('../../assets/images/loginCarousel_images/img_1.jpg'),
-    },
-    {
-      image: require('../../assets/images/loginCarousel_images/img_2.jpg'),
-    },
-    {
-      image: require('../../assets/images/loginCarousel_images/img_3.jpg'),
-    },
-    {
-      image: require('../../assets/images/loginCarousel_images/img_4.jpg'),
-    },
-  ];
 
   return (
     <ScrollView
@@ -112,14 +118,17 @@ const HomeScreen = () => {
           autoPlay
           width={width}
           height={height * 0.65}
-          data={data}
-          scrollAnimationDuration={2000}
-          autoPlayInterval={3000}
+          data={Banners}
+          scrollAnimationDuration={1000}
+          autoPlayInterval={2000}
           pagingEnabled
-          onSnapToItem={index => setActiveIndex(index)}
+          onProgressChange={(_, absoluteProgress) => {
+            const newIndex = Math.round(absoluteProgress) % Banners.length;
+            setActiveIndex(newIndex);
+          }}
           renderItem={({ item }) => (
             <View style={styles.carouselItem}>
-              <Image source={item.image} style={styles.carouselImage} />
+              <Image source={{ uri: item }} style={styles.carouselImage} />
             </View>
           )}
         />
@@ -127,7 +136,7 @@ const HomeScreen = () => {
 
       {/* Pagination */}
       <View style={styles.paginationContainer}>
-        {data.map((_, index) => (
+        {Banners.map((_, index) => (
           <View
             key={index}
             style={[

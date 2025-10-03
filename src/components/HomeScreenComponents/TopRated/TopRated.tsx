@@ -89,10 +89,10 @@ export const TopRated = () => {
           },
         });
 
-        // console.log(
-        //   '[TopRated] Full API Response:',
-        //   JSON.stringify(response.data, null, 2),
-        // );
+        console.log(
+          '[TopRated] Full API Response:',
+          JSON.stringify(response.data, null, 2),
+        );
 
         if (Array.isArray(response.data?.data)) {
           const sanitizedResorts = sanitizeResortImages(response.data.data);

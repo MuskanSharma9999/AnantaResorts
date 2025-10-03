@@ -30,6 +30,7 @@ export const ApiList = {
   GET_RESORT_BY_ID: id => `${url}/resorts/${id}`,
   UPDATE_KYC: `${url}/kyc/upload`,
   GET_ALL_VOUCHERS: `${url}/vouchers/my-vouchers`,
+  HOME_BANNER: `${url}/home/banners`,
 
   SUBMIT_REVIEW: `${url}/resorts`,
   GET_REVIEW: `${url}/resorts`,
