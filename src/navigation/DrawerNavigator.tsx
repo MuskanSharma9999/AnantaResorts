@@ -10,11 +10,12 @@ import {
   Alert,
   Dimensions,
   Image,
+  Platform,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,6 +26,8 @@ import HomeIcon from '../assets/images/home.svg';
 import LogoutIcon from '../assets/images/Logout.svg';
 import { apiRequest } from '../Api_List/apiUtils';
 import ApiList from '../Api_List/apiList';
+import ContactUs from '../Screens/ContactUs';
+import { ContactIcon, MenuIcon, SettingsIcon } from 'lucide-react-native';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
@@ -233,6 +236,34 @@ function CustomDrawerContent(props) {
         );
       })}
 
+      {/* Contact Us Button */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ContactUs')}
+        style={{ marginVertical: 4, marginTop: 20 }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+            paddingRight: 20,
+            paddingLeft: 10,
+          }}
+        >
+          <ContactIcon width={24} height={24} color="#fff" />
+          <Text
+            style={{
+              color: '#fff',
+              marginLeft: 16,
+              fontSize: 16,
+              fontWeight: '400',
+            }}
+          >
+            Contact Us
+          </Text>
+        </View>
+      </TouchableOpacity>
+
       {/* Logout Button */}
       <TouchableOpacity
         onPress={showLogoutConfirmation}
@@ -305,36 +336,35 @@ export const DrawerNavigator = () => {
 };
 
 {
-  /* <Drawer.Screen
-        name="Setting"
-        component={SettingScreen}
-        options={({ navigation }) => ({
-          title: 'Settings',
-          headerShown: true,
-          headerTitle: () => <Logo width={100} height={50} />,
-          headerTitleAlign: 'center',
-
-          headerTitleContainerStyle: {
-            height: '100%',
-          },
-          drawerIcon: ({ color, size }) => (
-            <SettingIcon width={size} height={size} fill="#fff" />
-          ),
-          headerStyle: {
-            backgroundColor: 'black',
-            height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
-          },
-          headerTintColor: '#D4AF37',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
-              style={{ marginLeft: 15 }}
-            >
-              <MenuIcon width={30} height={30} />
-            </TouchableOpacity>
-          ),
-        })}
-      /> */
+  // <Drawer.Screen
+  //   name="ContactUs"
+  //   component={ContactUs}
+  //   options={({ navigation }) => ({
+  //     title: 'ContactUs',
+  //     headerShown: true,
+  //     headerTitle: () => <Logo width={100} height={50} />,
+  //     headerTitleAlign: 'center',
+  //     headerTitleContainerStyle: {
+  //       height: '100%',
+  //     },
+  //     drawerIcon: ({ color, size }) => (
+  //       <SettingsIcon width={size} height={size} fill="#fff" />
+  //     ),
+  //     headerStyle: {
+  //       backgroundColor: 'black',
+  //       height: Platform.OS === 'ios' ? 56 + insets.top : 56 + insets.top,
+  //     },
+  //     headerTintColor: '#D4AF37',
+  //     headerLeft: () => (
+  //       <TouchableOpacity
+  //         onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+  //         style={{ marginLeft: 15 }}
+  //       >
+  //         <MenuIcon width={30} height={30} />
+  //       </TouchableOpacity>
+  //     ),
+  //   })}
+  // />;
 }
 {
   /* <Drawer.Screen

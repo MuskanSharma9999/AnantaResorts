@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from '../components/auth/Login/LoginScreen';
 import KYC from '../Screens/BottomTabScreens/ProfileScreen/KYC/KYC';
 import MyVouchers from '../Screens/BottomTabScreens/ProfileScreen/My Vouchers/MyVouchers';
+import ContactUs from '../Screens/ContactUs';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -23,6 +24,23 @@ export const MainNavigator = () => {
         options={{ gestureEnabled: false }}
       />
       <RootStack.Screen name="TopRated" component={TopRated} />
+      <RootStack.Screen
+        name="ContactUs"
+        component={ContactUs}
+        options={{
+          headerShown: true,
+          gestureEnabled: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 100 + insets.top : 56 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+
       <RootStack.Screen
         name="ResortDetails"
         component={ResortDetails}
