@@ -3,6 +3,11 @@ import { StyleSheet, Dimensions } from 'react-native';
 const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+  button: {
+    width: 100,
+    height: 40,
+  },
+
   safeArea: {
     flex: 1,
     backgroundColor: '#000',
@@ -479,5 +484,315 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Montserrat',
+  },
+
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 300,
+  },
+
+  closeButtonText: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+
+  // Add these to your existing styles
+  bookingRoomInfo: {
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  bookingRoomType: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  bookingRoomPrice: {
+    fontSize: 16,
+    color: '#E0C48F',
+    fontWeight: '600',
+  },
+  bookingField: {
+    marginBottom: 15,
+  },
+  bookingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  bookingInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#FFF',
+  },
+  bookingTextArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  bookingTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  bookingTotalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  bookingTotalAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E0C48F',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#1A1A1A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  modalScrollView: {
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  bookingRoomInfo: {
+    padding: 20,
+    backgroundColor: '#2A2A2A',
+    margin: 20,
+    borderRadius: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#E0C48F',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  bookingRoomType: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 6,
+  },
+  bookingRoomPrice: {
+    fontSize: 16,
+    color: '#E0C48F',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  bookingRoomCapacity: {
+    fontSize: 14,
+    color: '#CCCCCC',
+  },
+  bookingSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E0C48F',
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  bookingField: {
+    marginBottom: 16,
+  },
+  bookingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#CCCCCC',
+    marginBottom: 10,
+  },
+  dateInput: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#2A2A2A',
+  },
+  dateInputDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#222',
+  },
+  dateInputText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  placeholderText: {
+    color: '#888',
+  },
+  guestsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 12,
+    padding: 8,
+    backgroundColor: '#2A2A2A',
+  },
+  guestButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  guestButtonDisabled: {
+    backgroundColor: '#222',
+    borderColor: '#333',
+    opacity: 0.5,
+  },
+  guestButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E0C48F',
+  },
+  guestCount: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  bookingInput: {
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    backgroundColor: '#2A2A2A',
+    color: '#FFFFFF',
+  },
+  bookingTextArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: '#CCCCCC',
+  },
+  priceValue: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#333',
+    marginVertical: 12,
+  },
+  totalRow: {
+    marginTop: 8,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#E0C48F',
+  },
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    backgroundColor: '#1A1A1A',
+  },
+  submitButton: {
+    backgroundColor: '#E0C48F',
+    borderRadius: 14,
+    padding: 18,
+    alignItems: 'center',
+    shadowColor: '#E0C48F',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#333',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  submitButtonText: {
+    color: '#1A1A1A',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

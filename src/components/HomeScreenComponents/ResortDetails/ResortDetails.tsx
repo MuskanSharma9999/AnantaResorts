@@ -23,6 +23,9 @@ import {
   Star,
   Users,
   Square,
+  Calendar,
+  User,
+  Phone,
 } from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
 import { useRoute } from '@react-navigation/native';
@@ -32,6 +35,9 @@ import axios from 'axios';
 import { ApiList } from '../../../Api_List/apiList';
 import { TabView, SceneMap } from 'react-native-tab-view';
 import { Dimensions } from 'react-native';
+import GradientButton from '../../Buttons/GradientButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Clock, MessageCircle } from 'lucide-react-native';
 
 const ResortDetails: React.FC = ({ navigation }) => {
   const route = useRoute();
@@ -43,6 +49,16 @@ const ResortDetails: React.FC = ({ navigation }) => {
   const [reviews, setReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  const [bookingModalVisible, setBookingModalVisible] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [bookingData, setBookingData] = useState({
+    checkIn: '',
+    checkOut: '',
+    guests: '1',
+    specialRequests: '',
+  });
+  const [submittingBooking, setSubmittingBooking] = useState(false);
 
   const layout = Dimensions.get('window');
   const [tabIndex, setTabIndex] = useState(0);
@@ -60,6 +76,28 @@ const ResortDetails: React.FC = ({ navigation }) => {
     fetchRooms();
     fetchReviews();
   }, [resortId]);
+
+  const openBookingModal = room => {
+    setSelectedRoom(room);
+    setBookingData({
+      checkIn: '',
+      checkOut: '',
+      guests: room?.roomType?.max_occupancy?.toString() || '1',
+      specialRequests: '',
+    });
+    setBookingModalVisible(true);
+  };
+
+  const closeBookingModal = () => {
+    setBookingModalVisible(false);
+    setSelectedRoom(null);
+    setBookingData({
+      checkIn: '',
+      checkOut: '',
+      guests: '1',
+      specialRequests: '',
+    });
+  };
 
   const fetchResort = async () => {
     try {
@@ -185,6 +223,93 @@ const ResortDetails: React.FC = ({ navigation }) => {
     }
   };
 
+  const submitBooking = async bookingData => {
+    try {
+      setSubmittingBooking(true);
+      const token = await AsyncStorage.getItem('token');
+
+      if (!selectedRoom) {
+        Alert.alert('Error', 'No room selected');
+        return false;
+      }
+
+      if (!bookingData.checkIn || !bookingData.checkOut) {
+        Alert.alert('Error', 'Please select check-in and check-out dates');
+        return false;
+      }
+
+      if (!bookingData.contactPhone) {
+        Alert.alert('Error', 'Please enter your contact phone number');
+        return false;
+      }
+
+      const bookingPayload = {
+        resort_id: resortId, // From your component state
+        room_type_id: selectedRoom.room_type_id, // From selected room
+        check_in_date: bookingData.checkIn,
+        check_out_date: bookingData.checkOut,
+        guests: parseInt(bookingData.guests),
+        special_requests: bookingData.specialRequests || '',
+        contact_phone: bookingData.contactPhone,
+        payment_method: bookingData.paymentMethod || 'razorpay',
+        total_amount: calculateTotalAmount(
+          bookingData.checkIn,
+          bookingData.checkOut,
+          selectedRoom,
+        ),
+      };
+
+      const response = await axios.post(
+        ApiList.CREATE_BOOKING,
+        bookingPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (response.data.success) {
+        Alert.alert('Success', 'Booking submitted successfully!');
+        closeBookingModal();
+        return true;
+      } else {
+        Alert.alert(
+          'Error',
+          response.data.message ||
+            'Failed to submit booking. Please try again.',
+        );
+        return false;
+      }
+    } catch (err) {
+      console.error(
+        'Failed to submit booking:',
+        err.response?.data || err.message,
+      );
+      Alert.alert(
+        'Error',
+        err.response?.data?.message ||
+          'Failed to submit booking. Please try again.',
+      );
+      return false;
+    } finally {
+      setSubmittingBooking(false);
+    }
+  };
+
+  // Helper function to calculate total amount
+  const calculateTotalAmount = (checkIn, checkOut, room) => {
+    if (!checkIn || !checkOut) return 0;
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.ceil(
+      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24),
+    );
+
+    return nights > 0 ? nights * (room?.roomType?.price_per_night || 0) : 0;
+  };
   const getStatusColor = status => {
     switch (status) {
       case 'clean':
@@ -311,6 +436,422 @@ const ResortDetails: React.FC = ({ navigation }) => {
     );
   };
 
+  const BookingModal = ({ visible, onClose, onSubmit, room, submitting }) => {
+    const [showCheckInPicker, setShowCheckInPicker] = useState(false);
+    const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
+    const [bookingData, setBookingData] = useState({
+      checkIn: '',
+      checkOut: '',
+      guests: '1',
+      specialRequests: '',
+      contactPhone: '',
+      paymentMethod: 'razorpay',
+    });
+
+    const handleSubmit = async () => {
+      const success = await onSubmit(bookingData);
+      if (success) {
+        onClose();
+      }
+    };
+
+    const handleClose = () => {
+      setBookingData({
+        checkIn: '',
+        checkOut: '',
+        guests: '1',
+        specialRequests: '',
+        contactPhone: '',
+        paymentMethod: 'razorpay',
+      });
+      onClose();
+    };
+
+    const formatDate = date => {
+      return date.toISOString().split('T')[0];
+    };
+
+    const onCheckInChange = (event, selectedDate) => {
+      setShowCheckInPicker(false);
+      if (selectedDate) {
+        const formattedDate = formatDate(selectedDate);
+        setBookingData({ ...bookingData, checkIn: formattedDate });
+
+        // Auto-set checkout date to next day if not set
+        if (!bookingData.checkOut) {
+          const nextDay = new Date(selectedDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          setBookingData(prev => ({
+            ...prev,
+            checkIn: formattedDate,
+            checkOut: formatDate(nextDay),
+          }));
+        }
+      }
+    };
+
+    const onCheckOutChange = (event, selectedDate) => {
+      setShowCheckOutPicker(false);
+      if (selectedDate) {
+        setBookingData({
+          ...bookingData,
+          checkOut: formatDate(selectedDate),
+        });
+      }
+    };
+
+    const calculateTotal = () => {
+      if (!bookingData.checkIn || !bookingData.checkOut) return 0;
+
+      const checkIn = new Date(bookingData.checkIn);
+      const checkOut = new Date(bookingData.checkOut);
+      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+      return nights > 0 ? nights * (room?.roomType?.price_per_night || 0) : 0;
+    };
+
+    const calculateNights = () => {
+      if (!bookingData.checkIn || !bookingData.checkOut) return 0;
+
+      const checkIn = new Date(bookingData.checkIn);
+      const checkOut = new Date(bookingData.checkOut);
+      return Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+    };
+
+    const getMinCheckOutDate = () => {
+      if (!bookingData.checkIn) return new Date();
+      const minDate = new Date(bookingData.checkIn);
+      minDate.setDate(minDate.getDate() + 1);
+      return minDate;
+    };
+
+    return (
+      <Modal visible={visible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Book This Room</Text>
+              <TouchableOpacity
+                onPress={handleClose}
+                disabled={submitting}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Room Info */}
+              <View style={styles.bookingRoomInfo}>
+                <Text style={styles.bookingRoomType}>
+                  {room?.roomType?.room_type || 'Standard Room'}
+                </Text>
+                <Text style={styles.bookingRoomPrice}>
+                  ₹{room?.roomType?.price_per_night || '0.00'} / night
+                </Text>
+                <Text style={styles.bookingRoomCapacity}>
+                  Max {room?.roomType?.max_occupancy || 2} guests
+                </Text>
+              </View>
+
+              {/* Dates Section */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>Dates</Text>
+
+                {/* Check-in Date */}
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>
+                    <Calendar size={16} color="#E0C48F" /> Check-in Date
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.dateInput}
+                    onPress={() => setShowCheckInPicker(true)}
+                    disabled={submitting}
+                  >
+                    <Text
+                      style={[
+                        styles.dateInputText,
+                        !bookingData.checkIn && styles.placeholderText,
+                      ]}
+                    >
+                      {bookingData.checkIn || 'Select check-in date'}
+                    </Text>
+                    <Calendar size={20} color="#E0C48F" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Check-out Date */}
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>
+                    <Calendar size={16} color="#E0C48F" /> Check-out Date
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.dateInput}
+                    onPress={() => setShowCheckOutPicker(true)}
+                    disabled={submitting || !bookingData.checkIn}
+                  >
+                    <Text
+                      style={[
+                        styles.dateInputText,
+                        !bookingData.checkOut && styles.placeholderText,
+                      ]}
+                    >
+                      {bookingData.checkOut || 'Select check-out date'}
+                    </Text>
+                    <Calendar size={20} color="#E0C48F" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Date Pickers */}
+                {showCheckInPicker && (
+                  <DateTimePicker
+                    value={
+                      bookingData.checkIn
+                        ? new Date(bookingData.checkIn)
+                        : new Date()
+                    }
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onCheckInChange}
+                    minimumDate={new Date()}
+                    themeVariant="dark"
+                  />
+                )}
+
+                {showCheckOutPicker && (
+                  <DateTimePicker
+                    value={
+                      bookingData.checkOut
+                        ? new Date(bookingData.checkOut)
+                        : getMinCheckOutDate()
+                    }
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onCheckOutChange}
+                    minimumDate={getMinCheckOutDate()}
+                    themeVariant="dark"
+                  />
+                )}
+              </View>
+
+              {/* Contact Information */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>Contact Information</Text>
+
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>
+                    <Phone size={16} color="#E0C48F" /> Contact Phone *
+                  </Text>
+                  <TextInput
+                    style={styles.bookingInput}
+                    placeholder="Enter your phone number"
+                    placeholderTextColor="#888"
+                    value={bookingData.contactPhone}
+                    onChangeText={text =>
+                      setBookingData({ ...bookingData, contactPhone: text })
+                    }
+                    keyboardType="phone-pad"
+                    maxLength={15}
+                    editable={!submitting}
+                  />
+                </View>
+              </View>
+
+              {/* Guests Section */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>Guests</Text>
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>
+                    <User size={16} color="#E0C48F" /> Number of Guests
+                  </Text>
+                  <View style={styles.guestsContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.guestButton,
+                        (submitting || parseInt(bookingData.guests) <= 1) &&
+                          styles.guestButtonDisabled,
+                      ]}
+                      onPress={() => {
+                        const currentGuests = parseInt(bookingData.guests);
+                        if (currentGuests > 1) {
+                          setBookingData({
+                            ...bookingData,
+                            guests: (currentGuests - 1).toString(),
+                          });
+                        }
+                      }}
+                      disabled={submitting || parseInt(bookingData.guests) <= 1}
+                    >
+                      <Text style={styles.guestButtonText}>-</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.guestCount}>{bookingData.guests}</Text>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.guestButton,
+                        (submitting ||
+                          parseInt(bookingData.guests) >=
+                            (room?.roomType?.max_occupancy || 2)) &&
+                          styles.guestButtonDisabled,
+                      ]}
+                      onPress={() => {
+                        const currentGuests = parseInt(bookingData.guests);
+                        const maxGuests = room?.roomType?.max_occupancy || 2;
+                        if (currentGuests < maxGuests) {
+                          setBookingData({
+                            ...bookingData,
+                            guests: (currentGuests + 1).toString(),
+                          });
+                        }
+                      }}
+                      disabled={
+                        submitting ||
+                        parseInt(bookingData.guests) >=
+                          (room?.roomType?.max_occupancy || 2)
+                      }
+                    >
+                      <Text style={styles.guestButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+              {/* Payment Method */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>Payment Method</Text>
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>Select Payment Method</Text>
+                  <View style={styles.paymentOptions}>
+                    <TouchableOpacity
+                      style={[
+                        styles.paymentOption,
+                        bookingData.paymentMethod === 'razorpay' &&
+                          styles.paymentOptionSelected,
+                      ]}
+                      onPress={() =>
+                        setBookingData({
+                          ...bookingData,
+                          paymentMethod: 'razorpay',
+                        })
+                      }
+                      disabled={submitting}
+                    >
+                      <Text
+                        style={[
+                          styles.paymentOptionText,
+                          bookingData.paymentMethod === 'razorpay' &&
+                            styles.paymentOptionTextSelected,
+                        ]}
+                      >
+                        Razorpay
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.paymentOption,
+                        bookingData.paymentMethod === 'cash' &&
+                          styles.paymentOptionSelected,
+                      ]}
+                      onPress={() =>
+                        setBookingData({
+                          ...bookingData,
+                          paymentMethod: 'cash',
+                        })
+                      }
+                      disabled={submitting}
+                    >
+                      <Text
+                        style={[
+                          styles.paymentOptionText,
+                          bookingData.paymentMethod === 'cash' &&
+                            styles.paymentOptionTextSelected,
+                        ]}
+                      >
+                        Pay at Resort
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+              {/* Special Requests */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>
+                  <MessageCircle size={16} color="#E0C48F" /> Special Requests
+                </Text>
+                <TextInput
+                  style={[styles.bookingInput, styles.bookingTextArea]}
+                  placeholder="Any special requests or requirements..."
+                  placeholderTextColor="#888"
+                  value={bookingData.specialRequests}
+                  onChangeText={text =>
+                    setBookingData({ ...bookingData, specialRequests: text })
+                  }
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  editable={!submitting}
+                />
+              </View>
+
+              {/* Price Breakdown */}
+              <View style={styles.bookingSection}>
+                <Text style={styles.sectionTitle}>Price Breakdown</Text>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>
+                    ₹{room?.roomType?.price_per_night || '0.00'} x{' '}
+                    {calculateNights()} nights
+                  </Text>
+                  <Text style={styles.priceValue}>₹{calculateTotal()}</Text>
+                </View>
+
+                <View style={styles.divider} />
+
+                <View style={[styles.priceRow, styles.totalRow]}>
+                  <Text style={styles.totalLabel}>Total Amount</Text>
+                  <Text style={styles.totalAmount}>₹{calculateTotal()}</Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Submit Button */}
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (!bookingData.checkIn ||
+                    !bookingData.checkOut ||
+                    !bookingData.contactPhone ||
+                    submitting) &&
+                    styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={
+                  submitting ||
+                  !bookingData.checkIn ||
+                  !bookingData.checkOut ||
+                  !bookingData.contactPhone
+                }
+              >
+                <Text style={styles.submitButtonText}>
+                  {submitting
+                    ? 'Processing...'
+                    : `Book Now - ₹${calculateTotal()}`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const getStatusText = status => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -381,31 +922,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
     reviews: () => (
       <ScrollView style={styles.reviewsContainer}>
-        {/* Reviews Header */}
-        {/* <View style={styles.reviewsHeader}> */}
-        {/* <View style={styles.ratingSummary}>
-            <Text style={styles.averageRating}>{averageRating}</Text>
-            <View style={styles.starsContainer}>
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star
-                  key={star}
-                  size={20}
-                  color={star <= averageRating ? '#FFD700' : '#DDD'}
-                  fill={star <= averageRating ? '#FFD700' : 'none'}
-                />
-              ))}
-            </View>
-            <Text style={styles.totalReviews}>({reviews.length} reviews)</Text>
-          </View> */}
-
-        {/* <TouchableOpacity
-            style={styles.addReviewButton}
-            onPress={() => setIsModalVisible(true)}
-          >
-            <Text style={styles.addReviewButtonText}>Add Review</Text>
-          </TouchableOpacity> */}
-        {/* </View> */}
-
         {reviewLoading ? (
           <ActivityIndicator
             size="large"
@@ -504,16 +1020,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   {room.roomType?.room_type || 'Standard Room'}
                 </Text>
               </View>
-              {/* <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(room.room_status) },
-                ]}
-              >
-                <Text style={styles.statusText}>
-                  {getStatusText(room.room_status)}
-                </Text>
-              </View> */}
             </View>
 
             <View style={styles.roomDetails}>
@@ -547,30 +1053,31 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </View>
             </View>
 
-            <View style={styles.roomFooter}>
-              <View>
-                <Text style={styles.priceLabel}>Price per night</Text>
-                <Text style={styles.price}>
-                  ₹{room.roomType?.price_per_night || '0.00'}
-                </Text>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <View style={styles.roomFooter}>
+                <View>
+                  <Text style={styles.priceLabel}>Price per night</Text>
+                  <Text style={styles.price}>
+                    ₹{room.roomType?.price_per_night || '0.00'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.container}>
+                <GradientButton
+                  title="Book"
+                  style={styles.button}
+                  onPress={() => openBookingModal(room)}
+                />
               </View>
             </View>
-
-            {/* {room.housekeeping_status && (
-              <View style={styles.housekeepingInfo}>
-                <Text style={styles.housekeepingLabel}>Housekeeping:</Text>
-                <Text style={styles.housekeepingStatus}>
-                  {room.housekeeping_status.replace(/_/g, ' ')}
-                </Text>
-              </View>
-            )} */}
-
-            {/* {room.notes && (
-              <View style={styles.notesContainer}>
-                <Text style={styles.notesLabel}>Notes:</Text>
-                <Text style={styles.notesText}>{room.notes}</Text>
-              </View>
-            )} */}
           </View>
         ))}
 
@@ -666,6 +1173,15 @@ const ResortDetails: React.FC = ({ navigation }) => {
         onClose={() => setIsModalVisible(false)}
         onSubmit={submitReview}
         submitting={submittingReview}
+      />
+
+      {/* Booking Modal */}
+      <BookingModal
+        visible={bookingModalVisible}
+        onClose={closeBookingModal}
+        onSubmit={submitBooking}
+        room={selectedRoom}
+        submitting={submittingBooking}
       />
     </SafeAreaView>
   );
