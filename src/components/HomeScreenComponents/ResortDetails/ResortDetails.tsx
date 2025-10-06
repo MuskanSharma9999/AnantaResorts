@@ -70,6 +70,8 @@ const ResortDetails: React.FC = ({ navigation }) => {
           'Content-Type': 'application/json',
         },
       });
+
+      console.log('??????????????????????????????', response);
       setResort(response.data?.data);
     } catch (err) {
       console.error('Failed to fetch resort details:', err);
@@ -313,11 +315,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const gallery = resort?.image_gallery?.map(img => ({ uri: img.url })) ?? [
-    { uri: 'https://picsum.photos/400/304' },
-    { uri: 'https://picsum.photos/400/305' },
-    { uri: 'https://picsum.photos/400/306' },
-  ];
+  const gallery = resort?.image_gallery?.map(img => ({ uri: img.url }));
 
   const specificAmenities = [
     '4G Television',
