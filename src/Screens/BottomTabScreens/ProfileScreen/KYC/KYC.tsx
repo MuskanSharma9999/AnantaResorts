@@ -198,6 +198,11 @@ const KYC = () => {
   const [aadhaarNumber, setAadhaarNumber] = useState('');
   const [aadhaarFile, setAadhaarFile] = useState(null);
   const [aadhaarImageUri, setAadhaarImageUri] = useState(null);
+
+  const [panNumber, setPanNumber] = useState('');
+  const [panFile, setPanFile] = useState(null);
+  const [panImageUri, setPanImageUri] = useState(null);
+
   const [selectedDocType, setSelectedDocType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -205,6 +210,7 @@ const KYC = () => {
   const documentTypes = [
     { label: 'Aadhaar Card', value: 'Aadhaar Card' },
     { label: 'PAN Card', value: 'PAN Card' },
+    { label: 'Physical Card', value: 'PAN Card' },
   ];
 
   // Check KYC status
@@ -222,15 +228,18 @@ const KYC = () => {
     ) {
       setErrors(prev => ({ ...prev, aadhaarNumber: '' }));
     }
+    if (errors.panNumber && panNumber && validatePAN(panNumber)) {
+      setErrors(prev => ({ ...prev, panNumber: '' }));
+    }
     if (errors.documentType && selectedDocType) {
       setErrors(prev => ({ ...prev, documentType: '' }));
     }
-    if (errors.documentFile && aadhaarFile) {
+    if (errors.documentFile && (aadhaarFile || panFile)) {
       setErrors(prev => ({ ...prev, documentFile: '' }));
     }
-  }, [aadhaarNumber, selectedDocType, aadhaarFile]);
+  }, [aadhaarNumber, panNumber, selectedDocType, aadhaarFile, panFile]);
 
-  const pickAadhaarDocument = () => {
+  const pickDocument = type => {
     const options = {
       mediaType: 'photo',
       includeBase64: false,
@@ -247,19 +256,30 @@ const KYC = () => {
         Alert.alert('Error', 'Failed to pick image');
       } else if (response.assets && response.assets.length > 0) {
         const asset = response.assets[0];
-        setAadhaarFile({
+        const fileData = {
           uri: asset.uri,
           type: asset.type,
-          name: asset.fileName || `aadhaar_${Date.now()}.jpg`,
+          name: asset.fileName || `${type.toLowerCase()}_${Date.now()}.jpg`,
           size: asset.fileSize,
-        });
-        setAadhaarImageUri(asset.uri);
+        };
+
+        if (type === 'Aadhaar') {
+          setAadhaarFile(fileData);
+          setAadhaarImageUri(asset.uri);
+        } else if (type === 'PAN') {
+          setPanFile(fileData);
+          setPanImageUri(asset.uri);
+        }
       }
     });
   };
 
   const validateAadhaar = aadhaar => {
     return /^\d{12}$/.test(aadhaar);
+  };
+
+  const validatePAN = pan => {
+    return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
   };
 
   const validateForm = () => {
@@ -279,6 +299,19 @@ const KYC = () => {
 
       if (!aadhaarFile) {
         newErrors.documentFile = 'Please upload Aadhaar Card document image';
+      }
+    }
+
+    if (selectedDocType === 'PAN Card') {
+      if (!panNumber) {
+        newErrors.panNumber = 'Please enter PAN number';
+      } else if (!validatePAN(panNumber)) {
+        newErrors.panNumber =
+          'Please enter a valid PAN number (e.g., ABCDE1234F)';
+      }
+
+      if (!panFile) {
+        newErrors.documentFile = 'Please upload PAN Card document image';
       }
     }
 
@@ -305,6 +338,13 @@ const KYC = () => {
         type: aadhaarFile.type || 'image/jpeg',
         name: aadhaarFile.name,
       });
+    } else if (selectedDocType === 'PAN Card') {
+      formData.append('document_number', panNumber);
+      formData.append('document', {
+        uri: panFile.uri,
+        type: panFile.type || 'image/jpeg',
+        name: panFile.name,
+      });
     }
 
     try {
@@ -323,8 +363,8 @@ const KYC = () => {
       console.log('KYC Upload - Form Data:', {
         document_type_id: selectedDocType,
         document_number:
-          selectedDocType === 'Aadhaar Card' ? aadhaarNumber : 'N/A',
-        hasFile: !!aadhaarFile,
+          selectedDocType === 'Aadhaar Card' ? aadhaarNumber : panNumber,
+        hasFile: !!(aadhaarFile || panFile),
       });
 
       const response = await axios.post(ApiList.UPDATE_KYC, formData, {
@@ -343,6 +383,9 @@ const KYC = () => {
       setAadhaarNumber('');
       setAadhaarFile(null);
       setAadhaarImageUri(null);
+      setPanNumber('');
+      setPanFile(null);
+      setPanImageUri(null);
       setErrors({});
     } catch (error) {
       console.error('KYC Upload Error:', error);
@@ -488,6 +531,9 @@ const KYC = () => {
             setAadhaarNumber('');
             setAadhaarFile(null);
             setAadhaarImageUri(null);
+            setPanNumber('');
+            setPanFile(null);
+            setPanImageUri(null);
             setErrors({});
           }}
           placeholder="Choose Document Type"
@@ -548,7 +594,7 @@ const KYC = () => {
               <Text style={styles.inputLabel}>
                 Upload Aadhaar Card Document
               </Text>
-              <TouchableOpacity onPress={pickAadhaarDocument}>
+              <TouchableOpacity onPress={() => pickDocument('Aadhaar')}>
                 <Text
                   style={[
                     styles.uploadButtonText,
@@ -580,7 +626,59 @@ const KYC = () => {
           </View>
         )}
 
-        {/* Add similar sections for other document types here */}
+        {/* PAN Card Section */}
+        {selectedDocType === 'PAN Card' && (
+          <View style={styles.documentSection}>
+            <Text style={styles.sectionHeader}>PAN Card Details</Text>
+
+            <Text style={styles.inputLabel}>PAN Number</Text>
+            <TextInput
+              style={[
+                styles.inputField,
+                errors.panNumber && { borderColor: '#ef4444' },
+              ]}
+              placeholder="Enter PAN Number (e.g., ABCDE1234F)"
+              placeholderTextColor="#bbb"
+              autoCapitalize="characters"
+              maxLength={10}
+              value={panNumber}
+              onChangeText={text => setPanNumber(text.toUpperCase())}
+            />
+            {errors.panNumber && (
+              <Text style={styles.errorText}>{errors.panNumber}</Text>
+            )}
+
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.inputLabel}>Upload PAN Card Document</Text>
+              <TouchableOpacity onPress={() => pickDocument('PAN')}>
+                <Text
+                  style={[
+                    styles.uploadButtonText,
+                    errors.documentFile && { borderColor: '#ef4444' },
+                  ]}
+                >
+                  {panFile ? 'Change PAN Card Image' : 'Choose PAN Card Image'}
+                </Text>
+              </TouchableOpacity>
+              {errors.documentFile && (
+                <Text style={styles.errorText}>{errors.documentFile}</Text>
+              )}
+
+              {panImageUri && (
+                <View>
+                  <Image
+                    source={{ uri: panImageUri }}
+                    style={styles.previewImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.fileNameText}>
+                    {panFile?.name || 'PAN Card Document'}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
 
         <GradientButton
           title={
