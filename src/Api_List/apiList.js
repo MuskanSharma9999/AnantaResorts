@@ -5,7 +5,7 @@ let url = '';
 // Dynamically set base URL based on platform
 if (Platform.OS === 'android') {
   // For Android Emulator
-  url = 'http://10.0.2.2:6001/api';
+  // url = 'http://10.0.2.2:6001/api';
   // If using physical Android device, comment above and uncomment below
   // url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
 } else {

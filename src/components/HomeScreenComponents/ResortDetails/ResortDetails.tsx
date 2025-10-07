@@ -245,10 +245,11 @@ const ResortDetails: React.FC = ({ navigation }) => {
         return false;
       }
 
-      // ✅ Prepare payload matching backend expectation
+      // ✅ Correct payload
       const bookingPayload = {
-        resort_id: resortId,
-        room_type_id: selectedRoom.room_type_id,
+        resort_id: resortId, // Resort ID
+        room_id: selectedRoom?.id, // ✅ Correct Room ID
+        room_type_id: selectedRoom?.roomType?.id, // Optional, only if backend needs it
         check_in_date: bookingData.checkIn,
         check_out_date: bookingData.checkOut,
         guests: parseInt(bookingData.guests),
@@ -257,7 +258,8 @@ const ResortDetails: React.FC = ({ navigation }) => {
         payment_method: bookingData.paymentMethod || 'razorpay',
       };
 
-      // ✅ Send POST request to your backend endpoint
+      console.log('Booking Payload:', bookingPayload);
+
       const response = await axios.post(
         `${ApiList.CREATE_BOOKING}`,
         bookingPayload,

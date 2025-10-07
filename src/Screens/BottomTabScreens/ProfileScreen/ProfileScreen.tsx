@@ -344,17 +344,14 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() =>
-            navigation.navigate('KYC', {
-              onKYCSubmit: () => setIsKYCSubmitted(true),
-            })
-          }
-        >
-          <Text style={[styles.menuText, styles.logoutText]}>KYC</Text>
-          <Text style={styles.chevron}>{isKYCSubmitted ? '✓' : '>'}</Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+  style={styles.menuItem}
+  onPress={() => navigation.navigate('KYC')}
+>
+  <Text style={[styles.menuText, styles.logoutText]}>KYC</Text>
+  <Text style={styles.chevron}>{isKYCSubmitted ? '✓' : '>'}</Text>
+</TouchableOpacity>
+
 
         <TouchableOpacity onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
