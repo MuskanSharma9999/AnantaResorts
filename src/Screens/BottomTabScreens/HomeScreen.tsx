@@ -3,62 +3,64 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Image,
 } from 'react-native';
-import styles from '../../styles/HomeScreenStyles';
-import Carousel from 'react-native-reanimated-carousel';
-import { Image } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { TopRated } from '../../components/HomeScreenComponents/TopRated/TopRated';
 import { useDispatch, useSelector } from 'react-redux';
 import { useIsFocused } from '@react-navigation/native';
+import Carousel from 'react-native-reanimated-carousel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../../styles/HomeScreenStyles';
 import ApiList from '../../Api_List/apiList';
-import { fetchUserProfile } from './././../../redux/slices/userSlice';
 import { apiRequest } from '../../Api_List/apiUtils';
+import { fetchUserProfile } from '../../redux/slices/userSlice';
+import { TopRated } from '../../components/HomeScreenComponents/TopRated/TopRated';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
 
-  // ✅ Get user state from Redux
   const {
     name,
     email,
     activeMembership,
+    activeMembershipName, // ✅ Get membership name
     isLoading: userLoading,
   } = useSelector(state => state.user);
 
-  const [Banners, setBanners] = useState<string[]>([]);
-  const [BannersCount, setBannersCount] = useState<number>();
+  const [Banners, setBanners] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [bannersLoading, setBannersLoading] = useState(true);
 
   const { width, height } = Dimensions.get('window');
 
-  // ✅ ROBUST: Fetch user profile using Redux thunk when screen focuses
+  // ✅ Fetch user profile when screen focuses (always get fresh data)
   useEffect(() => {
     if (!isFocused) return;
 
-    console.log('[HomeScreen] Screen focused, fetching user profile...');
-
-    // Dispatch the async thunk
-    // forceRefresh on first load or when coming back to screen
-    dispatch(fetchUserProfile(false));
+    console.log('[HomeScreen] Screen focused, fetching fresh user profile...');
+    // Always get fresh data (forceRefresh = true)
+    dispatch(fetchUserProfile(true)).then(result => {
+      if (result.payload) {
+        console.log('[HomeScreen] Profile fetched:', {
+          name: result.payload.name,
+          email: result.payload.email,
+          activeMembership: result.payload.activeMembership,
+        });
+      }
+    });
   }, [isFocused, dispatch]);
 
-  // ✅ Optional: Log when user data changes
+  // ✅ Log when user data updates in Redux
   useEffect(() => {
-    if (name && email) {
-      console.log('[HomeScreen] User data loaded:', {
-        name,
-        email,
-        activeMembership,
-      });
-    }
-  }, [name, email, activeMembership]);
+    console.log('[HomeScreen] User data updated from Redux:', {
+      name,
+      email,
+      activeMembership,
+      userLoading,
+    });
+  }, [name, email, activeMembership, userLoading]);
 
   // ✅ Fetch banners independently
   useEffect(() => {
@@ -66,6 +68,7 @@ const HomeScreen = () => {
       try {
         setBannersLoading(true);
         const token = await AsyncStorage.getItem('token');
+
         if (!token) {
           console.log('[HomeScreen] No token found for banners');
           setBannersLoading(false);
@@ -79,12 +82,10 @@ const HomeScreen = () => {
           token,
         });
 
-        console.log('[HomeScreen] Banners API Response:', response);
-
         if (response.success) {
           const banners = response.data.data.map(item => item.image_url);
           setBanners(banners);
-          setBannersCount(banners.length);
+          console.log('[HomeScreen] Banners loaded:', banners.length);
         } else {
           console.error(
             '[HomeScreen] Failed to fetch banners:',
@@ -107,7 +108,7 @@ const HomeScreen = () => {
       contentContainerStyle={{ paddingBottom: 60 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Show loading indicator for banners */}
+      {/* Banners Section */}
       {bannersLoading ? (
         <View
           style={{
@@ -167,9 +168,75 @@ const HomeScreen = () => {
         </View>
       )}
 
+      {/* Top Rated sections */}
       <TopRated />
       <TopRated />
       <TopRated />
+
+      {/* User Info Section - Show loading state while fetching */}
+      {/* {userLoading && !activeMembership ? (
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <ActivityIndicator size="small" color="#FBCF9C" />
+          <Text style={{ color: '#FBCF9C', marginTop: 8 }}>
+            Loading membership...
+          </Text>
+        </View>
+      ) : name || email || activeMembership ? (
+        <View
+          style={{
+            padding: 20,
+            backgroundColor: 'rgba(251, 207, 156, 0.1)',
+            borderRadius: 10,
+            margin: 15,
+          }}
+        >
+          {name && (
+            <Text
+              style={{ color: '#FBCF9C', fontSize: 18, fontWeight: 'bold' }}
+            >
+              Welcome, {name}!
+            </Text>
+          )}
+          {email && (
+            <Text style={{ color: '#FBCF9C', fontSize: 14, marginTop: 5 }}>
+              {email}
+            </Text>
+          )}
+          {activeMembership ? (
+            <View
+              style={{
+                marginTop: 10,
+                paddingTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: '#FBCF9C',
+              }}
+            >
+              <Text style={{ color: '#FBCF9C', fontSize: 16 }}>
+                Active Membership: {activeMembership}
+              </Text>
+              <Text style={{ color: '#FBCF9C', fontSize: 12, marginTop: 5 }}>
+                Plan ID: {activeMembership}
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={{
+                marginTop: 10,
+                paddingTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: '#666',
+              }}
+            >
+              <Text style={{ color: '#888', fontSize: 14 }}>
+                No active membership
+              </Text>
+              <Text style={{ color: '#666', fontSize: 10, marginTop: 5 }}>
+                User loading: {userLoading ? 'Yes' : 'No'}
+              </Text>
+            </View>
+          )}
+        </View>
+      ) : null} */}
     </ScrollView>
   );
 };

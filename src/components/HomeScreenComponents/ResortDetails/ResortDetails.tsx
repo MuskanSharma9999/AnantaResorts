@@ -38,6 +38,7 @@ import { Dimensions } from 'react-native';
 import GradientButton from '../../Buttons/GradientButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Clock, MessageCircle } from 'lucide-react-native';
+import { useSelector } from 'react-redux';
 
 const ResortDetails: React.FC = ({ navigation }) => {
   const route = useRoute();
@@ -49,6 +50,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
   const [reviews, setReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const activeMembership = useSelector(state => state.user.activeMembership);
 
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -243,24 +245,21 @@ const ResortDetails: React.FC = ({ navigation }) => {
         return false;
       }
 
+      // ✅ Prepare payload matching backend expectation
       const bookingPayload = {
-        resort_id: resortId, // From your component state
-        room_type_id: selectedRoom.room_type_id, // From selected room
+        resort_id: resortId,
+        room_type_id: selectedRoom.room_type_id,
         check_in_date: bookingData.checkIn,
         check_out_date: bookingData.checkOut,
         guests: parseInt(bookingData.guests),
         special_requests: bookingData.specialRequests || '',
         contact_phone: bookingData.contactPhone,
         payment_method: bookingData.paymentMethod || 'razorpay',
-        total_amount: calculateTotalAmount(
-          bookingData.checkIn,
-          bookingData.checkOut,
-          selectedRoom,
-        ),
       };
 
+      // ✅ Send POST request to your backend endpoint
       const response = await axios.post(
-        ApiList.CREATE_BOOKING,
+        `${ApiList.CREATE_BOOKING}`,
         bookingPayload,
         {
           headers: {
@@ -283,14 +282,11 @@ const ResortDetails: React.FC = ({ navigation }) => {
         return false;
       }
     } catch (err) {
-      console.error(
-        'Failed to submit booking:',
-        err.response?.data || err.message,
-      );
+      console.error('Booking Error:', err.response?.data || err.message);
       Alert.alert(
         'Error',
         err.response?.data?.message ||
-          'Failed to submit booking. Please try again.',
+          'Something went wrong while submitting your booking.',
       );
       return false;
     } finally {
@@ -1070,13 +1066,23 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.container}>
+              {activeMembership && (
+                <View style={styles.container}>
+                  <GradientButton
+                    title="Book"
+                    style={styles.button}
+                    onPress={() => openBookingModal(room)}
+                  />
+                </View>
+              )}
+
+              {/* <View style={styles.container}>
                 <GradientButton
                   title="Book"
                   style={styles.button}
                   onPress={() => openBookingModal(room)}
                 />
-              </View>
+              </View> */}
             </View>
           </View>
         ))}
