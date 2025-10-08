@@ -15,27 +15,51 @@ export const styles = StyleSheet.create({
 
   // Header styles
   headerContainer: {
-    height: height * 0.5,
+    height: height * 0.4,
     position: 'relative',
   },
   headerImage: {
     flex: 1,
-    justifyContent: 'space-between',
+    // Remove justifyContent: 'space-between' to prevent content from sticking to bottom
   },
   headerImageStyle: {
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
+  // Remove or modify headerOverlay if it's causing issues
   headerOverlay: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 80, // Position above amenities
     left: 0,
     right: 0,
-    top: 120,
     paddingHorizontal: 24,
-    paddingBottom: 80,
-    paddingTop: 10,
   },
+
+  resortInfoContainer: {
+    position: 'absolute',
+    bottom: 0, // Position above amenities - adjust this value
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+    zIndex: 10,
+  },
+  resortInfoSection: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginTop: -40, // Negative margin to pull it up
+  },
+
+  // Amenities row styles - adjust positioning
+  amenitiesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+    zIndex: 5,
+  },
+
   resortName: {
     color: '#FBCF9C',
     fontSize: 32,
@@ -46,6 +70,7 @@ export const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 16, // Add margin to separate from amenities
   },
   locationText: {
     color: '#fff',
@@ -53,17 +78,15 @@ export const styles = StyleSheet.create({
     marginLeft: 6,
     fontFamily: 'Montserrat',
   },
-
-  // Amenities row styles
-  amenitiesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    marginTop: -160,
-    backgroundColor: 'transparent',
-    zIndex: 5,
+  resortInfoOverlay: {
+    position: 'absolute',
+    bottom: 80, // Position above amenities
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
   },
+  // Amenities row styles - adjust positioning
+
   amenityIconContainer: {
     alignItems: 'center',
     flex: 1,
@@ -140,8 +163,7 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     color: '#FBCF9C',
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Cormorant-Bold',
+    fontFamily: 'Montserrat',
     marginBottom: 16,
     marginTop: 8,
   },
@@ -332,6 +354,8 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: 'rgba(251, 207, 156, 0.2)',
+    paddingLeft: width * 0.05,
+    paddingRight: width * 0.05,
   },
   roomHeader: {
     flexDirection: 'row',
@@ -349,16 +373,7 @@ export const styles = StyleSheet.create({
   roomDetails: {
     marginBottom: 16,
   },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
+
   detailText: {
     color: '#D1D5DB',
     fontSize: 12,
@@ -400,6 +415,30 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  footerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  priceContainer: {
+    flex: 1,
+  },
+  bookButtonContainer: {
+    marginLeft: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    width: '100%',
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
   // Modal Styles (Dark Theme)
   modalOverlay: {
     flex: 1,
@@ -424,7 +463,6 @@ export const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
     color: '#fff',
     fontFamily: 'Montserrat',
   },

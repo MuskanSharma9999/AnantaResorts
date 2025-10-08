@@ -13,7 +13,7 @@ if (Platform.OS === 'android') {
   // url = 'http://192.168.1.7:6001/api'; // Replace with your machine's local IP
 }
 
-// For live/production (optional):
+// For live/production (optional):9399
 url = 'http://103.191.132.144/ap/api'; // Live server
 
 // url = 'http://192.168.1.27:6001/api'; // Replace with your machine's local IP

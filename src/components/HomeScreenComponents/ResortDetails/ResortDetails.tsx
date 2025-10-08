@@ -12,6 +12,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   Monitor,
@@ -26,6 +27,7 @@ import {
   Calendar,
   User,
   Phone,
+  MessageCircle,
 } from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
 import { useRoute } from '@react-navigation/native';
@@ -37,7 +39,6 @@ import { TabView, SceneMap } from 'react-native-tab-view';
 import { Dimensions } from 'react-native';
 import GradientButton from '../../Buttons/GradientButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Clock, MessageCircle } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 
 const ResortDetails: React.FC = ({ navigation }) => {
@@ -111,7 +112,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
         },
       });
 
-      console.log('??????????????????????????????', response);
+      console.log('Resort API Response:', response);
       setResort(response.data?.data);
     } catch (err) {
       console.error('Failed to fetch resort details:', err);
@@ -153,7 +154,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
       setReviewLoading(true);
       const token = await AsyncStorage.getItem('token');
 
-      // Updated API endpoint for fetching reviews
       const response = await axios.get(
         `${ApiList.SUBMIT_REVIEW}/${resortId}/reviews`,
         {
@@ -163,7 +163,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
           },
         },
       );
-      console.log('fetch Reviewssssss ', response);
+      console.log('fetch Reviews:', response);
 
       setReviews(response.data?.data || response.data || []);
     } catch (err) {
@@ -182,12 +182,11 @@ const ResortDetails: React.FC = ({ navigation }) => {
       setSubmittingReview(true);
       const token = await AsyncStorage.getItem('token');
 
-      // Updated API endpoint and payload structure
       const response = await axios.post(
         `${ApiList.SUBMIT_REVIEW}/${resortId}/reviews`,
         {
-          rating: reviewData.rating.toString(), // Convert to string as per your payload
-          title: reviewData.title || 'Great experience', // Add title field
+          rating: reviewData.rating.toString(),
+          title: reviewData.title || 'Great experience',
           comment: reviewData.comment,
         },
         {
@@ -200,7 +199,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
       if (response.data.success) {
         Alert.alert('Success', 'Review submitted successfully!');
-        fetchReviews(); // Refresh reviews
+        fetchReviews();
         return true;
       } else {
         Alert.alert(
@@ -245,11 +244,10 @@ const ResortDetails: React.FC = ({ navigation }) => {
         return false;
       }
 
-      // ✅ Correct payload
       const bookingPayload = {
-        resort_id: resortId, // Resort ID
-        room_id: selectedRoom?.id, // ✅ Correct Room ID
-        room_type_id: selectedRoom?.roomType?.id, // Optional, only if backend needs it
+        resort_id: resortId,
+        room_id: selectedRoom?.id,
+        room_type_id: selectedRoom?.roomType?.id,
         check_in_date: bookingData.checkIn,
         check_out_date: bookingData.checkOut,
         guests: parseInt(bookingData.guests),
@@ -296,31 +294,40 @@ const ResortDetails: React.FC = ({ navigation }) => {
     }
   };
 
-  // Helper function to calculate total amount
-  const calculateTotalAmount = (checkIn, checkOut, room) => {
-    if (!checkIn || !checkOut) return 0;
+  // Calculate average rating safely
+  const calculateAverageRating = reviews => {
+    if (!reviews || reviews.length === 0) return 0;
 
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-    const nights = Math.ceil(
-      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24),
-    );
+    try {
+      const sum = reviews.reduce((total, review) => {
+        const rating = parseInt(review.rating) || 0;
+        return total + rating;
+      }, 0);
 
-    return nights > 0 ? nights * (room?.roomType?.price_per_night || 0) : 0;
-  };
-  const getStatusColor = status => {
-    switch (status) {
-      case 'clean':
-        return '#10B981';
-      case 'dirty':
-        return '#EF4444';
-      case 'out_of_order':
-        return '#F59E0B';
-      case 'occupied':
-        return '#3B82F6';
-      default:
-        return '#6B7280';
+      return (sum / reviews.length).toFixed(1);
+    } catch (error) {
+      console.error('Error calculating average rating:', error);
+      return 0;
     }
+  };
+
+  const averageRating = calculateAverageRating(reviews);
+
+  // Get amenities safely
+  const getAmenities = () => {
+    if (!resort?.amenities || !Array.isArray(resort.amenities)) return [];
+    return resort.amenities.map(
+      amenity => amenity.name || amenity.icon_name || 'Amenity',
+    );
+  };
+
+  // Get gallery images safely
+  const getGalleryImages = () => {
+    if (!resort?.image_gallery || !Array.isArray(resort.image_gallery))
+      return [];
+    return resort.image_gallery.map(img => ({
+      uri: img.url || 'https://via.placeholder.com/150',
+    }));
   };
 
   const ReviewModal = ({ visible, onClose, onSubmit, submitting }) => {
@@ -336,7 +343,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
       const success = await onSubmit({
         rating,
-        title: title.trim() || `Rating: ${rating} stars`, // Default title if empty
+        title: title.trim() || `Rating: ${rating} stars`,
         comment,
       });
 
@@ -359,7 +366,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
       <Modal visible={visible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            {/* Header */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Write a Review</Text>
               <TouchableOpacity onPress={handleClose} disabled={submitting}>
@@ -367,7 +373,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Rating */}
             <View style={styles.ratingSection}>
               <Text style={styles.ratingLabel}>Rate your experience:</Text>
               <View style={styles.starsContainer}>
@@ -393,7 +398,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Title Input */}
             <TextInput
               style={styles.modalTitleInput}
               placeholder="Review title (optional)"
@@ -403,7 +407,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               editable={!submitting}
             />
 
-            {/* Comment Input */}
             <TextInput
               style={styles.modalCommentInput}
               placeholder="Tell us about your experience... *"
@@ -415,7 +418,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               editable={!submitting}
             />
 
-            {/* Submit Button */}
             <TouchableOpacity
               style={[
                 styles.modalSubmitButton,
@@ -475,7 +477,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         const formattedDate = formatDate(selectedDate);
         setBookingData({ ...bookingData, checkIn: formattedDate });
 
-        // Auto-set checkout date to next day if not set
         if (!bookingData.checkOut) {
           const nextDay = new Date(selectedDate);
           nextDay.setDate(nextDay.getDate() + 1);
@@ -527,7 +528,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
       <Modal visible={visible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            {/* Header */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Book This Room</Text>
               <TouchableOpacity
@@ -543,7 +543,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               style={styles.modalScrollView}
               showsVerticalScrollIndicator={false}
             >
-              {/* Room Info */}
               <View style={styles.bookingRoomInfo}>
                 <Text style={styles.bookingRoomType}>
                   {room?.roomType?.room_type || 'Standard Room'}
@@ -556,11 +555,9 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 </Text>
               </View>
 
-              {/* Dates Section */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>Dates</Text>
 
-                {/* Check-in Date */}
                 <View style={styles.bookingField}>
                   <Text style={styles.bookingLabel}>
                     <Calendar size={16} color="#E0C48F" /> Check-in Date
@@ -582,7 +579,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Check-out Date */}
                 <View style={styles.bookingField}>
                   <Text style={styles.bookingLabel}>
                     <Calendar size={16} color="#E0C48F" /> Check-out Date
@@ -604,7 +600,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Date Pickers */}
                 {showCheckInPicker && (
                   <DateTimePicker
                     value={
@@ -636,7 +631,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 )}
               </View>
 
-              {/* Contact Information */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>Contact Information</Text>
 
@@ -659,7 +653,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Guests Section */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>Guests</Text>
                 <View style={styles.bookingField}>
@@ -719,7 +712,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Payment Method */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>Payment Method</Text>
                 <View style={styles.bookingField}>
@@ -778,7 +770,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Special Requests */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>
                   <MessageCircle size={16} color="#E0C48F" /> Special Requests
@@ -798,7 +789,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                 />
               </View>
 
-              {/* Price Breakdown */}
               <View style={styles.bookingSection}>
                 <Text style={styles.sectionTitle}>Price Breakdown</Text>
                 <View style={styles.priceRow}>
@@ -818,7 +808,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </View>
             </ScrollView>
 
-            {/* Submit Button */}
             <View style={styles.footer}>
               <TouchableOpacity
                 style={[
@@ -850,27 +839,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
     );
   };
 
-  const getStatusText = status => {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
-
-  const gallery = resort?.image_gallery?.map(img => ({ uri: img.url }));
-
   const specificAmenities = [
     '4G Television',
     'Poolside dine',
     'Standard wifi',
     'Free Breakfast',
   ];
-
-  // Calculate average rating
-  const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce((sum, review) => sum + parseInt(review.rating), 0) /
-          reviews.length
-        ).toFixed(1)
-      : 0;
 
   if (loading) return <ActivityIndicator size="large" color="#E0C48F" />;
   if (!resort)
@@ -887,14 +861,15 @@ const ResortDetails: React.FC = ({ navigation }) => {
         <Text style={styles.descriptionText}>
           {resort.about || 'No description available'}
         </Text>
+
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {(resort.amenities || []).map((amenity, index) => (
+          {getAmenities().map((amenity, index) => (
             <View key={index} style={styles.amenityTag}>
               <Text style={styles.amenityTagText}>{amenity}</Text>
             </View>
           ))}
-          {(resort.amenities || []).length === 0 && (
+          {getAmenities().length === 0 && (
             <Text style={styles.descriptionText}>No amenities listed</Text>
           )}
         </View>
@@ -904,7 +879,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
     gallery: () => (
       <View style={styles.galleryContainer}>
         <FlatList
-          data={gallery}
+          data={getGalleryImages()}
           keyExtractor={(item, index) => index.toString()}
           numColumns={3}
           renderItem={({ item }) => (
@@ -1011,7 +986,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
         {(rooms || []).map((room, index) => (
           <View key={room.id || index} style={styles.roomCard}>
-            {/* Room card content remains the same */}
             <View style={styles.roomHeader}>
               <View>
                 <Text style={styles.roomNumber}>
@@ -1077,14 +1051,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
                   />
                 </View>
               )}
-
-              {/* <View style={styles.container}>
-                <GradientButton
-                  title="Book"
-                  style={styles.button}
-                  onPress={() => openBookingModal(room)}
-                />
-              </View> */}
             </View>
           </View>
         ))}
@@ -1105,7 +1071,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
 
-      {/* Header Image with overlay text */}
       <View style={styles.headerContainer}>
         <ImageBackground
           source={{
@@ -1126,7 +1091,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         </ImageBackground>
       </View>
 
-      {/* Amenities Icons */}
       <View style={styles.amenitiesRow}>
         {[Monitor, Bath, Wifi, Coffee].map((Icon, index) => (
           <View key={index} style={styles.amenityIconContainer}>
@@ -1138,7 +1102,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         ))}
       </View>
 
-      {/* Tab Navigation */}
       <TabView
         navigationState={{ index: tabIndex, routes }}
         renderScene={renderScene}
@@ -1175,7 +1138,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         )}
       />
 
-      {/* Review Modal */}
       <ReviewModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
@@ -1183,7 +1145,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         submitting={submittingReview}
       />
 
-      {/* Booking Modal */}
       <BookingModal
         visible={bookingModalVisible}
         onClose={closeBookingModal}
