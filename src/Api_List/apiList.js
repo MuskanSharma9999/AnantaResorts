@@ -32,6 +32,7 @@ export const ApiList = {
   GET_ALL_VOUCHERS: `${url}/vouchers/my-vouchers`,
   HOME_BANNER: `${url}/home/banners`,
   GET_ROOMS_BY_ID: id => `${url}/rooms/${id}`,
+  SEND_CONTACT_US_FORM: `${url}/inquiries/contact`,
 
   CREATE_BOOKING: `${url}/bookings`,
 

@@ -1,28 +1,94 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
   Linking,
-  TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import GradientButton from '../components/Buttons/GradientButton';
+import { Dropdown } from 'react-native-element-dropdown';
+import { apiRequest } from '../Api_List/apiUtils';
+import ApiList from '../Api_List/apiList';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ContactUs = () => {
+  const [category, setCategory] = useState('general');
+  const [priority, setPriority] = useState('low');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+
+  const categories = [
+    { label: 'General', value: 'general' },
+    { label: 'Membership', value: 'membership' },
+    { label: 'Booking', value: 'booking' },
+    { label: 'Technical', value: 'technical' },
+    { label: 'Complaint', value: 'complaint' },
+  ];
+
+  const priorities = [
+    { label: 'Low', value: 'low' },
+    { label: 'Medium', value: 'medium' },
+    { label: 'High', value: 'high' },
+  ];
+
+  const handleSubmit = async () => {
+    if (!subject || !message) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
+
+    try {
+      const token = (await AsyncStorage.getItem('token')) ?? undefined;
+
+      // Ensure we have clean, valid data
+      const payload = {
+        subject: subject.trim(),
+        message: message.trim(),
+        category: category || 'general',
+        status: 'submitted',
+      };
+
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+      console.log('Token:', token ? 'Present' : 'Missing');
+
+      const response = await apiRequest({
+        url: ApiList.SEND_CONTACT_US_FORM,
+        method: 'POST',
+        body: payload,
+        token,
+      });
+
+      console.log('Full Response:', response);
+
+      if (response?.success) {
+        Alert.alert(
+          'Success',
+          response.message || 'Message sent successfully!',
+        );
+        // Reset form
+        setSubject('');
+        setMessage('');
+        setCategory('general');
+        setPriority('low');
+      } else {
+        // More detailed error message
+        const errorMsg =
+          response?.error || response?.message || 'Failed to send message.';
+        Alert.alert('Error', `Validation failed: ${errorMsg}`);
+      }
+    } catch (error) {
+      console.error('ContactUs Error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* <Text style={styles.heading}>Contact Ananta Hotels Group</Text>
-      <Text style={styles.subheading}>
-        For inquiries, bookings, or more information, reach out to us below or
-        send a message.
-      </Text> */}
-
-      {/* Contact Info Card */}
       <View style={styles.card}>
         <Text style={styles.cardHeading}>Contact Details</Text>
-
         <View style={styles.infoSection}>
           <Text style={styles.infoText}>Email:</Text>
           <Text
@@ -32,7 +98,6 @@ const ContactUs = () => {
             info@anantahotels.com
           </Text>
         </View>
-
         <View style={styles.infoSection}>
           <Text style={styles.infoText}>Phone:</Text>
           <Text
@@ -42,7 +107,6 @@ const ContactUs = () => {
             +91 141 354 0500
           </Text>
         </View>
-
         <View style={styles.infoSection}>
           <Text style={styles.infoText}>Website:</Text>
           <Text
@@ -54,64 +118,65 @@ const ContactUs = () => {
         </View>
       </View>
 
-      {/* Form Card */}
       <View style={styles.card}>
         <Text style={styles.cardHeading}>Get In Touch</Text>
 
+        <Dropdown
+          style={styles.dropdown}
+          placeholder="Select Category"
+          data={categories}
+          labelField="label"
+          valueField="value"
+          value={category}
+          onChange={item => setCategory(item.value)}
+          placeholderStyle={styles.dropdownPlaceholder}
+          selectedTextStyle={styles.dropdownText}
+        />
+
+        <Dropdown
+          style={styles.dropdown}
+          placeholder="Select Priority"
+          data={priorities}
+          labelField="label"
+          valueField="value"
+          value={priority}
+          onChange={item => setPriority(item.value)}
+          placeholderStyle={styles.dropdownPlaceholder}
+          selectedTextStyle={styles.dropdownText}
+        />
+
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder="Subject"
           placeholderTextColor="#6B7280"
+          value={subject}
+          onChangeText={setSubject}
+          maxLength={100} // Add reasonable limits
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#6B7280"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone"
-          placeholderTextColor="#6B7280"
-          keyboardType="phone-pad"
-        />
+
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Comments"
+          placeholder="Enter your message here..."
           placeholderTextColor="#6B7280"
           multiline
           numberOfLines={4}
+          value={message}
+          onChangeText={setMessage}
+          maxLength={500} // Reasonable limit
         />
 
-        <GradientButton
-          title="Send Message"
-          onPress={() => alert('Form submission not implemented')}
-        ></GradientButton>
+        <GradientButton title="Send Message" onPress={handleSubmit} />
       </View>
     </ScrollView>
   );
 };
 
+// Your existing styles remain the same...
 const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: '#000',
     flexGrow: 1,
-  },
-  heading: {
-    fontSize: 26,
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#FBCF9C',
-    fontFamily: 'Cormorant-Bold',
-  },
-  subheading: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#D1D5DB',
-    fontFamily: 'Montserrat',
-    lineHeight: 22,
   },
   card: {
     backgroundColor: 'rgba(251, 207, 156, 0.05)',
@@ -120,26 +185,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: 'rgba(251, 207, 156, 0.2)',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 5,
   },
   cardHeading: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 15,
     color: '#FBCF9C',
-    textAlign: 'left',
     fontFamily: 'Cormorant-Bold',
   },
   infoSection: {
     flexDirection: 'row',
     marginBottom: 12,
-    justifyContent: 'flex-start',
-    flexWrap: 'wrap',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   infoText: {
     fontWeight: '600',
@@ -169,19 +227,20 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
-  button: {
-    backgroundColor: '#E0C48F',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
+  dropdown: {
+    marginBottom: 15,
     borderWidth: 1,
-    borderColor: 'rgba(251, 207, 156, 0.5)',
+    borderColor: 'rgba(251, 207, 156, 0.3)',
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: 'rgba(251, 207, 156, 0.05)',
   },
-  buttonText: {
-    color: '#000',
-    fontWeight: '600',
-    fontSize: 16,
+  dropdownPlaceholder: {
+    color: '#6B7280',
+    fontFamily: 'Montserrat',
+  },
+  dropdownText: {
+    color: '#D1D5DB',
     fontFamily: 'Montserrat',
   },
 });

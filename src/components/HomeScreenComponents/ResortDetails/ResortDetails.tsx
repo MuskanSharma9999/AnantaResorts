@@ -88,7 +88,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
   };
 
   // Helper function to render dynamic icon
-  const renderDynamicIcon = (iconName, size = 20, color = '#8B5A2B') => {
+  const renderDynamicIcon = (
+    iconName,
+    size = 20,
+    stroke = 1,
+    color = '#8B5A2B',
+  ) => {
     const IconComponent = getLucideIcon(iconName);
 
     if (!IconComponent) {
@@ -96,7 +101,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
       return <LucideIcons.Circle size={size} color={color} />;
     }
 
-    return <IconComponent size={size} color={color} />;
+    return <IconComponent size={size} color={color} strokeWidth={stroke} />;
   };
 
   useEffect(() => {
@@ -1106,7 +1111,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
                     >
                       <View style={styles.amenityTag}>
                         <View style={styles.amenityTagIcon}>
-                          {renderDynamicIcon(amenity.icon_name, 26, '#8B5A2B')}
+                          {renderDynamicIcon(
+                            amenity.icon_name,
+                            26,
+                            2,
+                            '#8B5A2B',
+                          )}
                         </View>
                       </View>
                       <Text style={styles.amenityTagText}>
