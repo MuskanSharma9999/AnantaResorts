@@ -402,6 +402,20 @@ const ProfileScreen = () => {
                   color: '#FBCF9C',
                 }}
               />
+                <TextInput
+                value={tempEmail}
+                onChangeText={setTempEmail}
+                placeholder="Enter Email"
+                placeholderTextColor="#999"
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#FBCF9C',
+                  borderRadius: 8,
+                  padding: 10,
+                  marginBottom: 15,
+                  color: '#FBCF9C',
+                }}
+              />
 
               <GradientButton title="Save" onPress={handleUpdateProfile} />
 
