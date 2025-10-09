@@ -130,7 +130,13 @@ const ContactUs = () => {
           value={category}
           onChange={item => setCategory(item.value)}
           placeholderStyle={styles.dropdownPlaceholder}
-          selectedTextStyle={styles.dropdownText}
+          selectedTextStyle={styles.dropdownSelectedText}
+          inputSearchStyle={styles.dropdownInputSearch}
+          iconStyle={styles.dropdownIcon}
+          itemTextStyle={styles.dropdownItemText}
+          itemContainerStyle={styles.dropdownItemContainer}
+          containerStyle={styles.dropdownContainer}
+          activeColor="rgba(251, 207, 156, 0.15)"
         />
 
         <Dropdown
@@ -142,9 +148,14 @@ const ContactUs = () => {
           value={priority}
           onChange={item => setPriority(item.value)}
           placeholderStyle={styles.dropdownPlaceholder}
-          selectedTextStyle={styles.dropdownText}
+          selectedTextStyle={styles.dropdownSelectedText}
+          inputSearchStyle={styles.dropdownInputSearch}
+          iconStyle={styles.dropdownIcon}
+          itemTextStyle={styles.dropdownItemText}
+          itemContainerStyle={styles.dropdownItemContainer}
+          containerStyle={styles.dropdownContainer}
+          activeColor="rgba(251, 207, 156, 0.15)"
         />
-
         <TextInput
           style={styles.input}
           placeholder="Subject"
@@ -227,21 +238,64 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
+
   dropdown: {
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: 'rgba(251, 207, 156, 0.3)',
+    borderColor: 'rgba(251, 207, 156, 0.4)', // Slightly brighter border
     borderRadius: 10,
     padding: 12,
-    backgroundColor: 'rgba(251, 207, 156, 0.05)',
+    backgroundColor: 'rgba(251, 207, 156, 0.08)', // Lighter background
   },
   dropdownPlaceholder: {
-    color: '#6B7280',
+    color: '#9CA3AF', // Lighter placeholder color
     fontFamily: 'Montserrat',
+    fontSize: 16,
   },
-  dropdownText: {
-    color: '#D1D5DB',
+  dropdownSelectedText: {
+    color: '#FBCF9C', // Gold text for selected item
     fontFamily: 'Montserrat',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  dropdownInputSearch: {
+    color: '#FBCF9C',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderColor: 'rgba(251, 207, 156, 0.4)',
+    borderRadius: 8,
+    fontFamily: 'Montserrat',
+    paddingHorizontal: 12,
+  },
+  dropdownIcon: {
+    tintColor: '#FBCF9C', // Gold dropdown arrow
+    width: 20,
+    height: 20,
+  },
+  dropdownItemText: {
+    color: '#FBCF9C', // Light gray text for items
+    fontFamily: 'Montserrat',
+    fontSize: 16,
+    // paddingVertical: 10,
+  },
+  dropdownItemContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.95)', // Dark background for items
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(251, 207, 156, 0.2)',
+  },
+  dropdownContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.95)', // Dark container background
+    borderColor: 'rgba(251, 207, 156, 0.4)',
+    borderWidth: 1,
+    borderRadius: 10,
+    marginTop: 5,
+    shadowColor: '#FBCF9C',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });
 
