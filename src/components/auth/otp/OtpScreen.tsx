@@ -27,8 +27,6 @@ import ApiList from '../../../Api_List/apiList';
 import { useDispatch } from 'react-redux';
 import { setAuth } from '../../../redux/slices/authSlice';
 import { setUserDetails } from '../../../redux/slices/userSlice';
-
-// Add this import
 import OtpVerify from 'react-native-otp-verify';
 
 type OtpScreenRouteProp = RouteProp<RootStackParamList, 'Otp'>;
@@ -41,10 +39,11 @@ const OtpScreen = () => {
 
   const [otp, setOtp] = useState('');
   const [resendTime, setResendTime] = useState(30);
-  const navigation = useAppNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [hasSmsPermission, setHasSmsPermission] = useState(false);
 
+  const navigation = useAppNavigation();
   const dispatch = useDispatch();
 
   // Request SMS permission for Android
@@ -76,14 +75,12 @@ const OtpScreen = () => {
   // Auto-read OTP from SMS
   useEffect(() => {
     if (hasSmsPermission) {
-      // Get the OTP hash (optional, for some apps)
       OtpVerify.getHash()
         .then(hash => {
           console.log('OTP Hash:', hash);
         })
         .catch(error => console.log('Hash error:', error));
 
-      // Start listening for OTP
       OtpVerify.getOtp()
         .then(p => OtpVerify.addListener(otpHandler))
         .catch(p => console.log('OTP listener error:', p));
@@ -96,18 +93,13 @@ const OtpScreen = () => {
 
   const otpHandler = (message: string) => {
     console.log('Received SMS:', message);
-
-    // Extract OTP from message using regex
-    const otpMatch = message.match(/\b\d{4,6}\b/); // Match 4-6 digit OTP
+    const otpMatch = message.match(/\b\d{4,6}\b/);
     if (otpMatch) {
       const extractedOtp = otpMatch[0];
       console.log('Extracted OTP:', extractedOtp);
 
-      // If it's a 4-digit OTP, auto-fill
       if (extractedOtp.length === 4) {
         setOtp(extractedOtp);
-
-        // Optional: Auto-verify after a short delay
         setTimeout(() => {
           handleVerify(extractedOtp);
         }, 500);
@@ -115,7 +107,40 @@ const OtpScreen = () => {
     }
   };
 
-  // Update handleVerify to accept optional parameter
+  // Resend OTP function
+  const handleResendOtp = async () => {
+    if (resendTime > 0 || isResending) return;
+
+    try {
+      setIsResending(true);
+
+      const response = await apiRequest({
+        url: ApiList.SEND_OTP,
+        method: 'POST',
+        body: { phone: phoneNumber },
+      });
+
+      if (response.success) {
+        // Reset timer and OTP input
+        setResendTime(30);
+        setOtp('');
+
+        Alert.alert('Success', 'OTP has been resent to your mobile number');
+      } else {
+        Alert.alert(
+          'Error',
+          response.error || 'Failed to resend OTP. Please try again.',
+        );
+      }
+    } catch (error) {
+      console.error('Resend OTP Error:', error);
+      Alert.alert('Error', 'Failed to resend OTP. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  // Verify OTP function
   const handleVerify = async (providedOtp = null) => {
     const otpToVerify = providedOtp || otp;
 
@@ -178,52 +203,13 @@ const OtpScreen = () => {
     }
   };
 
-  const sendOTP = async () => {
-    if (!phoneNumber) {
-      Alert.alert('Error', 'Please enter your mobile number');
-      return;
+  // Timer countdown effect
+  useEffect(() => {
+    if (resendTime > 0) {
+      const timer = setTimeout(() => setResendTime(resendTime - 1), 1000);
+      return () => clearTimeout(timer);
     }
-
-    try {
-      setIsLoading(true);
-
-      const response = await apiRequest({
-        url: ApiList.SEND_OTP,
-        method: 'POST',
-        body: { phone: phoneNumber },
-      });
-
-      // if (response.success) {
-      //   await AsyncStorage.setItem('userMobile', formattedNumber ?? '');
-
-      //   // Directly navigate without alert here
-      //   navigation.navigate('Otp', {
-      //     phoneNumber: formattedNumber,
-      //     maskedPhone: formattedNumber
-      //       ? '****' + formattedNumber.slice(-4)
-      //       : '****',
-      //   });
-      // } else {
-      //   Alert.alert('Error', 'Failed to send OTP, Please try again later');
-      //   console.error('error otp', response.error);
-      // }
-    } catch (error) {
-      Alert.alert('Error', error?.message || 'Unknown error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendCode = () => {
-    setResendTime(30);
-    setOtp('');
-
-    console.log(
-      ':::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::',
-      phoneNumber,
-    );
-    sendOTP;
-  };
+  }, [resendTime]);
 
   const data = [
     { image: require('../../../assets/images/loginCarousel_images/img_1.jpg') },
@@ -231,13 +217,6 @@ const OtpScreen = () => {
     { image: require('../../../assets/images/loginCarousel_images/img_3.jpg') },
     { image: require('../../../assets/images/loginCarousel_images/img_4.jpg') },
   ];
-
-  useEffect(() => {
-    if (resendTime > 0) {
-      const timer = setTimeout(() => setResendTime(resendTime - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTime]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -272,7 +251,6 @@ const OtpScreen = () => {
                 Sent to mobile ending with {maskedPhone}
               </Text>
 
-              {/* Add auto-read indicator */}
               {hasSmsPermission && (
                 <Text style={styles.autoReadText}>
                   📱 Auto-reading OTP from messages...
@@ -286,10 +264,10 @@ const OtpScreen = () => {
                   autoFocus={true}
                   hideStick={true}
                   placeholder="•"
-                  blurOnFilled={false} // Changed to false for better UX
-                  value={otp} // Controlled component
+                  blurOnFilled={false}
+                  value={otp}
                   onTextChange={value => setOtp(value)}
-                  onFilled={handleVerify} // Auto-verify when filled manually
+                  onFilled={handleVerify}
                   theme={{
                     pinCodeContainerStyle: styles.otpInput,
                     pinCodeTextStyle: {
@@ -317,14 +295,20 @@ const OtpScreen = () => {
               />
 
               <TouchableOpacity
-                style={styles.resendButton}
-                onPress={handleResendCode}
-                disabled={resendTime > 0}
+                style={[
+                  styles.resendButton,
+                  (resendTime > 0 || isResending) &&
+                    styles.resendButtonDisabled,
+                ]}
+                onPress={handleResendOtp}
+                disabled={resendTime > 0 || isResending}
               >
                 <Text style={styles.resendText}>
                   Didn't receive code?{' '}
                   <Text style={styles.resendHighlight}>
-                    {resendTime > 0
+                    {isResending
+                      ? 'Resending...'
+                      : resendTime > 0
                       ? `Resend in ${resendTime}s`
                       : 'Resend Code'}
                   </Text>
