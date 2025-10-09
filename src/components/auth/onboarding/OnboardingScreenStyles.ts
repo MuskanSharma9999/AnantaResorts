@@ -1,19 +1,29 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
+
+// Base dimensions for scaling (based on iPhone 12 width 375px, height 812px)
+const baseWidth = 375;
+const baseHeight = 812;
+
+// Helper functions
+const scaleSize = size => (width / baseWidth) * size;
+const scaleFont = size => Math.round(scaleSize(size));
+const verticalScale = size => (height / baseHeight) * size;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: verticalScale(20),
   },
 
   titleSlide: {
     width,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: scaleSize(20),
   },
 
   carousel: {
@@ -23,72 +33,74 @@ const styles = StyleSheet.create({
   onboardingImage: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
 
   textContainer: {
     alignItems: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: scaleSize(32),
   },
 
   title: {
-    fontSize: 28,
+    fontSize: scaleFont(28),
     fontFamily: 'Cormorant-Bold',
     color: '#E3C47A',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
+    lineHeight: scaleFont(34),
   },
 
   subtitle: {
-    fontSize: 16,
+    fontSize: scaleFont(15),
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: verticalScale(25),
   },
 
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: verticalScale(10),
   },
 
   paginationDot: {
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
+    height: scaleSize(8),
+    borderRadius: scaleSize(4),
+    marginHorizontal: scaleSize(4),
   },
 
   activeDot: {
-    width: 51,
+    width: scaleSize(50),
     backgroundColor: '#C39E65',
   },
 
   inactiveDot: {
-    width: 9,
+    width: scaleSize(9),
     backgroundColor: '#D9D9D9',
   },
+
   button: {
     width: '80%',
     alignSelf: 'center',
     backgroundColor: '#C3A485',
-    marginTop: 30,
-    marginBottom: 90, // adjust as needed for safe area
-    borderRadius: 25,
+    marginTop: verticalScale(20),
+    marginBottom: Platform.OS === 'ios' ? verticalScale(80) : verticalScale(60),
+    borderRadius: scaleSize(25),
     overflow: 'hidden',
   },
 
   buttonGradient: {
-    paddingVertical: 15,
+    paddingVertical: verticalScale(15),
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 25,
+    borderRadius: scaleSize(25),
   },
 
   buttonText: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: scaleFont(17),
     fontWeight: 'bold',
     letterSpacing: 1,
   },

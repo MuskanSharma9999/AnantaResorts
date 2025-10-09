@@ -7,6 +7,8 @@ import {
   Alert,
   ScrollView,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -20,7 +22,10 @@ const styles = {
   container: {
     flex: 1,
     backgroundColor: 'black',
+  },
+  contentContainer: {
     padding: 16,
+    paddingBottom: 100, // Add extra padding at bottom for submit button
   },
   sectionTitle: {
     color: '#FFE2B8',
@@ -47,6 +52,7 @@ const styles = {
     paddingVertical: 10,
     fontSize: 14,
     fontFamily: 'Montserrat-Regular',
+    minHeight: 44, // Ensure minimum touch target size
   },
   uploadButtonText: {
     backgroundColor: '#19191A',
@@ -55,10 +61,11 @@ const styles = {
     borderWidth: 1,
     color: '#fff',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 14,
     fontFamily: 'Montserrat',
     textAlign: 'center',
+    minHeight: 44, // Ensure minimum touch target size
   },
   elementDropdown: {
     backgroundColor: '#19191A',
@@ -67,6 +74,7 @@ const styles = {
     borderRadius: 8,
     marginBottom: 12,
     paddingHorizontal: 12,
+    minHeight: 44, // Ensure minimum touch target size
   },
   elementDropdownPlaceholder: {
     color: '#bbb',
@@ -83,7 +91,8 @@ const styles = {
     tintColor: '#FFE2B8',
   },
   previewImage: {
-    width: 200,
+    width: '100%',
+    maxWidth: 300,
     height: 200,
     borderRadius: 8,
     marginTop: 10,
@@ -95,6 +104,7 @@ const styles = {
     fontFamily: 'Montserrat',
     textAlign: 'center',
     marginTop: 5,
+    marginBottom: 8,
   },
   documentSection: {
     marginBottom: 20,
@@ -113,8 +123,7 @@ const styles = {
   statusContainer: {
     borderRadius: 8,
     padding: 16,
-    alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 20,
   },
   statusText: {
     fontSize: 18,
@@ -133,6 +142,7 @@ const styles = {
   verifiedContainer: {
     backgroundColor: 'rgba(34, 197, 94, 0.1)',
     borderColor: '#22c55e',
+    borderWidth: 1,
   },
   verifiedText: {
     color: '#22c55e',
@@ -144,6 +154,7 @@ const styles = {
   pendingContainer: {
     backgroundColor: 'rgba(234, 179, 8, 0.1)',
     borderColor: '#eab308',
+    borderWidth: 1,
   },
   pendingText: {
     color: '#eab308',
@@ -155,6 +166,7 @@ const styles = {
   rejectedContainer: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderColor: '#ef4444',
+    borderWidth: 1,
   },
   rejectedText: {
     color: '#ef4444',
@@ -166,6 +178,7 @@ const styles = {
   expiredContainer: {
     backgroundColor: 'rgba(249, 115, 22, 0.1)',
     borderColor: '#f97316',
+    borderWidth: 1,
   },
   expiredText: {
     color: '#f97316',
@@ -187,6 +200,10 @@ const styles = {
     color: '#FFE2B8',
     fontSize: 16,
     fontFamily: 'Montserrat',
+  },
+  buttonContainer: {
+    marginTop: 20,
+    marginBottom: 20,
   },
 };
 
@@ -372,7 +389,7 @@ const KYC = () => {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
         },
-        timeout: 30000, // 30 seconds timeout
+        timeout: 30000,
       });
 
       console.log('KYC Upload Success:', response.data);
@@ -393,7 +410,6 @@ const KYC = () => {
       let errorMessage = 'Failed to upload KYC data';
 
       if (error.response) {
-        // Server responded with error status
         console.error('KYC Upload Error Details:', {
           status: error.response.status,
           statusText: error.response.statusText,
@@ -411,7 +427,6 @@ const KYC = () => {
           errorMessage = error.response.data.message;
         }
       } else if (error.request) {
-        // Request made but no response received
         errorMessage = 'Network error. Please check your internet connection.';
       } else if (error.code === 'ECONNABORTED') {
         errorMessage = 'Request timeout. Please try again.';
@@ -427,7 +442,7 @@ const KYC = () => {
     return (
       <View
         style={{
-          backgroundColor: selected ? '#19191A' : '#19191A',
+          backgroundColor: '#19191A',
           paddingHorizontal: 12,
           paddingVertical: 10,
           borderBottomWidth: 0.5,
@@ -680,32 +695,45 @@ const KYC = () => {
           </View>
         )}
 
-        <GradientButton
-          title={
-            isKYCRejected
-              ? 'Resubmit KYC'
-              : isKYCExpired
-              ? 'Renew KYC'
-              : 'Submit KYC'
-          }
-          onPress={handleSubmit}
-          disabled={isLoading}
-        />
+        <View style={styles.buttonContainer}>
+          <GradientButton
+            title={
+              isKYCRejected
+                ? 'Resubmit KYC'
+                : isKYCExpired
+                ? 'Renew KYC'
+                : 'Submit KYC'
+            }
+            onPress={handleSubmit}
+            disabled={isLoading}
+          />
+        </View>
       </>
     );
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>KYC Verification</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.sectionTitle}>KYC Verification</Text>
 
-      {/* Show status message for all states */}
-      {renderStatusMessage()}
+        {/* Show status message for all states */}
+        {renderStatusMessage()}
 
-      {/* Show KYC form for pending, rejected, expired, or no status */}
-      {(isKYCPending || isKYCRejected || isKYCExpired || !kycStatus) &&
-        renderKYCForm()}
-    </ScrollView>
+        {/* Show KYC form for pending, rejected, expired, or no status */}
+        {(isKYCPending || isKYCRejected || isKYCExpired || !kycStatus) &&
+          renderKYCForm()}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

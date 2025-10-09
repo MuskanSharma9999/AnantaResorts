@@ -393,68 +393,87 @@ const ResortDetails: React.FC = ({ navigation }) => {
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Write a Review</Text>
-              <TouchableOpacity onPress={handleClose} disabled={submitting}>
-                <Text style={styles.closeButton}>✕</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleClose}
+                disabled={submitting}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.ratingSection}>
-              <Text style={styles.ratingLabel}>Rate your experience:</Text>
-              <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <TouchableOpacity
-                    key={star}
-                    onPress={() => setRating(star)}
-                    disabled={submitting}
-                  >
-                    <Text
-                      style={[
-                        styles.starInput,
-                        {
-                          color: star <= rating ? '#FFD700' : '#CCC',
-                          fontSize: 40,
-                        },
-                      ]}
-                    >
-                      ★
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+            <ScrollView style={styles.modalScrollView}>
+              <View style={styles.bookingSection}>
+                <View style={styles.ratingSection}>
+                  <Text style={styles.ratingLabel}>Rate your experience:</Text>
+                  <View style={styles.starsContainer}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <TouchableOpacity
+                        key={star}
+                        onPress={() => setRating(star)}
+                        disabled={submitting}
+                        style={styles.starInput}
+                      >
+                        <Text
+                          style={{
+                            color: star <= rating ? '#FFD700' : '#444',
+                            fontSize: 40,
+                          }}
+                        >
+                          ★
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>
+                    Review Title (Optional)
+                  </Text>
+                  <TextInput
+                    style={styles.modalTitleInput}
+                    placeholder="Give your review a title"
+                    placeholderTextColor="#888"
+                    value={title}
+                    onChangeText={setTitle}
+                    maxLength={100}
+                    editable={!submitting}
+                  />
+                </View>
+
+                <View style={styles.bookingField}>
+                  <Text style={styles.bookingLabel}>Your Review *</Text>
+                  <TextInput
+                    style={styles.modalCommentInput}
+                    placeholder="Tell us about your experience..."
+                    placeholderTextColor="#888"
+                    value={comment}
+                    onChangeText={setComment}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                    editable={!submitting}
+                  />
+                </View>
               </View>
+            </ScrollView>
+
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (submitting || rating === 0 || !comment.trim()) &&
+                    styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={submitting || rating === 0 || !comment.trim()}
+              >
+                <Text style={styles.submitButtonText}>
+                  {submitting ? 'Submitting...' : 'Submit Review'}
+                </Text>
+              </TouchableOpacity>
             </View>
-
-            <TextInput
-              style={styles.modalTitleInput}
-              placeholder="Review title (optional)"
-              value={title}
-              onChangeText={setTitle}
-              maxLength={100}
-              editable={!submitting}
-            />
-
-            <TextInput
-              style={styles.modalCommentInput}
-              placeholder="Tell us about your experience... *"
-              value={comment}
-              onChangeText={setComment}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              editable={!submitting}
-            />
-
-            <TouchableOpacity
-              style={[
-                styles.modalSubmitButton,
-                submitting && styles.modalSubmitButtonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={submitting || rating === 0 || !comment.trim()}
-            >
-              <Text style={styles.modalSubmitButtonText}>
-                {submitting ? 'Submitting...' : 'Submit Review'}
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>

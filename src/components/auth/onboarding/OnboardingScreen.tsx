@@ -58,8 +58,20 @@ const OnboardingScreen = () => {
         style={styles.container}
       >
         {/* <OnBoarding width={width} height={width} /> */}
-        <View style={styles.onboardingImage}>
-          <Image source={require('../../../assets/images/onBoarding.png')} />
+        <View
+          style={[
+            styles.onboardingImage,
+            { transform: [{ scale: width < 360 ? 0.85 : 1 }] },
+          ]}
+        >
+          <Image
+            source={require('../../../assets/images/onBoarding.png')}
+            style={{
+              width: width * 0.9,
+              height: width * 0.9,
+              resizeMode: 'contain',
+            }}
+          />
         </View>
 
         <View>
