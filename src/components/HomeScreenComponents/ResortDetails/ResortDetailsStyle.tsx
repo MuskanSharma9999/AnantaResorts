@@ -29,7 +29,7 @@ export const styles = StyleSheet.create({
   // Remove or modify headerOverlay if it's causing issues
   headerOverlay: {
     position: 'absolute',
-    bottom: 80, // Position above amenities
+    bottom: 0, // Position above amenities
     left: 0,
     right: 0,
     paddingHorizontal: 24,
@@ -52,25 +52,18 @@ export const styles = StyleSheet.create({
   },
 
   // Amenities row styles - adjust positioning
-  amenitiesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
-    backgroundColor: 'transparent',
-    zIndex: 5,
-  },
 
   resortName: {
     color: '#FBCF9C',
     fontSize: 32,
     fontWeight: '300',
     fontFamily: 'Cormorant-Bold',
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16, // Add margin to separate from amenities
+    // marginBottom: 16, // Add margin to separate from amenities
   },
   locationText: {
     color: '#fff',
@@ -166,28 +159,6 @@ export const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
     marginBottom: 16,
     marginTop: 8,
-  },
-  descriptionText: {
-    color: '#D1D5DB',
-    fontSize: 14,
-    lineHeight: 22,
-    fontFamily: 'Montserrat',
-    marginBottom: 20,
-  },
-  amenityTag: {
-    backgroundColor: 'rgba(251, 207, 156, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(251, 207, 156, 0.3)',
-  },
-  amenityTagText: {
-    color: '#FBCF9C',
-    fontSize: 12,
-    fontFamily: 'Montserrat',
   },
 
   // Gallery styles
@@ -832,5 +803,45 @@ export const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  amenitiesRow: {
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+  },
+
+  // Container for amenity tags
+  amenityTag: {
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(251, 207, 156, 0.3)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  amenityTagIcon: {
+    marginRight: 0,
+  },
+
+  amenityTagText: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignContent: 'center',
+    color: '#FBCF9C',
+    fontSize: 10,
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+  },
+
+  // For the empty state
+  descriptionText: {
+    color: '#D1D5DB',
+    fontSize: 14,
+    lineHeight: 22,
+    fontFamily: 'Montserrat',
+    marginBottom: 20,
   },
 });

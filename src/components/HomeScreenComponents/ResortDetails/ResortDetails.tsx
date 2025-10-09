@@ -14,7 +14,20 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import {
+import * as LucideIcons from 'lucide-react-native';
+import { styles } from './ResortDetailsStyle';
+import { useRoute } from '@react-navigation/native';
+import { ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { ApiList } from '../../../Api_List/apiList';
+import { TabView, SceneMap } from 'react-native-tab-view';
+import { Dimensions } from 'react-native';
+import GradientButton from '../../Buttons/GradientButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useSelector } from 'react-redux';
+
+const {
   Monitor,
   Bath,
   Wifi,
@@ -28,18 +41,7 @@ import {
   User,
   Phone,
   MessageCircle,
-} from 'lucide-react-native';
-import { styles } from './ResortDetailsStyle';
-import { useRoute } from '@react-navigation/native';
-import { ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { ApiList } from '../../../Api_List/apiList';
-import { TabView, SceneMap } from 'react-native-tab-view';
-import { Dimensions } from 'react-native';
-import GradientButton from '../../Buttons/GradientButton';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useSelector } from 'react-redux';
+} = LucideIcons;
 
 const ResortDetails: React.FC = ({ navigation }) => {
   const route = useRoute();
@@ -73,6 +75,29 @@ const ResortDetails: React.FC = ({ navigation }) => {
   ]);
 
   const [rooms, setRooms] = useState([]);
+
+  // Helper function to get Lucide icon component dynamically
+  const getLucideIcon = iconName => {
+    if (!iconName) return null;
+
+    // Try to get the icon from Lucide
+    const IconComponent = LucideIcons[iconName];
+
+    // Return the component if found, otherwise return a default icon
+    return IconComponent || LucideIcons.Circle;
+  };
+
+  // Helper function to render dynamic icon
+  const renderDynamicIcon = (iconName, size = 20, color = '#8B5A2B') => {
+    const IconComponent = getLucideIcon(iconName);
+
+    if (!IconComponent) {
+      // Fallback to a default icon if not found
+      return <LucideIcons.Circle size={size} color={color} />;
+    }
+
+    return <IconComponent size={size} color={color} />;
+  };
 
   useEffect(() => {
     fetchResort();
@@ -294,34 +319,29 @@ const ResortDetails: React.FC = ({ navigation }) => {
     }
   };
 
-  // Calculate average rating safely
-  const calculateAverageRating = reviews => {
-    if (!reviews || reviews.length === 0) return 0;
+  // const calculateAverageRating = reviews => {
+  //   if (!reviews || reviews.length === 0) return 0;
 
-    try {
-      const sum = reviews.reduce((total, review) => {
-        const rating = parseInt(review.rating) || 0;
-        return total + rating;
-      }, 0);
+  //   try {
+  //     const sum = reviews.reduce((total, review) => {
+  //       const rating = parseInt(review.rating) || 0;
+  //       return total + rating;
+  //     }, 0);
 
-      return (sum / reviews.length).toFixed(1);
-    } catch (error) {
-      console.error('Error calculating average rating:', error);
-      return 0;
-    }
-  };
+  //     return (sum / reviews.length).toFixed(1);
+  //   } catch (error) {
+  //     console.error('Error calculating average rating:', error);
+  //     return 0;
+  //   }
+  // };
 
-  const averageRating = calculateAverageRating(reviews);
+  // const averageRating = calculateAverageRating(reviews);
 
-  // Get amenities safely
   const getAmenities = () => {
     if (!resort?.amenities || !Array.isArray(resort.amenities)) return [];
-    return resort.amenities.map(
-      amenity => amenity.name || amenity.icon_name || 'Amenity',
-    );
+    return resort.amenities;
   };
 
-  // Get gallery images safely
   const getGalleryImages = () => {
     if (!resort?.image_gallery || !Array.isArray(resort.image_gallery))
       return [];
@@ -839,13 +859,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
     );
   };
 
-  const specificAmenities = [
-    '4G Television',
-    'Poolside dine',
-    'Standard wifi',
-    'Free Breakfast',
-  ];
-
   if (loading) return <ActivityIndicator size="large" color="#E0C48F" />;
   if (!resort)
     return <Text style={styles.descriptionText}>Resort not found</Text>;
@@ -861,18 +874,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         <Text style={styles.descriptionText}>
           {resort.about || 'No description available'}
         </Text>
-
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {getAmenities().map((amenity, index) => (
-            <View key={index} style={styles.amenityTag}>
-              <Text style={styles.amenityTagText}>{amenity}</Text>
-            </View>
-          ))}
-          {getAmenities().length === 0 && (
-            <Text style={styles.descriptionText}>No amenities listed</Text>
-          )}
-        </View>
       </ScrollView>
     ),
 
@@ -1087,19 +1088,41 @@ const ResortDetails: React.FC = ({ navigation }) => {
               <MapPin size={16} color="#fff" />
               <Text style={styles.locationText}>{resort.location}</Text>
             </View>
+            <View style={styles.amenitiesRow}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  flexDirection: 'row',
+                  gap: 20,
+                  paddingHorizontal: 10,
+                }}
+              >
+                {getAmenities().length > 0 ? (
+                  getAmenities().map((amenity, index) => (
+                    <View
+                      key={amenity.id || index}
+                      style={{ alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <View style={styles.amenityTag}>
+                        <View style={styles.amenityTagIcon}>
+                          {renderDynamicIcon(amenity.icon_name, 26, '#8B5A2B')}
+                        </View>
+                      </View>
+                      <Text style={styles.amenityTagText}>
+                        {amenity.name || amenity.label}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.descriptionText}>
+                    No amenities listed
+                  </Text>
+                )}
+              </ScrollView>
+            </View>
           </View>
         </ImageBackground>
-      </View>
-
-      <View style={styles.amenitiesRow}>
-        {[Monitor, Bath, Wifi, Coffee].map((Icon, index) => (
-          <View key={index} style={styles.amenityIconContainer}>
-            <View style={styles.amenityIconWrapper}>
-              <Icon size={20} color="#8B5A2B" />
-            </View>
-            <Text style={styles.amenityLabel}>{specificAmenities[index]}</Text>
-          </View>
-        ))}
       </View>
 
       <TabView
@@ -1157,3 +1180,17 @@ const ResortDetails: React.FC = ({ navigation }) => {
 };
 
 export default ResortDetails;
+
+//  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+//       {getAmenities().map((amenity, index) => (
+//         <View key={amenity.id || index} style={styles.amenityTag}>
+//           <View style={styles.amenityTagIcon}>
+//             {renderDynamicIcon(amenity.icon_name, 16, '#8B5A2B')}
+//           </View>
+//           <Text style={styles.amenityTagText}>{amenity.name}</Text>
+//         </View>
+//       ))}
+//       {getAmenities().length === 0 && (
+//         <Text style={styles.descriptionText}>No amenities listed</Text>
+//       )}
+//     </View>
