@@ -459,21 +459,19 @@ const ResortDetails: React.FC = ({ navigation }) => {
               </View>
             </ScrollView>
 
-            <View style={styles.footer}>
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  (submitting || rating === 0 || !comment.trim()) &&
-                    styles.submitButtonDisabled,
-                ]}
+            <TouchableOpacity
+              style={[
+                styles.footer,
+                (submitting || rating === 0 || !comment.trim()) &&
+                  styles.submitButtonDisabled,
+              ]}
+              disabled={submitting || rating === 0 || !comment.trim()}
+            >
+              <GradientButton
                 onPress={handleSubmit}
-                disabled={submitting || rating === 0 || !comment.trim()}
-              >
-                <Text style={styles.submitButtonText}>
-                  {submitting ? 'Submitting...' : 'Submit Review'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                title={submitting ? 'Submitting...' : 'Submit Review'}
+              ></GradientButton>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -567,6 +565,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
       minDate.setDate(minDate.getDate() + 1);
       return minDate;
     };
+
+    const isFormValid =
+      bookingData.checkIn &&
+      bookingData.checkOut &&
+      bookingData.contactPhone &&
+      !submitting;
 
     return (
       <Modal visible={visible} animationType="slide" transparent>
@@ -853,29 +857,23 @@ const ResortDetails: React.FC = ({ navigation }) => {
             </ScrollView>
 
             <View style={styles.footer}>
-              <TouchableOpacity
+              <View
                 style={[
-                  styles.submitButton,
-                  (!bookingData.checkIn ||
-                    !bookingData.checkOut ||
-                    !bookingData.contactPhone ||
-                    submitting) &&
-                    styles.submitButtonDisabled,
+                  styles.submitButtonWrapper,
+                  !isFormValid && styles.submitButtonDisabled,
                 ]}
-                onPress={handleSubmit}
-                disabled={
-                  submitting ||
-                  !bookingData.checkIn ||
-                  !bookingData.checkOut ||
-                  !bookingData.contactPhone
-                }
               >
-                <Text style={styles.submitButtonText}>
-                  {submitting
-                    ? 'Processing...'
-                    : `Book Now - ₹${calculateTotal()}`}
-                </Text>
-              </TouchableOpacity>
+                <GradientButton
+                  title={
+                    submitting
+                      ? 'Processing...'
+                      : `Book Now - ₹${calculateTotal()}`
+                  }
+                  style={styles.submitButton}
+                  onPress={handleSubmit}
+                  disabled={!isFormValid}
+                />
+              </View>
             </View>
           </View>
         </View>
@@ -1226,3 +1224,31 @@ export default ResortDetails;
 //         <Text style={styles.descriptionText}>No amenities listed</Text>
 //       )}
 //     </View>
+
+{
+  /* <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (!bookingData.checkIn ||
+                    !bookingData.checkOut ||
+                    !bookingData.contactPhone ||
+                    submitting) &&
+                    styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={
+                  submitting ||
+                  !bookingData.checkIn ||
+                  !bookingData.checkOut ||
+                  !bookingData.contactPhone
+                }
+              >
+                <Text style={styles.submitButtonText}>
+                  {submitting
+                    ? 'Processing...'
+                    : `Book Now - ₹${calculateTotal()}`}
+                </Text>
+              </TouchableOpacity>
+            </View> */
+}

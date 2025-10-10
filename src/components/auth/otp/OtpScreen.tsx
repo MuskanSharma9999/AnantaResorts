@@ -225,7 +225,7 @@ const OtpScreen = () => {
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? height * 0.1 : 20}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? height * 0.1 : 10}
         >
           <View style={{ flex: 1 }}>
             <View style={styles.imageSection}>

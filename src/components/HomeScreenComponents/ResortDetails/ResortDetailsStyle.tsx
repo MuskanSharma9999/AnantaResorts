@@ -20,90 +20,34 @@ export const styles = StyleSheet.create({
   },
   headerImage: {
     flex: 1,
-    // Remove justifyContent: 'space-between' to prevent content from sticking to bottom
   },
   headerImageStyle: {
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
-  // Remove or modify headerOverlay if it's causing issues
   headerOverlay: {
     position: 'absolute',
-    bottom: 0, // Position above amenities
+    bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 24,
   },
-
-  resortInfoContainer: {
-    position: 'absolute',
-    bottom: 0, // Position above amenities - adjust this value
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    zIndex: 10,
-  },
-  resortInfoSection: {
-    backgroundColor: 'transparent',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-    marginTop: -40, // Negative margin to pull it up
-  },
-
-  // Amenities row styles - adjust positioning
 
   resortName: {
     color: '#FBCF9C',
     fontSize: 32,
     fontWeight: '300',
     fontFamily: 'Cormorant-Bold',
-    // marginBottom: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    // marginBottom: 16, // Add margin to separate from amenities
   },
   locationText: {
     color: '#fff',
     fontSize: 14,
     marginLeft: 6,
     fontFamily: 'Montserrat',
-  },
-  resortInfoOverlay: {
-    position: 'absolute',
-    bottom: 80, // Position above amenities
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-  },
-  // Amenities row styles - adjust positioning
-
-  amenityIconContainer: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  amenityIconWrapper: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#fff',
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  amenityLabel: {
-    color: '#D1D5DB',
-    fontSize: 11,
-    textAlign: 'center',
-    fontFamily: 'Montserrat',
-    lineHeight: 14,
   },
 
   // Tab navigation styles
@@ -192,42 +136,9 @@ export const styles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: 'black',
   },
-  reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(251, 207, 156, 0.2)',
-  },
-  ratingSummary: {
-    alignItems: 'center',
-  },
-  averageRating: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FBCF9C',
-  },
   starsContainer: {
     flexDirection: 'row',
     marginVertical: 4,
-  },
-  totalReviews: {
-    fontSize: 14,
-    color: '#D1D5DB',
-    marginTop: 4,
-  },
-  addReviewButton: {
-    backgroundColor: '#E0C48F',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  addReviewButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
-    fontFamily: 'Montserrat',
   },
   loadingIndicator: {
     marginTop: 40,
@@ -344,7 +255,17 @@ export const styles = StyleSheet.create({
   roomDetails: {
     marginBottom: 16,
   },
-
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    width: '100%',
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   detailText: {
     color: '#D1D5DB',
     fontSize: 12,
@@ -386,201 +307,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  footerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  priceContainer: {
-    flex: 1,
-  },
-  bookButtonContainer: {
-    marginLeft: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    width: '100%',
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  // Modal Styles (Dark Theme)
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 20,
-    width: '90%',
-    maxHeight: '80%',
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    color: '#fff',
-    fontFamily: 'Montserrat',
-  },
-  closeButton: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  ratingSection: {
-    marginBottom: 20,
-  },
-  ratingLabel: {
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 10,
-    fontFamily: 'Montserrat',
-  },
-  starInput: {
-    marginHorizontal: 5,
-  },
-  modalTitleInput: {
-    borderWidth: 1,
-    borderColor: '#444',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 12,
-    fontFamily: 'Montserrat',
-  },
-  modalCommentInput: {
-    borderWidth: 1,
-    borderColor: '#444',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 120,
-    marginBottom: 20,
-    textAlignVertical: 'top',
-    color: '#fff',
-    fontFamily: 'Montserrat',
-  },
-  modalSubmitButton: {
-    backgroundColor: '#E0C48F',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalSubmitButtonDisabled: {
-    backgroundColor: '#6B7280',
-    opacity: 0.6,
-  },
-  modalSubmitButtonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Montserrat',
-  },
-
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    minWidth: 300,
-  },
-
-  closeButtonText: {
-    color: 'red',
-    fontWeight: 'bold',
-  },
-
-  // Add these to your existing styles
-  bookingRoomInfo: {
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  bookingRoomType: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  bookingRoomPrice: {
-    fontSize: 16,
-    color: '#E0C48F',
-    fontWeight: '600',
-  },
-  bookingField: {
-    marginBottom: 15,
-  },
-  bookingLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  bookingInput: {
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#FFF',
-  },
-  bookingTextArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  bookingTotal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-  },
-  bookingTotalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  bookingTotalAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E0C48F',
-  },
+  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -623,6 +350,44 @@ export const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
+  ratingSection: {
+    marginBottom: 20,
+  },
+  ratingLabel: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 10,
+    fontFamily: 'Montserrat',
+  },
+  starInput: {
+    marginHorizontal: 5,
+  },
+  modalTitleInput: {
+    borderWidth: 1,
+    borderColor: '#444',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 12,
+    fontFamily: 'Montserrat',
+  },
+  modalCommentInput: {
+    borderWidth: 1,
+    borderColor: '#444',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 120,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+    color: '#fff',
+    fontFamily: 'Montserrat',
+  },
+
+  // Booking Modal styles
   bookingRoomInfo: {
     padding: 20,
     backgroundColor: '#2A2A2A',
@@ -653,15 +418,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#E0C48F',
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   bookingField: {
     marginBottom: 16,
   },
@@ -680,10 +436,6 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     backgroundColor: '#2A2A2A',
-  },
-  dateInputDisabled: {
-    opacity: 0.5,
-    backgroundColor: '#222',
   },
   dateInputText: {
     fontSize: 16,
@@ -747,10 +499,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  priceLabel: {
-    fontSize: 14,
-    color: '#CCCCCC',
-  },
   priceValue: {
     fontSize: 14,
     color: '#FFFFFF',
@@ -776,40 +524,62 @@ export const styles = StyleSheet.create({
   },
   footer: {
     padding: 20,
+    paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: '#333',
     backgroundColor: '#1A1A1A',
   },
+  submitButtonWrapper: {
+    width: '100%',
+  },
   submitButton: {
-    backgroundColor: '#E0C48F',
+    width: '100%',
+    height: 56,
     borderRadius: 14,
-    padding: 18,
-    alignItems: 'center',
-    shadowColor: '#E0C48F',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    overflow: 'hidden',
   },
   submitButtonDisabled: {
-    backgroundColor: '#333',
-    shadowOpacity: 0,
-    elevation: 0,
+    opacity: 0.4,
   },
   submitButtonText: {
     color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  // Payment options
+  paymentOptions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  paymentOption: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#2A2A2A',
+    alignItems: 'center',
+  },
+  paymentOptionSelected: {
+    borderColor: '#E0C48F',
+    backgroundColor: '#333',
+  },
+  paymentOptionText: {
+    fontSize: 14,
+    color: '#CCCCCC',
+    fontWeight: '500',
+  },
+  paymentOptionTextSelected: {
+    color: '#E0C48F',
+    fontWeight: '600',
+  },
+
+  // Amenities
   amenitiesRow: {
     paddingVertical: 16,
     backgroundColor: 'transparent',
   },
-
-  // Container for amenity tags
   amenityTag: {
     backgroundColor: 'rgba(255, 255, 255, 1)',
     paddingHorizontal: 10,
@@ -821,11 +591,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   amenityTagIcon: {
     marginRight: 0,
   },
-
   amenityTagText: {
     display: 'flex',
     justifyContent: 'center',
@@ -836,7 +604,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // For the empty state
+  // General
   descriptionText: {
     color: '#D1D5DB',
     fontSize: 14,
@@ -859,5 +627,10 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 6,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
