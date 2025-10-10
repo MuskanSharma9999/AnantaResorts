@@ -31,7 +31,12 @@ import LogoutIcon from '../assets/images/Logout.svg';
 import { apiRequest } from '../Api_List/apiUtils';
 import ApiList from '../Api_List/apiList';
 import ContactUs from '../Screens/ContactUs';
-import { ContactIcon, MenuIcon, SettingsIcon } from 'lucide-react-native';
+import {
+  ContactIcon,
+  History,
+  MenuIcon,
+  SettingsIcon,
+} from 'lucide-react-native';
 import userService from '../services/userService'; // ✅ Import UserService
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -195,7 +200,6 @@ function CustomDrawerContent(props) {
           )}
         </View>
       </View>
-
       {/* Drawer Items */}
       {state.routes.map((route, index) => {
         const focused = state.index === index;
@@ -269,7 +273,6 @@ function CustomDrawerContent(props) {
           </TouchableOpacity>
         );
       })}
-
       {/* Contact Us Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate('ContactUs')}
@@ -297,7 +300,32 @@ function CustomDrawerContent(props) {
           </Text>
         </View>
       </TouchableOpacity>
-
+      <TouchableOpacity
+        onPress={() => navigation.navigate('BookingHistory')}
+        style={{ marginVertical: 4, marginTop: 20 }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+            paddingRight: 20,
+            paddingLeft: 10,
+          }}
+        >
+          <History width={24} height={24} color="#fff" />
+          <Text
+            style={{
+              color: '#fff',
+              marginLeft: 16,
+              fontSize: 16,
+              fontWeight: '400',
+            }}
+          >
+            Booking History
+          </Text>
+        </View>
+      </TouchableOpacity>
       {/* Logout Button */}
       <TouchableOpacity
         onPress={showLogoutConfirmation}

@@ -195,7 +195,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
       );
       console.log('fetch Reviews:', response);
 
-      setReviews(response.data?.data || response.data || []);
+      setReviews(response.data?.data.reviews || response.data || []);
     } catch (err) {
       console.error(
         'Failed to fetch reviews:',
@@ -917,86 +917,89 @@ const ResortDetails: React.FC = ({ navigation }) => {
         />
       </View>
     ),
-
     reviews: () => (
-      <ScrollView style={styles.reviewsContainer}>
-        {reviewLoading ? (
-          <ActivityIndicator
-            size="large"
-            color="#E0C48F"
-            style={styles.loadingIndicator}
-          />
-        ) : (
-          <>
-            {reviews.length > 0 ? (
-              reviews.map((review, index) => (
-                <View key={review.id || index} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <Image
-                      source={{
-                        uri:
-                          review.user_avatar ||
-                          review.user?.avatar ||
-                          'https://via.placeholder.com/40',
-                      }}
-                      style={styles.avatar}
-                    />
-                    <View style={styles.reviewUserInfo}>
-                      <Text style={styles.userName}>
-                        {review.user_name ||
-                          review.user?.name ||
-                          'Anonymous User'}
-                      </Text>
-                      <Text style={styles.reviewDate}>
-                        {new Date(
-                          review.created_at || review.date,
-                        ).toLocaleDateString()}
-                      </Text>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={styles.reviewsContainer}>
+          {reviewLoading ? (
+            <ActivityIndicator
+              size="large"
+              color="#E0C48F"
+              style={styles.loadingIndicator}
+            />
+          ) : (
+            <>
+              {reviews.length > 0 ? (
+                reviews.map((review, index) => (
+                  <View key={review.id || index} style={styles.reviewCard}>
+                    <View style={styles.reviewHeader}>
+                      <Image
+                        source={{
+                          uri:
+                            review.user_avatar ||
+                            review.user?.avatar ||
+                            'https://via.placeholder.com/40',
+                        }}
+                        style={styles.avatar}
+                      />
+                      <View style={styles.reviewUserInfo}>
+                        <Text style={styles.userName}>
+                          {review.user_name ||
+                            review.user?.name ||
+                            'Anonymous User'}
+                        </Text>
+                        <Text style={styles.reviewDate}>
+                          {new Date(
+                            review.created_at || review.date,
+                          ).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <View style={styles.ratingContainer}>
+                        {Array.from({ length: 5 }).map((_, starIndex) => (
+                          <Star
+                            key={starIndex}
+                            size={16}
+                            color={
+                              starIndex < parseInt(review.rating)
+                                ? '#FFD700'
+                                : '#444'
+                            }
+                            fill={
+                              starIndex < parseInt(review.rating)
+                                ? '#FFD700'
+                                : 'none'
+                            }
+                          />
+                        ))}
+                      </View>
                     </View>
-                    <View style={styles.ratingContainer}>
-                      {Array.from({ length: 5 }).map((_, starIndex) => (
-                        <Star
-                          key={starIndex}
-                          size={16}
-                          color={
-                            starIndex < parseInt(review.rating)
-                              ? '#FFD700'
-                              : '#444'
-                          }
-                          fill={
-                            starIndex < parseInt(review.rating)
-                              ? '#FFD700'
-                              : 'none'
-                          }
-                        />
-                      ))}
-                    </View>
+
+                    {review.title && (
+                      <Text style={styles.reviewTitle}>{review.title}</Text>
+                    )}
+
+                    <Text style={styles.reviewComment}>{review.comment}</Text>
                   </View>
-
-                  {review.title && (
-                    <Text style={styles.reviewTitle}>{review.title}</Text>
-                  )}
-
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                ))
+              ) : (
+                <View style={styles.noReviewsContainer}>
+                  <Text style={styles.noReviewsText}>No reviews yet</Text>
+                  <Text style={styles.noReviewsSubtext}>
+                    Be the first to share your experience!
+                  </Text>
                 </View>
-              ))
-            ) : (
-              <View style={styles.noReviewsContainer}>
-                <Text style={styles.noReviewsText}>No reviews yet</Text>
-                <Text style={styles.noReviewsSubtext}>
-                  Be the first to share your experience!
-                </Text>
-                <TouchableOpacity
-                  style={styles.addReviewButton}
-                  onPress={() => setIsModalVisible(true)}
-                >
-                  <Text style={styles.addReviewButtonText}>Write a Review</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
+              )}
+            </>
+          )}
+        </ScrollView>
+
+        {/* Floating Add Review Button */}
+        <TouchableOpacity
+          style={styles.floatingAddButton}
+          onPress={() => setIsModalVisible(true)}
+        >
+          <LucideIcons.Plus color="#fff" size={28} strokeWidth={2.5} />
+        </TouchableOpacity>
+      </View>
     ),
 
     rooms: () => (

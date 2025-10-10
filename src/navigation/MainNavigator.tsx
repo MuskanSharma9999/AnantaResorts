@@ -11,6 +11,7 @@ import LoginScreen from '../components/auth/Login/LoginScreen';
 import KYC from '../Screens/BottomTabScreens/ProfileScreen/KYC/KYC';
 import MyVouchers from '../Screens/BottomTabScreens/ProfileScreen/My Vouchers/MyVouchers';
 import ContactUs from '../Screens/ContactUs';
+import BookingHistory from '../Screens/BookingHistory';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -40,7 +41,22 @@ export const MainNavigator = () => {
           headerBackButtonDisplayMode: 'minimal',
         }}
       />
-
+      <RootStack.Screen
+        name="BookingHistory"
+        component={BookingHistory}
+        options={{
+          headerShown: true,
+          gestureEnabled: true,
+          headerTitle: () => <Logo width={100} height={50} />,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'black',
+            height: Platform.OS === 'ios' ? 100 + insets.top : 56 + insets.top,
+          },
+          headerTintColor: '#D4AF37',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
       <RootStack.Screen
         name="ResortDetails"
         component={ResortDetails}
@@ -73,7 +89,6 @@ export const MainNavigator = () => {
           headerBackButtonDisplayMode: 'minimal',
         }}
       />
-
       <RootStack.Screen
         name="MyVouchers"
         component={MyVouchers}

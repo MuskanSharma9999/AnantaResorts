@@ -25,5 +25,6 @@ export type TabParamList = {
 export type DrawerParamList = {
   MainTabs: undefined;
   ContactUs: undefined;
+  BookingHistory: undefined;
   Logout: undefined;
 };
