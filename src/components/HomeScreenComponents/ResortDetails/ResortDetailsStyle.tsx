@@ -273,6 +273,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
   roomFooter: {
+    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -614,8 +615,8 @@ export const styles = StyleSheet.create({
   },
   floatingAddButton: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    bottom: 30,
+    right: 30,
     backgroundColor: '#9fea54ff',
     width: 56,
     height: 56,

@@ -9,10 +9,7 @@ import {
   SafeAreaView,
   FlatList,
   Image,
-  TextInput,
-  Modal,
   Alert,
-  Platform,
 } from 'react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { styles } from './ResortDetailsStyle';
@@ -24,24 +21,11 @@ import { ApiList } from '../../../Api_List/apiList';
 import { TabView, SceneMap } from 'react-native-tab-view';
 import { Dimensions } from 'react-native';
 import GradientButton from '../../Buttons/GradientButton';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSelector } from 'react-redux';
+import ReviewModal from './ReviewModal';
+import BookingModal from './BookingModal';
 
-const {
-  Monitor,
-  Bath,
-  Wifi,
-  Coffee,
-  MapPin,
-  ChevronLeft,
-  Star,
-  Users,
-  Square,
-  Calendar,
-  User,
-  Phone,
-  MessageCircle,
-} = LucideIcons;
+const { MapPin, Star, Users, Square } = LucideIcons;
 
 const ResortDetails: React.FC = ({ navigation }) => {
   const route = useRoute();
@@ -57,12 +41,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [bookingData, setBookingData] = useState({
-    checkIn: '',
-    checkOut: '',
-    guests: '1',
-    specialRequests: '',
-  });
   const [submittingBooking, setSubmittingBooking] = useState(false);
 
   const layout = Dimensions.get('window');
@@ -79,11 +57,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
   // Helper function to get Lucide icon component dynamically
   const getLucideIcon = iconName => {
     if (!iconName) return null;
-
-    // Try to get the icon from Lucide
     const IconComponent = LucideIcons[iconName];
-
-    // Return the component if found, otherwise return a default icon
     return IconComponent || LucideIcons.Circle;
   };
 
@@ -95,12 +69,9 @@ const ResortDetails: React.FC = ({ navigation }) => {
     color = '#8B5A2B',
   ) => {
     const IconComponent = getLucideIcon(iconName);
-
     if (!IconComponent) {
-      // Fallback to a default icon if not found
       return <LucideIcons.Circle size={size} color={color} />;
     }
-
     return <IconComponent size={size} color={color} strokeWidth={stroke} />;
   };
 
@@ -112,24 +83,12 @@ const ResortDetails: React.FC = ({ navigation }) => {
 
   const openBookingModal = room => {
     setSelectedRoom(room);
-    setBookingData({
-      checkIn: '',
-      checkOut: '',
-      guests: room?.roomType?.max_occupancy?.toString() || '1',
-      specialRequests: '',
-    });
     setBookingModalVisible(true);
   };
 
   const closeBookingModal = () => {
     setBookingModalVisible(false);
     setSelectedRoom(null);
-    setBookingData({
-      checkIn: '',
-      checkOut: '',
-      guests: '1',
-      specialRequests: '',
-    });
   };
 
   const fetchResort = async () => {
@@ -141,7 +100,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
           'Content-Type': 'application/json',
         },
       });
-
       console.log('Resort API Response:', response);
       setResort(response.data?.data);
     } catch (err) {
@@ -168,7 +126,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
           },
         },
       );
-
       setRooms(response.data?.data || []);
     } catch (err) {
       console.error(
@@ -194,7 +151,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
         },
       );
       console.log('fetch Reviews:', response);
-
       setReviews(response.data?.data.reviews || response.data || []);
     } catch (err) {
       console.error(
@@ -324,24 +280,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
     }
   };
 
-  // const calculateAverageRating = reviews => {
-  //   if (!reviews || reviews.length === 0) return 0;
-
-  //   try {
-  //     const sum = reviews.reduce((total, review) => {
-  //       const rating = parseInt(review.rating) || 0;
-  //       return total + rating;
-  //     }, 0);
-
-  //     return (sum / reviews.length).toFixed(1);
-  //   } catch (error) {
-  //     console.error('Error calculating average rating:', error);
-  //     return 0;
-  //   }
-  // };
-
-  // const averageRating = calculateAverageRating(reviews);
-
   const getAmenities = () => {
     if (!resort?.amenities || !Array.isArray(resort.amenities)) return [];
     return resort.amenities;
@@ -353,532 +291,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
     return resort.image_gallery.map(img => ({
       uri: img.url || 'https://via.placeholder.com/150',
     }));
-  };
-
-  const ReviewModal = ({ visible, onClose, onSubmit, submitting }) => {
-    const [rating, setRating] = useState(0);
-    const [title, setTitle] = useState('');
-    const [comment, setComment] = useState('');
-
-    const handleSubmit = async () => {
-      if (rating === 0 || !comment.trim()) {
-        alert('Please provide both rating and comment');
-        return;
-      }
-
-      const success = await onSubmit({
-        rating,
-        title: title.trim() || `Rating: ${rating} stars`,
-        comment,
-      });
-
-      if (success) {
-        setRating(0);
-        setTitle('');
-        setComment('');
-        onClose();
-      }
-    };
-
-    const handleClose = () => {
-      setRating(0);
-      setTitle('');
-      setComment('');
-      onClose();
-    };
-
-    return (
-      <Modal visible={visible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Write a Review</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleClose}
-                disabled={submitting}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalScrollView}>
-              <View style={styles.bookingSection}>
-                <View style={styles.ratingSection}>
-                  <Text style={styles.ratingLabel}>Rate your experience:</Text>
-                  <View style={styles.starsContainer}>
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <TouchableOpacity
-                        key={star}
-                        onPress={() => setRating(star)}
-                        disabled={submitting}
-                        style={styles.starInput}
-                      >
-                        <Text
-                          style={{
-                            color: star <= rating ? '#FFD700' : '#444',
-                            fontSize: 40,
-                          }}
-                        >
-                          ★
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>
-                    Review Title (Optional)
-                  </Text>
-                  <TextInput
-                    style={styles.modalTitleInput}
-                    placeholder="Give your review a title"
-                    placeholderTextColor="#888"
-                    value={title}
-                    onChangeText={setTitle}
-                    maxLength={100}
-                    editable={!submitting}
-                  />
-                </View>
-
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>Your Review *</Text>
-                  <TextInput
-                    style={styles.modalCommentInput}
-                    placeholder="Tell us about your experience..."
-                    placeholderTextColor="#888"
-                    value={comment}
-                    onChangeText={setComment}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                    editable={!submitting}
-                  />
-                </View>
-              </View>
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[
-                styles.footer,
-                (submitting || rating === 0 || !comment.trim()) &&
-                  styles.submitButtonDisabled,
-              ]}
-              disabled={submitting || rating === 0 || !comment.trim()}
-            >
-              <GradientButton
-                onPress={handleSubmit}
-                title={submitting ? 'Submitting...' : 'Submit Review'}
-              ></GradientButton>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
-
-  const BookingModal = ({ visible, onClose, onSubmit, room, submitting }) => {
-    const [showCheckInPicker, setShowCheckInPicker] = useState(false);
-    const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
-    const [bookingData, setBookingData] = useState({
-      checkIn: '',
-      checkOut: '',
-      guests: '1',
-      specialRequests: '',
-      contactPhone: '',
-      paymentMethod: 'razorpay',
-    });
-
-    const handleSubmit = async () => {
-      const success = await onSubmit(bookingData);
-      if (success) {
-        onClose();
-      }
-    };
-
-    const handleClose = () => {
-      setBookingData({
-        checkIn: '',
-        checkOut: '',
-        guests: '1',
-        specialRequests: '',
-        contactPhone: '',
-        paymentMethod: 'razorpay',
-      });
-      onClose();
-    };
-
-    const formatDate = date => {
-      return date.toISOString().split('T')[0];
-    };
-
-    const onCheckInChange = (event, selectedDate) => {
-      setShowCheckInPicker(false);
-      if (selectedDate) {
-        const formattedDate = formatDate(selectedDate);
-        setBookingData({ ...bookingData, checkIn: formattedDate });
-
-        if (!bookingData.checkOut) {
-          const nextDay = new Date(selectedDate);
-          nextDay.setDate(nextDay.getDate() + 1);
-          setBookingData(prev => ({
-            ...prev,
-            checkIn: formattedDate,
-            checkOut: formatDate(nextDay),
-          }));
-        }
-      }
-    };
-
-    const onCheckOutChange = (event, selectedDate) => {
-      setShowCheckOutPicker(false);
-      if (selectedDate) {
-        setBookingData({
-          ...bookingData,
-          checkOut: formatDate(selectedDate),
-        });
-      }
-    };
-
-    const calculateTotal = () => {
-      if (!bookingData.checkIn || !bookingData.checkOut) return 0;
-
-      const checkIn = new Date(bookingData.checkIn);
-      const checkOut = new Date(bookingData.checkOut);
-      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-
-      return nights > 0 ? nights * (room?.roomType?.price_per_night || 0) : 0;
-    };
-
-    const calculateNights = () => {
-      if (!bookingData.checkIn || !bookingData.checkOut) return 0;
-
-      const checkIn = new Date(bookingData.checkIn);
-      const checkOut = new Date(bookingData.checkOut);
-      return Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-    };
-
-    const getMinCheckOutDate = () => {
-      if (!bookingData.checkIn) return new Date();
-      const minDate = new Date(bookingData.checkIn);
-      minDate.setDate(minDate.getDate() + 1);
-      return minDate;
-    };
-
-    const isFormValid =
-      bookingData.checkIn &&
-      bookingData.checkOut &&
-      bookingData.contactPhone &&
-      !submitting;
-
-    return (
-      <Modal visible={visible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Book This Room</Text>
-              <TouchableOpacity
-                onPress={handleClose}
-                disabled={submitting}
-                style={styles.closeButton}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              style={styles.modalScrollView}
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.bookingRoomInfo}>
-                <Text style={styles.bookingRoomType}>
-                  {room?.roomType?.room_type || 'Standard Room'}
-                </Text>
-                <Text style={styles.bookingRoomPrice}>
-                  ₹{room?.roomType?.price_per_night || '0.00'} / night
-                </Text>
-                <Text style={styles.bookingRoomCapacity}>
-                  Max {room?.roomType?.max_occupancy || 2} guests
-                </Text>
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Dates</Text>
-
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>
-                    <Calendar size={16} color="#E0C48F" /> Check-in Date
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.dateInput}
-                    onPress={() => setShowCheckInPicker(true)}
-                    disabled={submitting}
-                  >
-                    <Text
-                      style={[
-                        styles.dateInputText,
-                        !bookingData.checkIn && styles.placeholderText,
-                      ]}
-                    >
-                      {bookingData.checkIn || 'Select check-in date'}
-                    </Text>
-                    <Calendar size={20} color="#E0C48F" />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>
-                    <Calendar size={16} color="#E0C48F" /> Check-out Date
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.dateInput}
-                    onPress={() => setShowCheckOutPicker(true)}
-                    disabled={submitting || !bookingData.checkIn}
-                  >
-                    <Text
-                      style={[
-                        styles.dateInputText,
-                        !bookingData.checkOut && styles.placeholderText,
-                      ]}
-                    >
-                      {bookingData.checkOut || 'Select check-out date'}
-                    </Text>
-                    <Calendar size={20} color="#E0C48F" />
-                  </TouchableOpacity>
-                </View>
-
-                {showCheckInPicker && (
-                  <DateTimePicker
-                    value={
-                      bookingData.checkIn
-                        ? new Date(bookingData.checkIn)
-                        : new Date()
-                    }
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={onCheckInChange}
-                    minimumDate={new Date()}
-                    themeVariant="dark"
-                  />
-                )}
-
-                {showCheckOutPicker && (
-                  <DateTimePicker
-                    value={
-                      bookingData.checkOut
-                        ? new Date(bookingData.checkOut)
-                        : getMinCheckOutDate()
-                    }
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={onCheckOutChange}
-                    minimumDate={getMinCheckOutDate()}
-                    themeVariant="dark"
-                  />
-                )}
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Contact Information</Text>
-
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>
-                    <Phone size={16} color="#E0C48F" /> Contact Phone *
-                  </Text>
-                  <TextInput
-                    style={styles.bookingInput}
-                    placeholder="Enter your phone number"
-                    placeholderTextColor="#888"
-                    value={bookingData.contactPhone}
-                    onChangeText={text =>
-                      setBookingData({ ...bookingData, contactPhone: text })
-                    }
-                    keyboardType="phone-pad"
-                    maxLength={15}
-                    editable={!submitting}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Guests</Text>
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>
-                    <User size={16} color="#E0C48F" /> Number of Guests
-                  </Text>
-                  <View style={styles.guestsContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.guestButton,
-                        (submitting || parseInt(bookingData.guests) <= 1) &&
-                          styles.guestButtonDisabled,
-                      ]}
-                      onPress={() => {
-                        const currentGuests = parseInt(bookingData.guests);
-                        if (currentGuests > 1) {
-                          setBookingData({
-                            ...bookingData,
-                            guests: (currentGuests - 1).toString(),
-                          });
-                        }
-                      }}
-                      disabled={submitting || parseInt(bookingData.guests) <= 1}
-                    >
-                      <Text style={styles.guestButtonText}>-</Text>
-                    </TouchableOpacity>
-
-                    <Text style={styles.guestCount}>{bookingData.guests}</Text>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.guestButton,
-                        (submitting ||
-                          parseInt(bookingData.guests) >=
-                            (room?.roomType?.max_occupancy || 2)) &&
-                          styles.guestButtonDisabled,
-                      ]}
-                      onPress={() => {
-                        const currentGuests = parseInt(bookingData.guests);
-                        const maxGuests = room?.roomType?.max_occupancy || 2;
-                        if (currentGuests < maxGuests) {
-                          setBookingData({
-                            ...bookingData,
-                            guests: (currentGuests + 1).toString(),
-                          });
-                        }
-                      }}
-                      disabled={
-                        submitting ||
-                        parseInt(bookingData.guests) >=
-                          (room?.roomType?.max_occupancy || 2)
-                      }
-                    >
-                      <Text style={styles.guestButtonText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Payment Method</Text>
-                <View style={styles.bookingField}>
-                  <Text style={styles.bookingLabel}>Select Payment Method</Text>
-                  <View style={styles.paymentOptions}>
-                    <TouchableOpacity
-                      style={[
-                        styles.paymentOption,
-                        bookingData.paymentMethod === 'razorpay' &&
-                          styles.paymentOptionSelected,
-                      ]}
-                      onPress={() =>
-                        setBookingData({
-                          ...bookingData,
-                          paymentMethod: 'razorpay',
-                        })
-                      }
-                      disabled={submitting}
-                    >
-                      <Text
-                        style={[
-                          styles.paymentOptionText,
-                          bookingData.paymentMethod === 'razorpay' &&
-                            styles.paymentOptionTextSelected,
-                        ]}
-                      >
-                        Razorpay
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.paymentOption,
-                        bookingData.paymentMethod === 'cash' &&
-                          styles.paymentOptionSelected,
-                      ]}
-                      onPress={() =>
-                        setBookingData({
-                          ...bookingData,
-                          paymentMethod: 'cash',
-                        })
-                      }
-                      disabled={submitting}
-                    >
-                      <Text
-                        style={[
-                          styles.paymentOptionText,
-                          bookingData.paymentMethod === 'cash' &&
-                            styles.paymentOptionTextSelected,
-                        ]}
-                      >
-                        Pay at Resort
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>
-                  <MessageCircle size={16} color="#E0C48F" /> Special Requests
-                </Text>
-                <TextInput
-                  style={[styles.bookingInput, styles.bookingTextArea]}
-                  placeholder="Any special requests or requirements..."
-                  placeholderTextColor="#888"
-                  value={bookingData.specialRequests}
-                  onChangeText={text =>
-                    setBookingData({ ...bookingData, specialRequests: text })
-                  }
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                  editable={!submitting}
-                />
-              </View>
-
-              <View style={styles.bookingSection}>
-                <Text style={styles.sectionTitle}>Price Breakdown</Text>
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>
-                    ₹{room?.roomType?.price_per_night || '0.00'} x{' '}
-                    {calculateNights()} nights
-                  </Text>
-                  <Text style={styles.priceValue}>₹{calculateTotal()}</Text>
-                </View>
-
-                <View style={styles.divider} />
-
-                <View style={[styles.priceRow, styles.totalRow]}>
-                  <Text style={styles.totalLabel}>Total Amount</Text>
-                  <Text style={styles.totalAmount}>₹{calculateTotal()}</Text>
-                </View>
-              </View>
-            </ScrollView>
-
-            <View style={styles.footer}>
-              <View
-                style={[
-                  styles.submitButtonWrapper,
-                  !isFormValid && styles.submitButtonDisabled,
-                ]}
-              >
-                <GradientButton
-                  title={
-                    submitting
-                      ? 'Processing...'
-                      : `Book Now - ₹${calculateTotal()}`
-                  }
-                  style={styles.submitButton}
-                  onPress={handleSubmit}
-                  disabled={!isFormValid}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
   };
 
   if (loading) return <ActivityIndicator size="large" color="#E0C48F" />;
@@ -915,6 +327,7 @@ const ResortDetails: React.FC = ({ navigation }) => {
         />
       </View>
     ),
+
     reviews: () => (
       <View style={{ flex: 1 }}>
         <ScrollView style={styles.reviewsContainer}>
@@ -990,7 +403,6 @@ const ResortDetails: React.FC = ({ navigation }) => {
           )}
         </ScrollView>
 
-        {/* Floating Add Review Button */}
         <TouchableOpacity
           style={styles.floatingAddButton}
           onPress={() => setIsModalVisible(true)}
@@ -1066,17 +478,17 @@ const ResortDetails: React.FC = ({ navigation }) => {
                     ₹{room.roomType?.price_per_night || '0.00'}
                   </Text>
                 </View>
-              </View>
 
-              {activeMembership && (
-                <View style={styles.container}>
-                  <GradientButton
-                    title="Book"
-                    style={styles.button}
-                    onPress={() => openBookingModal(room)}
-                  />
-                </View>
-              )}
+                {activeMembership && (
+                  <View style={styles.container}>
+                    <GradientButton
+                      title="Book"
+                      style={styles.button}
+                      onPress={() => openBookingModal(room)}
+                    />
+                  </View>
+                )}
+              </View>
             </View>
           </View>
         ))}
